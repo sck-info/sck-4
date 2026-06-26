@@ -137,7 +137,7 @@ export default function VisionMission() {
                 marginBottom: "1rem",
               }}
             >
-              Vision
+              <b>Vision</b>
             </p>
             <p
               style={{
@@ -198,14 +198,14 @@ export default function VisionMission() {
               style={{
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: 11,
-                color: "#6B8F71",
+                color: "#6B9F99",
                 letterSpacing: 2,
                 textTransform: "uppercase",
                 fontWeight: 500,
                 marginBottom: "1rem",
               }}
             >
-              Mission
+              <b>Mission</b>
             </p>
             <p
               style={{
