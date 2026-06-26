@@ -89,20 +89,6 @@ export default function Sessions() {
               reach out within <b>48 to 72 hours</b> to schedule and confirm
               your booking.
             </p>
-            {/* <p
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: 15,
-                color: "var(--text-mid)",
-                maxWidth: 380,
-                lineHeight: 1.7,
-                fontWeight: 300,
-              }}
-            >
-              *Once you submit the form and complete your payment, our team will
-              reach out within <b>48 to 72 hours</b> to schedule and confirm
-              your booking.
-            </p> */}
           </div>
         </div>
 
