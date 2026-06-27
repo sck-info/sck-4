@@ -848,35 +848,6 @@ export default function Sessions() {
                   {session.name}
                 </h4>
 
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "baseline",
-                    gap: 8,
-                    marginBottom: "0.75rem",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: "'Cormorant Garamond', serif",
-                      fontSize: 22,
-                      fontWeight: 600,
-                      color: cat.color,
-                    }}
-                  >
-                    {session.price}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "'DM Sans', sans-serif",
-                      fontSize: 12,
-                      color: "var(--text-light)",
-                    }}
-                  >
-                    {session.priceNote}
-                  </span>
-                </div>
-
                 <p
                   style={{
                     fontFamily: "'DM Sans', sans-serif",
