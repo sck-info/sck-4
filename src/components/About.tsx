@@ -550,7 +550,7 @@ export default function About() {
                 <p
                   style={{
                     fontFamily: "'Cormorant Garamond', serif",
-                    fontSize: 16,
+                    fontSize: 24,
                     color: "var(--ivory)",
                     fontStyle: "italic",
                     lineHeight: 1.5,
@@ -558,8 +558,10 @@ export default function About() {
                   }}
                 >
                   Inspired by{" "}
-                  <span style={{ color: "var(--gold)" }}>
-                    Gurudev Sri Sri Ravi Shankar
+                  <span style={{ color: "var(--light-gold)" }}>
+                    <a href="https://gurudev.artofliving.org/">
+                      Gurudev Sri Sri Ravi Shankar
+                    </a>
                   </span>
                 </p>
               </div>
@@ -571,7 +573,7 @@ export default function About() {
                 position: "absolute",
                 bottom: -20,
                 right: -16,
-                background: "var(--gold)",
+                background: "var(--light-gold)",
                 borderRadius: 14,
                 padding: "10px 16px",
                 zIndex: 2,
@@ -653,7 +655,7 @@ export default function About() {
                 lineHeight: 1.5,
               }}
             >
-              Young &amp; Dynamic International Faculty of AOL · Life Skills
+              Young &amp; Dynamic International Faculty · Life Skills
               Facilitator · Mind &amp; Breath Expert · Holistic Wellness Coach ·
               Professional Singer
             </p>

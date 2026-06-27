@@ -5,6 +5,7 @@ import VisionMission from "@/components/VisionMission";
 import Sessions from "@/components/Sessions";
 import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
+import Gallery from "@/components/Gallery";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       <About />
       <VisionMission />
       <Sessions />
+      <Gallery />
       <Testimonials />
       <Contact />
     </>
