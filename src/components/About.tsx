@@ -182,7 +182,7 @@ function StatsBar({ stats }: { stats: { num: string; label: string }[] }) {
               fontWeight: 400,
               color: "var(--indigo)",
               lineHeight: 1.1,
-              marginBottom: "0.75rem",
+              marginBottom: "1.5rem",
             }}
           >
             Transforming{" "}
@@ -203,7 +203,7 @@ function StatsBar({ stats }: { stats: { num: string; label: string }[] }) {
               fontSize: 18,
               color: "var(--gold)",
               fontStyle: "italic",
-              marginBottom: "1.5rem",
+              marginBottom: "1rem",
               lineHeight: 1.5,
               maxWidth: 700,
             }}
@@ -301,7 +301,7 @@ export default function About() {
       id="about"
       style={{
         background: "var(--ivory)",
-        padding: "3rem 2rem",
+        padding: "1.5rem 2rem",
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -309,7 +309,7 @@ export default function About() {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "clamp(3rem, 6vw, 6rem)",
+            gap: "clamp(2rem, 4vw, 3rem)",
             alignItems: "center",
           }}
         >
@@ -330,7 +330,8 @@ export default function About() {
                 zIndex: 1,
                 borderRadius: 20,
                 overflow: "hidden",
-                aspectRatio: "3/4",
+                // aspectRatio: "3/4",
+                height: "560px",
                 background: "#d4c4b0",
                 border: "1px solid rgba(232,150,46,0.3)",
                 boxShadow: "0 20px 25px -5px rgba(0,0,0,0.15)",
@@ -338,10 +339,14 @@ export default function About() {
             >
               <div
                 style={{
+                  // position: "relative",
+                  // width: "100%",
+                  // height: "100%",
+                  // overflow: "hidden",
                   position: "relative",
+                  maxWidth: "360px",
                   width: "100%",
-                  height: "100%",
-                  overflow: "hidden",
+                  margin: "0 auto",
                 }}
               >
                 <AnimatePresence mode="wait">
@@ -351,7 +356,12 @@ export default function About() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.8, ease: "easeInOut" }}
-                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      width: "100%",
+                      height: "100%",
+                    }}
                   >
                     <Image
                       src={slideshowImages[imgIndex].src}
@@ -422,7 +432,10 @@ export default function About() {
                 >
                   Inspired by{" "}
                   <span style={{ color: "var(--light-gold)" }}>
-                    <a href="https://gurudev.artofliving.org/" style={{ color: "inherit", textDecoration: "underline" }}>
+                    <a
+                      href="https://gurudev.artofliving.org/"
+                      style={{ color: "inherit", textDecoration: "underline" }}
+                    >
                       Gurudev Sri Sri Ravi Shankar
                     </a>
                   </span>
@@ -501,8 +514,8 @@ export default function About() {
                 fontSize: "clamp(32px, 5vw, 48px)",
                 fontWeight: 400,
                 color: "var(--indigo)",
-                lineHeight: 1.1,
-                marginBottom: "0.75rem",
+                lineHeight: 0.8,
+                marginBottom: "0.5rem",
               }}
             >
               {profile.name}
@@ -514,7 +527,7 @@ export default function About() {
                 fontSize: 18,
                 color: "var(--gold)",
                 fontStyle: "italic",
-                marginBottom: "1.5rem",
+                marginBottom: "0.75rem",
                 lineHeight: 1.5,
               }}
             >
@@ -528,8 +541,8 @@ export default function About() {
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: 15,
                 color: "var(--text-mid)",
-                lineHeight: 1.85,
-                marginBottom: "2rem",
+                lineHeight: 1.7,
+                marginBottom: "1.5rem",
                 fontWeight: 300,
               }}
             >
