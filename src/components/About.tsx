@@ -47,23 +47,35 @@ function StatCard({ num, label }: { num: string; label: string }) {
       <div
         style={{
           fontFamily: "'Cormorant Garamond', serif",
-          fontSize: "clamp(24px, 3vw, 34px)",
-          fontWeight: 500,
-          color: "var(--light-gold)",
+          fontSize: 36,
+          fontWeight: 600,
+          color: "var(--indigo)",
           lineHeight: 1,
         }}
       >
         {triggered ? `${display}${suffix}` : "0"}
       </div>
+
+      <div
+        style={{
+          width: 24,
+          height: 1,
+          background: "rgba(232,150,46,.35)",
+          margin: "14px auto",
+        }}
+      />
+
       <div
         style={{
           fontFamily: "'DM Sans', sans-serif",
-          fontSize: 11,
-          color: "rgba(250,247,242,0.7)",
-          marginTop: 6,
-          letterSpacing: 0.5,
-          textTransform: "uppercase" as const,
-          lineHeight: 1.4,
+          fontSize: 10,
+          letterSpacing: "0.16em",
+          textTransform: "uppercase",
+          fontWeight: 600,
+          color: "var(--text-light)",
+          lineHeight: 1.6,
+          maxWidth: 110,
+          margin: "0 auto",
         }}
       >
         {label}
@@ -73,87 +85,174 @@ function StatCard({ num, label }: { num: string; label: string }) {
 }
 
 function StatsBar({ stats }: { stats: { num: string; label: string }[] }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const doubled = [...stats, ...stats];
-
   return (
-    <div
+    <section
       style={{
         marginTop: "clamp(4rem, 7vw, 6rem)",
-        background: "var(--indigo)",
-        borderRadius: 20,
-        padding: "clamp(1.5rem, 3vw, 2rem) 0",
-        overflow: "hidden",
-        maxWidth: 1200,
-        marginLeft: "auto",
-        marginRight: "auto",
-        position: "relative",
       }}
     >
-      {/* Left fade */}
       <div
         style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 80,
-          zIndex: 2,
-          background: "linear-gradient(to right, #1C1F4A, transparent)",
-          borderRadius: "20px 0 0 20px",
-          pointerEvents: "none",
-        }}
-      />
-      {/* Right fade */}
-      <div
-        style={{
-          position: "absolute",
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: 80,
-          zIndex: 2,
-          background: "linear-gradient(to left, #1C1F4A, transparent)",
-          borderRadius: "0 20px 20px 0",
-          pointerEvents: "none",
-        }}
-      />
-
-      <div
-        ref={trackRef}
-        style={{
-          display: "flex",
-          gap: 0,
-          animation: "marquee 24s linear infinite",
-          width: "max-content",
+          maxWidth: 850,
+          margin: "0 auto",
         }}
       >
-        {doubled.map((s, i) => (
+        {/* Heading */}
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+            marginBottom: "2rem",
+          }}
+        >
+          {/* Same design as About */}
           <div
-            key={i}
             style={{
-              textAlign: "center",
-              padding: "0 clamp(2rem, 4vw, 3.5rem)",
-              borderRight: "1px solid rgba(250,247,242,0.08)",
-              minWidth: 140,
-              flexShrink: 0,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: "1.25rem",
             }}
           >
-            <StatCard num={s.num} label={s.label} />
+            <div
+              style={{
+                width: 32,
+                height: 1,
+                background: "var(--gold)",
+              }}
+            />
+            <span
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 12,
+                color: "var(--gold)",
+                letterSpacing: 2,
+                textTransform: "uppercase",
+                fontWeight: 500,
+              }}
+            >
+              Our Impact
+            </span>
+            <div
+              style={{
+                width: 32,
+                height: 1,
+                background: "var(--gold)",
+              }}
+            />
           </div>
-        ))}
-      </div>
 
-      <style>{`
-        @keyframes marquee {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        div[style*="marquee"]:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
-    </div>
+          <h2
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: "clamp(32px,5vw,48px)",
+              fontWeight: 400,
+              color: "var(--indigo)",
+              lineHeight: 1.1,
+              marginBottom: "0.75rem",
+            }}
+          >
+            Transforming{" "}
+            <span
+              style={{
+                color: "var(--gold)",
+                fontStyle: "italic",
+                fontWeight: 400,
+              }}
+            >
+              Thousands of Lives
+            </span>
+          </h2>
+
+          <p
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 18,
+              color: "var(--gold)",
+              fontStyle: "italic",
+              marginBottom: "1.5rem",
+              lineHeight: 1.5,
+              maxWidth: 700,
+            }}
+          >
+            More than a decade of nurturing well-being through breathwork,
+            meditation, mindfulness and holistic wellness.
+          </p>
+        </div>
+
+        {/* Cards */}
+        <div className="stats-grid">
+          {stats.map((s) => (
+            <div key={s.label} className="metric-card">
+              <div className="corner top" />
+              <div className="corner bottom" />
+
+              <StatCard num={s.num} label={s.label} />
+            </div>
+          ))}
+        </div>
+
+        <style>{`
+          .stats-grid{
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:20px;
+          }
+
+          .metric-card{
+            position:relative;
+            background:#fff;
+            border:1px solid rgba(28,31,74,.08);
+            height:150px;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            transition:.3s;
+          }
+
+          .metric-card:hover{
+            transform:translateY(-5px);
+            border-color:rgba(232,150,46,.35);
+            box-shadow:0 12px 28px rgba(28,31,74,.08);
+          }
+
+          .corner{
+            position:absolute;
+            width:8px;
+            height:8px;
+          }
+
+          .corner.top{
+            top:8px;
+            left:8px;
+            border-top:1px solid rgba(232,150,46,.35);
+            border-left:1px solid rgba(232,150,46,.35);
+          }
+
+          .corner.bottom{
+            right:8px;
+            bottom:8px;
+            border-right:1px solid rgba(232,150,46,.35);
+            border-bottom:1px solid rgba(232,150,46,.35);
+          }
+
+          @media(max-width:900px){
+            .stats-grid{
+              grid-template-columns:repeat(2,1fr);
+            }
+          }
+
+          @media(max-width:600px){
+            .stats-grid{
+              grid-template-columns:1fr;
+            }
+          }
+        `}</style>
+      </div>
+    </section>
   );
 }
 
@@ -163,7 +262,7 @@ export default function About() {
       id="about"
       style={{
         background: "var(--ivory)",
-        padding: "clamp(5rem, 10vw, 9rem) 2rem",
+        padding: "3rem 2rem",
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
