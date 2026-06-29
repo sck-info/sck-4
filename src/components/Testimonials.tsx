@@ -118,7 +118,7 @@ export default function Testimonials() {
                   fontWeight: 300,
                 }}
               >
-                "
+                &quot;
               </div>
 
               <p

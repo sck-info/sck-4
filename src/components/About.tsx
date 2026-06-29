@@ -1,6 +1,36 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { profile } from "@/data/content";
+
+const slideshowImages = [
+  {
+    src: "/images/profile-hero1.jpeg",
+    tag: "LIFE SKILLS FACILITATOR",
+    alt: "Sharath Chandra Kancherla - CST touch",
+  },
+  {
+    src: "/images/sck-music.jpeg",
+    tag: "MUSIC THERAPIST",
+    alt: "Sharath Chandra Kancherla - Swara Frequencies",
+  },
+  {
+    src: "/images/sck-yoga.jpeg",
+    tag: "YOGA & RAKKENHO",
+    alt: "Sharath Chandra Kancherla - Sole Pressure",
+  },
+  {
+    src: "/images/sck-tutuor.jpeg",
+    tag: "NLP COACH & MENTOR",
+    alt: "Sharath Chandra Kancherla - Habit Adjustments",
+  },
+  {
+    src: "/images/sck-cool.jpeg",
+    tag: "VEDIC ASTROLOGER",
+    alt: "Sharath Chandra Kancherla - Chart Reading",
+  },
+];
 
 function useCountUp(target: number, duration = 2000, startTrigger: boolean) {
   const [count, setCount] = useState(0);
@@ -257,6 +287,15 @@ function StatsBar({ stats }: { stats: { num: string; label: string }[] }) {
 }
 
 export default function About() {
+  const [imgIndex, setImgIndex] = useState(0);
+
+  useEffect(() => {
+    const slideTimer = setInterval(() => {
+      setImgIndex((prev) => (prev + 1) % slideshowImages.length);
+    }, 4000);
+    return () => clearInterval(slideTimer);
+  }, []);
+
   return (
     <section
       id="about"
@@ -274,7 +313,7 @@ export default function About() {
             alignItems: "center",
           }}
         >
-          {/* Photo */}
+          {/* Photo Carousel (matching sck-3) */}
           <div style={{ position: "relative" }}>
             <div
               style={{
@@ -293,41 +332,70 @@ export default function About() {
                 overflow: "hidden",
                 aspectRatio: "3/4",
                 background: "#d4c4b0",
+                border: "1px solid rgba(232,150,46,0.3)",
+                boxShadow: "0 20px 25px -5px rgba(0,0,0,0.15)",
               }}
             >
               <div
                 style={{
+                  position: "relative",
                   width: "100%",
                   height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 12,
-                  background:
-                    "linear-gradient(160deg, #c8b49a 0%, #a8906e 100%)",
+                  overflow: "hidden",
                 }}
               >
-                <div style={{ fontSize: 80 }}>🙏</div>
-                <p
-                  style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: 13,
-                    color: "rgba(28,31,74,0.5)",
-                    textAlign: "center",
-                    padding: "0 2rem",
-                  }}
-                >
-                  <img
-                    src="/sharath.jpeg"
-                    alt="Sharath Chandra Kancherla"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                </p>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={imgIndex}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.8, ease: "easeInOut" }}
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+                  >
+                    <Image
+                      src={slideshowImages[imgIndex].src}
+                      alt={slideshowImages[imgIndex].alt}
+                      fill
+                      priority
+                      style={{ objectFit: "cover" }}
+                      sizes="(min-width: 1024px) 30vw, 85vw"
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Tag Badge */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 16,
+                  right: 16,
+                  background: "var(--indigo)",
+                  color: "var(--light-gold)",
+                  fontSize: 10,
+                  fontFamily: "monospace",
+                  letterSpacing: "0.15em",
+                  fontWeight: "bold",
+                  padding: "6px 14px",
+                  borderRadius: 6,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+                  zIndex: 30,
+                  overflow: "hidden",
+                }}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={imgIndex}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    transition={{ duration: 0.3 }}
+                    style={{ display: "block" }}
+                  >
+                    {slideshowImages[imgIndex].tag}
+                  </motion.span>
+                </AnimatePresence>
               </div>
 
               <div
@@ -336,23 +404,25 @@ export default function About() {
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  background: "var(--indigo)",
-                  padding: "1.25rem 1.5rem",
+                  background: "rgba(28,31,74,0.92)",
+                  backdropFilter: "blur(8px)",
+                  padding: "1rem 1.25rem",
+                  zIndex: 20,
                 }}
               >
                 <p
                   style={{
                     fontFamily: "'Cormorant Garamond', serif",
-                    fontSize: 20,
+                    fontSize: 18,
                     color: "var(--ivory)",
                     fontStyle: "italic",
-                    lineHeight: 1.5,
+                    lineHeight: 1.4,
                     textAlign: "center",
                   }}
                 >
                   Inspired by{" "}
                   <span style={{ color: "var(--light-gold)" }}>
-                    <a href="https://gurudev.artofliving.org/">
+                    <a href="https://gurudev.artofliving.org/" style={{ color: "inherit", textDecoration: "underline" }}>
                       Gurudev Sri Sri Ravi Shankar
                     </a>
                   </span>
