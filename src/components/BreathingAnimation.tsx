@@ -123,15 +123,14 @@ export default function BreathingAnimation() {
   return (
     <div
       style={{
-        position: "absolute",
-        right: "-5%",
-        top: "50%",
-        transform: "translateY(-50%)",
-        width: "min(600px, 85vw)",
-        height: "min(600px, 85vw)",
+        position: "relative",
+        width: "100%",
+        maxWidth: 520,
+        aspectRatio: "1",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        margin: "0 auto",
         pointerEvents: "none",
       }}
     >
