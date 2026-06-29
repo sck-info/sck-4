@@ -331,7 +331,7 @@ export default function About() {
                 borderRadius: 20,
                 overflow: "hidden",
                 // aspectRatio: "3/4",
-                height: "560px",
+                height: "clamp(420px, 60vw, 560px)",
                 background: "#d4c4b0",
                 border: "1px solid rgba(232,150,46,0.3)",
                 boxShadow: "0 20px 25px -5px rgba(0,0,0,0.15)",
@@ -339,14 +339,14 @@ export default function About() {
             >
               <div
                 style={{
-                  // position: "relative",
-                  // width: "100%",
-                  // height: "100%",
-                  // overflow: "hidden",
                   position: "relative",
-                  maxWidth: "360px",
                   width: "100%",
-                  margin: "0 auto",
+                  height: "100%",
+                  overflow: "hidden",
+                  // position: "relative",
+                  maxWidth: "580px",
+                  // width: "100%",
+                  // margin: "0 auto",
                 }}
               >
                 <AnimatePresence mode="wait">
