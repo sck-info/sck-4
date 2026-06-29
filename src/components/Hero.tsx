@@ -1,25 +1,8 @@
 "use client";
 import { useEffect, useRef } from "react";
+import BreathingAnimation from "@/components/BreathingAnimation";
 
 export default function Hero() {
-  const mandalaRef = useRef<SVGGElement>(null);
-
-  useEffect(() => {
-    let angle = 0;
-    const animate = () => {
-      angle += 0.08;
-      if (mandalaRef.current) {
-        mandalaRef.current.setAttribute(
-          "transform",
-          `translate(50,50) rotate(${angle})`,
-        );
-      }
-      requestAnimationFrame(animate);
-    };
-    const id = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(id);
-  }, []);
-
   return (
     <section
       style={{
@@ -31,6 +14,7 @@ export default function Hero() {
         overflow: "hidden",
       }}
     >
+      <BreathingAnimation />
       <div
         style={{
           position: "absolute",
@@ -42,66 +26,7 @@ export default function Hero() {
           opacity: 0.07,
           pointerEvents: "none",
         }}
-      >
-        <svg viewBox="0 0 100 100" width="100%" height="100%">
-          <g ref={mandalaRef}>
-            {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(
-              (deg, i) => (
-                <g key={i} transform={`rotate(${deg})`}>
-                  <ellipse cx="0" cy="-30" rx="2.5" ry="8" fill="#E8962E" />
-                  <ellipse cx="0" cy="-44" rx="1.5" ry="5" fill="#E8962E" />
-                  <circle cx="0" cy="-22" r="1.5" fill="#E8962E" />
-                </g>
-              ),
-            )}
-            {[0, 45, 90, 135, 180, 225, 270, 315].map((deg, i) => (
-              <g key={i} transform={`rotate(${deg})`}>
-                <path d="M0,-14 L3,-8 L0,-4 L-3,-8 Z" fill="#FAF7F2" />
-              </g>
-            ))}
-            <circle
-              cx="0"
-              cy="0"
-              r="6"
-              fill="none"
-              stroke="#E8962E"
-              strokeWidth="0.5"
-            />
-            <circle
-              cx="0"
-              cy="0"
-              r="14"
-              fill="none"
-              stroke="#FAF7F2"
-              strokeWidth="0.3"
-            />
-            <circle
-              cx="0"
-              cy="0"
-              r="22"
-              fill="none"
-              stroke="#E8962E"
-              strokeWidth="0.3"
-            />
-            <circle
-              cx="0"
-              cy="0"
-              r="36"
-              fill="none"
-              stroke="#FAF7F2"
-              strokeWidth="0.2"
-            />
-            <circle
-              cx="0"
-              cy="0"
-              r="46"
-              fill="none"
-              stroke="#E8962E"
-              strokeWidth="0.2"
-            />
-          </g>
-        </svg>
-      </div>
+      ></div>
 
       <div
         style={{
