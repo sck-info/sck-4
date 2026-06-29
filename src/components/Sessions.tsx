@@ -381,6 +381,114 @@ export default function Sessions() {
             </a>
           </div>
 
+          {/* Category Quote */}
+          <div
+            style={{
+              padding: "1.2rem 2rem",
+              background: cat.lightColor,
+              border: `1px solid ${cat.color}25`,
+              textAlign: "center",
+              position: "relative",
+            }}
+          >
+            {/* Decorative line */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 12,
+                marginBottom: "0.5rem",
+              }}
+            >
+              <div
+                style={{
+                  width: 45,
+                  height: 1,
+                  background: `${cat.color}55`,
+                }}
+              />
+              <span
+                style={{
+                  color: cat.color,
+                  fontSize: 12,
+                  opacity: 0.7,
+                }}
+              >
+                ✦
+              </span>
+              <div
+                style={{
+                  width: 45,
+                  height: 1,
+                  background: `${cat.color}55`,
+                }}
+              />
+            </div>
+
+            <p
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "clamp(16px,1.8vw,19px)",
+                color: cat.color,
+                fontWeight: 500,
+                lineHeight: 1.7,
+                marginBottom: "0.35rem",
+              }}
+            >
+              &ldquo;{cat.sanskritQuote}&rdquo;
+            </p>
+
+            <p
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "clamp(12px,1.2vw,14px)",
+                color: "var(--text-mid)",
+                fontStyle: "italic",
+                lineHeight: 1.5,
+                maxWidth: 760,
+                margin: "0 auto",
+              }}
+            >
+              {cat.englishQuote}
+            </p>
+
+            {/* Bottom decoration */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 12,
+                marginTop: "0.5rem",
+              }}
+            >
+              <div
+                style={{
+                  width: 45,
+                  height: 1,
+                  background: `${cat.color}55`,
+                }}
+              />
+              <span
+                style={{
+                  color: cat.color,
+                  fontSize: 12,
+                  opacity: 0.7,
+                }}
+              >
+                ✦
+              </span>
+              <div
+                style={{
+                  width: 45,
+                  height: 1,
+                  background: `${cat.color}55`,
+                }}
+              />
+            </div>
+          </div>
+
           {/* Session cards */}
           <div
             style={{

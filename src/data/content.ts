@@ -40,6 +40,10 @@ export const categories = [
     description:
       "Gentle, evidence-informed body-based therapies that work on the nervous system, energy field, and emotional body to restore natural flow and deep healing.",
     formUrl: "https://forms.google.com/therapy-registration",
+    sanskritQuote:
+      "शरीरमाद्यं खलु धर्मसाधनम् • आरोग्यं परमं भाग्यं स्वास्थ्यं सर्वार्थसाधनम्",
+    englishQuote:
+      "The body is the primary vehicle for life's purpose. Complete physical and emotional restoration is the ultimate fortune, and absolute wellness is the key to achieving all tasks.",
     sessions: [
       {
         name: "CranioSacral Therapy (CST)",
@@ -97,6 +101,9 @@ export const categories = [
     description:
       "Ancient divinatory sciences offering deep insight into your life's patterns, timing, and purpose. Any detailed or specialised reading may be subject to revised fees.",
     formUrl: "https://forms.google.com/consultation-registration",
+    sanskritQuote: "ज्योतिषं ज्ञानचक्षुषां मार्गदर्शकम् • तमसो मा ज्योतिर्गमय",
+    englishQuote:
+      "Vedic insight is the guiding eye of knowledge. Lead me from the darkness of uncertainty to the light of cosmic clarity, mapping out relationships and hand structures to align our life directions.",
     sessions: [
       {
         name: "Vedic Astrology",
@@ -169,6 +176,9 @@ export const categories = [
     description:
       "Structured music education in Carnatic and light music traditions — offered as intimate 1-on-1 sessions or community group classes. 4 classes per month.",
     formUrl: "https://forms.google.com/classes-registration",
+    sanskritQuote: "नादब्रह्म परानन्दः • संगीतं मुक्तिदायकम्",
+    englishQuote:
+      "Sound resonance is the supreme bliss. Dedicated musical practice purifies the soul and unlocks emotional harmony and vocal mastery.",
     sessions: [
       {
         name: "Music Classes — 1-on-1",
@@ -211,6 +221,9 @@ export const categories = [
     description:
       "Deep-dive transformative programmes combining theory, experiential practice, and personal coaching — available online and in-person.",
     formUrl: "https://forms.google.com/workshops-registration",
+    sanskritQuote: "ज्ञानेन हि सदृशं पवित्रमिह न विद्यते",
+    englishQuote:
+      "There is no purifier in this world like mindful learning. We adjust subconscious habits, cognitive focus, and nutrition to cultivate balanced life energy.",
     sessions: [
       {
         name: "NLP Workshop",
