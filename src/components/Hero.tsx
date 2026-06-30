@@ -43,31 +43,33 @@ export default function Hero() {
                   marginBottom: "2rem",
                 }}
               >
-                <span style={{ color: "var(--gold)", fontSize: 10 }}>✦</span>
-                <HangingLotus align="right" />
-                <HangingLotus
-                  align="right"
-                  offset="right-16 sm:right-28"
-                  className="top-8 opacity-75 scale-90"
-                />
-                <HangingLotus
-                  align="right"
-                  offset="right-28 sm:right-44"
-                  className="top-16 opacity-50 scale-75"
-                />
-
-                <span
-                  style={{
-                    color: "var(--gold)",
-                    fontSize: 12,
-                    fontWeight: 500,
-                    letterSpacing: 1.5,
-                    textTransform: "uppercase",
-                    fontFamily: "'DM Sans', sans-serif",
-                  }}
-                >
-                  Holistic Healing & Ancient Wisdom
-                </span>
+                <div className="badge-wrapper">
+                  <HangingLotus align="right" />
+                  <HangingLotus
+                    align="right"
+                    offset="right-16 sm:right-28"
+                    className="top-8 opacity-75 scale-90"
+                  />
+                  <HangingLotus
+                    align="right"
+                    offset="right-28 sm:right-44"
+                    className="top-16 opacity-50 scale-75"
+                  />
+                </div>
+                <div className="hero-badge">
+                  <span
+                    style={{
+                      color: "var(--gold)",
+                      fontSize: 12,
+                      fontWeight: 500,
+                      letterSpacing: 1.5,
+                      textTransform: "uppercase",
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    Holistic Healing & Ancient Wisdom
+                  </span>
+                </div>
               </div>
 
               <h1
@@ -198,6 +200,16 @@ export default function Hero() {
           .hero-animation{
             margin-top:60px;
           }
+
+          .badge-wrapper{
+    position:relative;
+    display:inline-block;
+}
+
+.hero-badge{
+    position:relative;
+    z-index:2;
+}
         }
       `}</style>
     </section>
