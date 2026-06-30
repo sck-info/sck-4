@@ -44,7 +44,7 @@ export default function Testimonials() {
 
   const prevSlide = () =>
     setCurrentIndex(
-      (prev) => (prev - 1 + testimonials.length) % testimonials.length
+      (prev) => (prev - 1 + testimonials.length) % testimonials.length,
     );
 
   const prevIndex =
@@ -110,11 +110,21 @@ export default function Testimonials() {
             fontFamily: "'Cormorant Garamond', serif",
             fontSize: "clamp(28px, 5vw, 48px)",
             color: "var(--indigo)",
-            fontWeight: 400,
+            fontWeight: 300,
             lineHeight: 1.1,
           }}
         >
-          Stories of Healing & Transformation
+          Stories of{" "}
+          <span
+            style={{
+              color: "var(--gold)",
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: "clamp(28px, 5vw, 48px)",
+              fontWeight: 300,
+            }}
+          >
+            <i>Healing & Transformation</i>
+          </span>
         </h2>
 
         <div className="testimonial-carousel">
