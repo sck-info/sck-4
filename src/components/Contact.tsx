@@ -404,23 +404,6 @@ export default function Contact() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-              background: "rgba(232,150,46,0.15)",
-              border: "1px solid rgba(232,150,46,0.3)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--gold)",
-              fontSize: 12,
-              fontFamily: "'Cormorant Garamond', serif",
-            }}
-          >
-            ✦
-          </div>
           <span
             style={{
               fontFamily: "'Cormorant Garamond', serif",
