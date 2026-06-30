@@ -91,141 +91,68 @@ export default function Sessions() {
                 Programmes
               </span>
             </h2>
-            <p
+
+            <div
               style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: 15,
-                color: "var(--text-mid)",
-                maxWidth: 380,
-                lineHeight: 1.7,
-                fontWeight: 300,
+                background: "rgba(232,150,46,0.05)",
+                border: "1px solid rgba(232,150,46,0.18)",
+                borderLeft: "3px solid var(--gold)",
+                borderRadius: 14,
+                padding: "1rem 1.2rem",
+                maxWidth: 350,
+                flexShrink: 0,
               }}
             >
-              Each offering is carefully crafted to address the whole person —
-              body, mind, and spirit. Prices are shown in the registration form.
-              <br />
-              *Once you submit the form and complete your payment, our team will
-              reach out within <b>48 to 72 hours</b> to schedule and confirm
-              your booking.
-            </p>
-          </div>
-        </div>
+              <div
+                style={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: 10,
+                  letterSpacing: 1.6,
+                  textTransform: "uppercase",
+                  color: "var(--gold)",
+                  fontWeight: 600,
+                  marginBottom: "0.45rem",
+                }}
+              >
+                Scheduling Note
+              </div>
 
-        {/* Sanskrit Shloka Banner */}
-        <div
-          style={{
-            background: "var(--ivory)",
-            border: "1px solid rgba(232,150,46,0.2)",
-            borderLeft: "4px solid var(--gold)",
-            borderRadius: 16,
-            padding: "1rem 2rem",
-            marginBottom: "clamp(2rem, 4vw, 3rem)",
-            textAlign: "center",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          {/* Subtle background glow */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background:
-                "radial-gradient(ellipse at center, rgba(232,150,46,0.05) 0%, transparent 70%)",
-              pointerEvents: "none",
-            }}
-          />
+              <h4
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 22,
+                  color: "var(--indigo)",
+                  fontWeight: 500,
+                  margin: "0 0 0.45rem",
+                  lineHeight: 1.1,
+                }}
+              >
+                Payment & Coordination
+              </h4>
 
-          {/* Decorative top line */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 12,
-              marginBottom: "0.6rem",
-            }}
-          >
-            <div
-              style={{
-                height: 1,
-                width: 40,
-                background: "rgba(232,150,46,0.3)",
-              }}
-            />
-            <span style={{ color: "var(--gold)", fontSize: 12, opacity: 0.6 }}>
-              ✦
-            </span>
-            <div
-              style={{
-                height: 1,
-                width: 40,
-                background: "rgba(232,150,46,0.3)",
-              }}
-            />
-          </div>
-
-          {/* Sanskrit text */}
-          <p
-            style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "clamp(14px, 2vw, 18px)",
-              color: "var(--gold)",
-              fontWeight: 500,
-              lineHeight: 1.6,
-              marginBottom: "0.5rem",
-              letterSpacing: 0.5,
-            }}
-          >
-            &ldquo;शरीरमाद्यं खलु धर्मसाधनम् &bull; आरोग्यं परमं भाग्यं
-            स्वास्थ्यं सर्वार्थसाधनम्&rdquo;
-          </p>
-
-          {/* English translation */}
-          <p
-            style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "clamp(12px, 1.4vw, 14px)",
-              color: "var(--text-mid)",
-              fontStyle: "italic",
-              lineHeight: 1.75,
-              maxWidth: 680,
-              margin: "0 auto",
-              fontWeight: 400,
-            }}
-          >
-            The body is the primary vehicle for life&apos;s purpose. Complete
-            physical and emotional restoration is the ultimate fortune, and
-            absolute wellness is the key to achieving all tasks.
-          </p>
-
-          {/* Decorative bottom line */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 12,
-              marginTop: "0.6rem",
-            }}
-          >
-            <div
-              style={{
-                height: 1,
-                width: 40,
-                background: "rgba(232,150,46,0.3)",
-              }}
-            />
-            <span style={{ color: "var(--gold)", fontSize: 12, opacity: 0.6 }}>
-              ✦
-            </span>
-            <div
-              style={{
-                height: 1,
-                width: 40,
-                background: "rgba(232,150,46,0.3)",
-              }}
-            />
+              <p
+                style={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: 13,
+                  color: "var(--text-mid)",
+                  lineHeight: 1.6,
+                  margin: 0,
+                  fontWeight: 300,
+                }}
+              >
+                Pricing is available in each registration form. After payment,
+                our team will contact you within{" "}
+                <span
+                  style={{
+                    color: "var(--gold)",
+                    fontWeight: 600,
+                  }}
+                >
+                  48–72 hours
+                </span>{" "}
+                to confirm and schedule your session.
+              </p>
+            </div>
           </div>
         </div>
 

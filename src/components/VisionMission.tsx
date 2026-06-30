@@ -1,5 +1,6 @@
 "use client";
 import { profile } from "@/data/content";
+import HangingLotus from "@/components/HangingLotus";
 
 export default function VisionMission() {
   return (
@@ -21,6 +22,8 @@ export default function VisionMission() {
           pointerEvents: "none",
         }}
       />
+      <HangingLotus align="right" />
+      <HangingLotus align="left" />
 
       <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
         {/* Section heading */}

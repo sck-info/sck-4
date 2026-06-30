@@ -21,10 +21,12 @@ export const profile = {
   stats: [
     { num: "13+", label: "Years Experience" },
     { num: "1.5L+", label: "Lives Touched" },
-    { num: "10+", label: "Countries Reached" },
+    { num: "5+", label: "Countries Reached" },
     { num: "8", label: "States in India" },
+    { num: "30,000+", label: "Corporate Trained" },
     { num: "1000+", label: "Satsangs Done" },
     { num: "2000+", label: "CST Sessions" },
+    { num: "250+", label: "Rakkenho Sessions" },
     { num: "300+", label: "Music Therapy Sessions" },
     { num: "100+", label: "Music Students" },
   ],

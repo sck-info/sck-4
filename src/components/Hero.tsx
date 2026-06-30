@@ -1,6 +1,7 @@
 "use client";
 
 import BreathingAnimation from "@/components/BreathingAnimation";
+import HangingLotus from "@/components/HangingLotus";
 
 export default function Hero() {
   return (
@@ -43,6 +44,17 @@ export default function Hero() {
                 }}
               >
                 <span style={{ color: "var(--gold)", fontSize: 10 }}>✦</span>
+                <HangingLotus align="right" />
+                <HangingLotus
+                  align="right"
+                  offset="right-16 sm:right-28"
+                  className="top-8 opacity-75 scale-90"
+                />
+                <HangingLotus
+                  align="right"
+                  offset="right-28 sm:right-44"
+                  className="top-16 opacity-50 scale-75"
+                />
 
                 <span
                   style={{

@@ -75,7 +75,7 @@ export default function Navbar() {
             gap: 10,
           }}
         >
-          <div
+          {/* <div
             style={{
               width: 36,
               height: 36,
@@ -91,7 +91,7 @@ export default function Navbar() {
             }}
           >
             ✦
-          </div>
+          </div> */}
           <span
             style={{
               fontFamily: "'Cormorant Garamond', serif",

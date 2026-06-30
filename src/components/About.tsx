@@ -228,7 +228,7 @@ function StatsBar({ stats }: { stats: { num: string; label: string }[] }) {
         <style>{`
           .stats-grid{
             display:grid;
-            grid-template-columns:repeat(4,1fr);
+            grid-template-columns:repeat(5,minmax(0, 1fr));
             gap:20px;
           }
 
@@ -269,17 +269,23 @@ function StatsBar({ stats }: { stats: { num: string; label: string }[] }) {
             border-bottom:1px solid rgba(232,150,46,.35);
           }
 
-          @media(max-width:900px){
-            .stats-grid{
-              grid-template-columns:repeat(2,1fr);
-            }
-          }
+          @media(max-width:1200px){
+  .stats-grid{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
 
-          @media(max-width:600px){
-            .stats-grid{
-              grid-template-columns:1fr;
-            }
-          }
+@media(max-width:768px){
+  .stats-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:600px){
+  .stats-grid{
+    grid-template-columns:1fr;
+  }
+}
         `}</style>
       </div>
     </section>

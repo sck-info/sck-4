@@ -2,6 +2,7 @@
 
 import { photos } from "@/data/content";
 import { useRef } from "react";
+import HangingLotus from "@/components/HangingLotus";
 
 export default function Gallery() {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -13,8 +14,12 @@ export default function Gallery() {
         background: "var(--indigo)",
         padding: "clamp(5rem, 10vw, 8rem) 0",
         overflow: "hidden",
+        position: "relative",
       }}
     >
+      <HangingLotus align="left" />
+
+      <HangingLotus align="right" />
       <div
         style={{
           textAlign: "center",
