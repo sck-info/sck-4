@@ -103,6 +103,50 @@ export default function Testimonials() {
       `}</style>
 
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "1rem",
+          }}
+        >
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: "1rem",
+            }}
+          >
+            <div
+              style={{
+                width: 32,
+                height: 1,
+                background: "var(--gold)",
+              }}
+            />
+            <span
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 12,
+                color: "var(--gold)",
+                letterSpacing: 2,
+                textTransform: "uppercase",
+                fontWeight: 500,
+              }}
+            >
+              Testimonials
+            </span>
+            <div
+              style={{
+                width: 32,
+                height: 1,
+                background: "var(--gold)",
+              }}
+            />
+          </div>
+        </div>
+
         <h2
           style={{
             textAlign: "center",
