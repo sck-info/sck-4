@@ -8,7 +8,7 @@ export const profile = {
   vision:
     "To inspire and uplift millions of lives through healing, wisdom, music, and conscious living — nurturing a world that lives as one global family.",
   mission:
-    "To foster holistic well-being through mindfulness, yoga, breathwork, music, therapies, and timeless wisdom, empowering individuals to thrive with purpose and compassion.",
+    "To foster holistic well-being through yogic practices, integrative healing, music, and timeless wisdom - empowering individuals to live with purpose and compassion.",
   credentials: [
     "Life Skills Facilitator & Breath Expert ",
     "Diploma + Double PG in Bio Dynamic Cranio Sacral Therapy",
