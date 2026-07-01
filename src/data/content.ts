@@ -45,7 +45,7 @@ export const categories = [
     sanskritQuote:
       "शरीरमाद्यं खलु धर्मसाधनम् • आरोग्यं परमं भाग्यं स्वास्थ्यं सर्वार्थसाधनम्",
     englishQuote:
-      "The body is the primary vehicle for life's purpose. Complete physical and emotional restoration is the ultimate fortune, and absolute wellness is the key to achieving all tasks.",
+      "The body is the primary vehicle for life's purpose. Complete physical and emotional restoration is the ultimate fortune, and therapies are key to absolute wellness.",
     sessions: [
       {
         name: "CranioSacral Therapy (CST)",
@@ -105,7 +105,7 @@ export const categories = [
     formUrl: "https://forms.google.com/consultation-registration",
     sanskritQuote: "ज्योतिषं ज्ञानचक्षुषां मार्गदर्शकम् • तमसो मा ज्योतिर्गमय",
     englishQuote:
-      "Vedic insight is the guiding eye of knowledge. Lead me from the darkness of uncertainty to the light of cosmic clarity, mapping out relationships and hand structures to align our life directions.",
+      "Astrology is the guiding vision of knowledge, inspiring us to move beyond confusion and toward truth, clarity, and light.",
     sessions: [
       {
         name: "Vedic Astrology",
@@ -263,23 +263,73 @@ export const categories = [
 
 export const photos = [
   {
+    src: "/sharath7.jpeg",
+    // caption: "International Yoga Day 2026",
+  },
+  {
+    src: "/sharath8.jpeg",
+  },
+  {
+    src: "/sharath9.jpeg",
+  },
+  {
+    src: "/sharath10.jpeg",
+  },
+  {
+    src: "/sharath11.jpeg",
+  },
+  {
+    src: "/sharath12.jpeg",
+  },
+  {
+    src: "/sharath13.jpeg",
+  },
+  {
+    src: "/sharath14.jpeg",
+  },
+  {
+    src: "/sharath15.jpeg",
+  },
+  {
+    src: "/sharath16.jpeg",
+  },
+  {
+    src: "/sharath17.jpeg",
+  },
+  {
+    src: "/sharath18.jpeg",
+  },
+  {
+    src: "/sharath19.jpeg",
+  },
+  {
+    src: "/sharath20.jpeg",
+  },
+  {
+    src: "/sharath21.jpeg",
+  },
+  {
+    src: "/sharath22.jpeg",
+  },
+  {
+    src: "/sharath23.jpeg",
+  },
+  {
     src: "/sharath1.jpeg",
-    caption: "International Yoga Day 2026",
   },
   {
-    src: "/sharath2.jpeg",
-    caption: "International Yoga Day 2026",
+    src: "/sharath25.jpeg",
   },
   {
-    src: "/sharath3.jpeg",
-    caption: "International Yoga Day 2026",
+    src: "/sharath26.jpeg",
   },
   {
-    src: "/sharath4.jpg",
-    caption: "Satsang",
+    src: "/sharath27.jpeg",
   },
   {
-    src: "/sharath5.jpeg",
-    caption: "Satsang",
+    src: "/sharath28.jpeg",
+  },
+  {
+    src: "/sharath29.jpeg",
   },
 ];

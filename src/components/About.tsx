@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { profile } from "@/data/content";
+import type { ReactElement } from "react";
 
 const slideshowImages = [
   {
@@ -11,7 +12,7 @@ const slideshowImages = [
     alt: "Sharath Chandra Kancherla - CST touch",
   },
   {
-    src: "/images/sck-music.jpeg",
+    src: "/images/sck-music-therapy.jpeg",
     tag: "MUSIC THERAPIST",
     alt: "Sharath Chandra Kancherla - Swara Frequencies",
   },
@@ -22,15 +23,58 @@ const slideshowImages = [
   },
   {
     src: "/images/sck-tutuor.jpeg",
-    tag: "NLP COACH & MENTOR",
+    tag: "VEDIC ASTROLOGER",
     alt: "Sharath Chandra Kancherla - Habit Adjustments",
   },
   {
     src: "/images/sck-cool.jpeg",
-    tag: "VEDIC ASTROLOGER",
+    tag: "NLP COACH & MENTOR",
     alt: "Sharath Chandra Kancherla - Chart Reading",
   },
 ];
+
+const highlights = [
+  "Art of Living",
+  "13+ years of experience",
+  "30,000+ IT employees",
+  "Infosys, IBM, Microsoft, Google, Cognizant, TCS & Mylan",
+  "100+ students",
+  "1.5 lakh+ lives",
+  "10+ countries",
+  "8 states in India",
+];
+
+
+type HighlightPart = string | ReactElement;
+
+function highlightText(text: string): HighlightPart[] {
+  let result: HighlightPart[] = [text];
+
+  highlights.forEach((phrase) => {
+    result = result.flatMap((part) => {
+      if (typeof part !== "string") return [part];
+
+      return part.split(phrase).flatMap((segment, index, arr) => {
+        if (index === arr.length - 1) return [segment];
+
+        return [
+          segment,
+          <span
+            key={`${phrase}-${index}`}
+            style={{
+              color: "var(--gold)",
+              fontWeight: 600,
+            }}
+          >
+            {phrase}
+          </span>,
+        ];
+      });
+    });
+  });
+
+  return result;
+}
 
 function useCountUp(target: number, duration = 2000, startTrigger: boolean) {
   const [count, setCount] = useState(0);
@@ -78,7 +122,7 @@ function StatCard({ num, label }: { num: string; label: string }) {
         style={{
           fontFamily: "'Cormorant Garamond', serif",
           fontSize: 36,
-          fontWeight: 600,
+          fontWeight: 400,
           color: "var(--indigo)",
           lineHeight: 1,
         }}
@@ -552,7 +596,7 @@ export default function About() {
                 fontWeight: 300,
               }}
             >
-              {profile.bio}
+              {highlightText(profile.bio)}
             </p>
 
             <p

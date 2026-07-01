@@ -99,7 +99,7 @@ export default function Gallery() {
           style={{
             display: "flex",
             gap: 20,
-            animation: "galleryMarquee 36s linear infinite",
+            animation: "galleryMarquee 90s linear infinite",
             width: "max-content",
             padding: "1rem 0 2rem",
           }}
@@ -147,7 +147,7 @@ export default function Gallery() {
               >
                 <img
                   src={photo.src}
-                  alt={photo.caption}
+                  // alt={photo.caption}
                   style={{
                     width: "100%",
                     height: "100%",
@@ -181,7 +181,7 @@ export default function Gallery() {
                   padding: "1.25rem",
                 }}
               >
-                <p
+                {/* <p
                   style={{
                     fontFamily: "'Cormorant Garamond', serif",
                     fontSize: 16,
@@ -192,7 +192,7 @@ export default function Gallery() {
                   }}
                 >
                   {photo.caption}
-                </p>
+                </p> */}
               </div>
 
               <div
