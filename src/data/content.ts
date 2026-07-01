@@ -6,9 +6,9 @@ export const profile = {
   inspiration: "Gurudev Sri Sri Ravi Shankar",
   bio: "Sharath Chandra Kancherla is a Young & Dynamic International Faculty of the Art of Living — an engineer turned healer, professional singer, and holistic wellness coach with 13+ years of experience. He holds a Diploma and double Post Graduate in Bio Dynamic Cranio Sacral Therapy, is an NLP Master Practitioner & Research Astrologer, Advanced Rakheno & Music Therapist, and S-YASA Certified Music Therapist. He has trained 30,000+ IT employees from organisations like Infosys, IBM, Microsoft, Google, Cognizant, TCS & Mylan, and has taught 100+ students in Carnatic and light music. He has touched 1.5 lakh+ lives across 10+ countries and 8 states in India.",
   vision:
-    "To inspire and uplift one billion lives through healing, wisdom, music, and conscious living — nurturing a world that lives as one global family.",
+    "To inspire and uplift millions of lives through healing, wisdom, music, and conscious living — nurturing a world that lives as one global family.",
   mission:
-    "To empower individuals with practical tools for holistic well-being through meditation, yoga, breathwork, music, education, and timeless wisdom, enabling them to live healthier, happier, and more purposeful lives while spreading compassion and human values.",
+    "To foster holistic well-being through mindfulness, yoga, breathwork, music, therapies, and timeless wisdom, empowering individuals to thrive with purpose and compassion.",
   credentials: [
     "Life Skills Facilitator & Breath Expert ",
     "Diploma + Double PG in Bio Dynamic Cranio Sacral Therapy",
