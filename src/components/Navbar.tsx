@@ -6,6 +6,7 @@ const sessionCategories = [
   { href: "#consultations", label: "Consultations" },
   { href: "#classes", label: "Classes" },
   { href: "#workshops", label: "Workshops" },
+  { href: "#satsangs", label: "Satsangs" },
 ];
 
 export default function Navbar() {
@@ -75,23 +76,6 @@ export default function Navbar() {
             gap: 10,
           }}
         >
-          {/* <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              background: "var(--indigo)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--gold)",
-              fontSize: 16,
-              fontFamily: "'Cormorant Garamond', serif",
-              fontWeight: 600,
-            }}
-          >
-            ✦
-          </div> */}
           <span
             style={{
               fontFamily: "'Cormorant Garamond', serif",
@@ -276,6 +260,29 @@ export default function Navbar() {
             </div>
           </div>
 
+          <a
+            href="#satsangs"
+            style={{
+              background: "var(--indigo)",
+              color: "var(--ivory)",
+              padding: "9px 22px",
+              borderRadius: 100,
+              fontSize: 13,
+              fontWeight: 500,
+              textDecoration: "none",
+              fontFamily: "'DM Sans', sans-serif",
+              letterSpacing: 0.3,
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLElement).style.background = "var(--gold)";
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLElement).style.background = "var(--indigo)";
+            }}
+          >
+            Book a Satsang
+          </a>
           <a
             href="#sessions"
             style={{

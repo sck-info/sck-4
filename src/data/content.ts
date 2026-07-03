@@ -259,6 +259,66 @@ export const categories = [
       },
     ],
   },
+  {
+    id: "satsangs",
+    label: "Satsangs",
+    icon: "♫",
+    color: "#7A5E9A",
+    lightColor: "#F5F0FA",
+    description:
+      "Soulful gatherings filled with music, meditation, wisdom, and collective celebration that uplift the mind, open the heart, and create a sense of belonging.",
+    formUrl: "https://forms.google.com/satsang-registration",
+    sanskritQuote: "सत्सङ्गत्वे निस्सङ्गत्वम्",
+    englishQuote:
+      "In the company of truth, the mind becomes free. Through music, meditation, and wisdom, satsang nurtures joy, inner peace, and a deeper connection with oneself and others.",
+    sessions: [
+      {
+        name: "Bhajan Jamming",
+        duration: "2 – 3 hours",
+        price: "On request",
+        priceNote: "Customized based on venue and band requirements",
+        description:
+          "A youth-centric devotional music experience where high-energy bhajans, live instruments, and interactive participation create an uplifting atmosphere. Led by a live band, Bhajan Jamming blends contemporary musical arrangements with timeless wisdom, making spirituality engaging, vibrant, and accessible for today's generation.",
+        benefits: [
+          "High-energy live music",
+          "Youth engagement",
+          "Collective joy & connection",
+          "Meditative yet vibrant experience",
+        ],
+        format: "Colleges · Corporate · Communities",
+      },
+      {
+        name: "Private Satsang",
+        duration: "Customisable (1.5 – 2 hours)",
+        price: "On request",
+        priceNote: "Based on venue and requirements",
+        description:
+          "A personalised satsang organised for homes, organisations, celebrations, or special occasions. Includes Knowledge session, bhajans, bollywood and tollywood songs and interactive activities along with some ancient chants tailored to the audience.",
+        benefits: [
+          "Personalised experience",
+          "Spiritual upliftment",
+          "Team & family bonding",
+          "Customised programme",
+        ],
+        format: "On-site / Private venue",
+      },
+      {
+        name: "Open Satsang",
+        duration: "Typically 1.5 – 2 hours",
+        price: "Free / Donation-based",
+        priceNote: "Open to all",
+        description:
+          "A community gathering featuring devotional music, guided meditation, wisdom talks, and joyful celebration. Open to everyone, regardless of prior experience.",
+        benefits: [
+          "Inner peace",
+          "Collective meditation",
+          "Devotional music",
+          "Community connection",
+        ],
+        format: "In-person & Online",
+      },
+    ],
+  },
 ];
 
 export const photos = [
