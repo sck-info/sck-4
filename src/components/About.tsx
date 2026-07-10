@@ -252,7 +252,7 @@ function StatsBar({ stats }: { stats: { num: string; label: string }[] }) {
             }}
           >
             More than a decade of nurturing well-being through breathwork,
-            meditation, mindfulness and holistic wellness.
+            meditation, mindfulness, ancient wisdom and holistic lifestyle techniques.
           </p>
         </div>
 

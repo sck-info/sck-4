@@ -7,7 +7,7 @@ const testimonials = [
   {
     name: "Usha",
     role: "Software Architect",
-    text: "The CranioSacral sessions with Sharath have been deeply restorative. I walked in with chronic stress and neck tension from desk work, and left feeling an incredible sense of space, lightness, and deep alignment. His gentle touch is truly therapeutic.",
+    text: "The CranioSacral therapy sessions with Sharath have been deeply restorative. I walked in with chronic stress and neck tension from desk work, and left feeling an incredible sense of space, lightness, and deep alignment. His gentle touch is truly therapeutic.",
     therapy: "CranioSacral Therapy",
   },
   {
@@ -18,7 +18,7 @@ const testimonials = [
   },
   {
     name: "Sanjana",
-    role: "Creative Director",
+    role: "Teacher",
     text: "Sharath's vocal harmonics and sound healing sessions helped me navigate a period of severe anxiety. The frequencies resonance created a safe space for emotional release and profound mental clarity. Highly recommended for inner peace.",
     therapy: "Music Therapy",
   },
