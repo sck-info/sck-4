@@ -1,6 +1,20 @@
 import type { Metadata } from "next";
+import { Playfair_Display, Martel } from "next/font/google";
 import "./globals.css";
 import SecurityWrapper from "@/components/SecurityWrapper";
+
+const displayFont = Playfair_Display({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
+const martelFont = Martel({
+  variable: "--font-hindi",
+  subsets: ["latin", "devanagari"],
+  weight: ["300", "400", "700", "900"],
+});
 
 export const metadata: Metadata = {
   title: "Sharath Chandra Kancherla — Holistic Wellness Coach & Healer",
@@ -14,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${displayFont.variable} ${martelFont.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{
