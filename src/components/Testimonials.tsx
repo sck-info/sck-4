@@ -12,7 +12,7 @@ const testimonials = [
   },
   {
     name: "Gokul",
-    role: "Yoga Instructor",
+    role: "Developer",
     text: "As a long-time practitioner of yoga, I was amazed by the effectiveness of Rakkenho. The rhythmic foot pressure completely released tension in my lower back that years of stretching couldn't touch. An ancient art masterfully applied.",
     therapy: "Rakkenho Therapy",
   },
@@ -29,7 +29,7 @@ const testimonials = [
     therapy: "Vedic Astrology",
   },
   {
-    name: "Sharath",
+    name: "Sriram",
     role: "Mindfulness Advocate",
     text: "The box breathing guidance and holistic health coaching completely reset my sleep cycle and energy levels. Sharath's deep understanding of wellness integrates ancient Indian traditions with a modern lifestyle.",
     therapy: "Holistic Lifestyle Coaching",
