@@ -19,6 +19,8 @@
   --text-dark: #1c1f4a;
   --text-mid: #5a5e7a;
   --text-light: #9396ae;
+  --font-display: 'Cormorant Garamond', serif;
+  --font-hindi: 'Martel', serif;
 }
 
 * {
@@ -61,11 +63,11 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-clay);
+  background: var(--rose);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-clay);
+  background: var(--gold);
 }
 
 .scrollbar::-webkit-scrollbar {
@@ -79,13 +81,13 @@ body {
 }
 
 .scrollbar::-webkit-scrollbar-thumb {
-  background: var(--color-clay);
+  background: var(--rose);
   border-radius: 100vh;
   border: 1px solid var(--color-clay);
 }
 
 .scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-clay);
+  background: var(--gold);
 }
 
 .scrollbar-hidden::-webkit-scrollbar {
