@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import SecurityWrapper from "@/components/SecurityWrapper";
 
 export const metadata: Metadata = {
   title: "Sharath Chandra Kancherla — Holistic Wellness Coach & Healer",
@@ -14,7 +15,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <SecurityWrapper>{children}</SecurityWrapper>
+      </body>
     </html>
   );
 }
