@@ -54,6 +54,7 @@ export default function Testimonials() {
 
   return (
     <section
+      id="Testimonials"
       style={{
         background: "white",
         padding: "clamp(3rem, 8vw, 6rem) 1rem",

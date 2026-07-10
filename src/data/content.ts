@@ -61,6 +61,7 @@ export const categories = [
           "Stress relief",
         ],
         format: "1-on-1",
+        url: "https://forms.gle/jjHiYLsS41csuk8x7",
       },
       {
         name: "Rakkenho Therapy",
@@ -76,6 +77,7 @@ export const categories = [
           "Emotional balance",
         ],
         format: "1-on-1",
+        url: "https://forms.gle/jjHiYLsS41csuk8x7",
       },
       {
         name: "Music Therapy",
@@ -91,6 +93,7 @@ export const categories = [
           "Physical wellness",
         ],
         format: "1-on-1",
+        url: "https://forms.gle/jjHiYLsS41csuk8x7",
       },
     ],
   },
@@ -121,6 +124,7 @@ export const categories = [
           "Planetary analysis",
         ],
         format: "1-on-1",
+        url: "https://forms.gle/9tzkrwSneeeAMoTW9",
       },
       {
         name: "Palmistry",
@@ -136,6 +140,7 @@ export const categories = [
           "Strengths discovery",
         ],
         format: "1-on-1",
+        url: "https://forms.gle/9tzkrwSneeeAMoTW9",
       },
       {
         name: "Medical Astrology",
@@ -151,6 +156,7 @@ export const categories = [
           "Constitution mapping",
         ],
         format: "1-on-1",
+        url: "https://forms.gle/9tzkrwSneeeAMoTW9",
       },
       {
         name: "Prasna Hora",
@@ -166,6 +172,7 @@ export const categories = [
           "Question astrology",
         ],
         format: "1-on-1",
+        url: "https://forms.gle/9tzkrwSneeeAMoTW9",
       },
     ],
   },
@@ -196,6 +203,7 @@ export const categories = [
           "Dedicated attention",
         ],
         format: "1-on-1",
+        url: "https://forms.gle/rriqtYCqQTi88Uyy6",
       },
       {
         name: "Music Classes — Group",
@@ -211,6 +219,7 @@ export const categories = [
           "Carnatic & light music",
         ],
         format: "Group",
+        url: "https://forms.gle/rriqtYCqQTi88Uyy6",
       },
     ],
   },
@@ -241,6 +250,7 @@ export const categories = [
           "Behavioural change",
         ],
         format: "Online & 1-on-1",
+        url: "https://forms.gle/f5MNNoN6AGKs8TD89",
       },
       {
         name: "Holistic Lifestyle & Nutrition Workshop",
@@ -256,6 +266,7 @@ export const categories = [
           "Inner harmony",
         ],
         format: "Group & curated",
+        url: "https://forms.gle/f5MNNoN6AGKs8TD89",
       },
     ],
   },
@@ -286,6 +297,7 @@ export const categories = [
           "Meditative yet vibrant experience",
         ],
         format: "Colleges · Corporate · Communities",
+        url: "https://forms.gle/y1XBLfrsLnNgsDXo6",
       },
       {
         name: "Private Satsang",
@@ -301,6 +313,7 @@ export const categories = [
           "Customised programme",
         ],
         format: "On-site / Private venue",
+        url: "https://forms.gle/y1XBLfrsLnNgsDXo6",
       },
       {
         name: "Open Satsang",
@@ -316,6 +329,7 @@ export const categories = [
           "Community connection",
         ],
         format: "In-person & Online",
+        url: "https://forms.gle/y1XBLfrsLnNgsDXo6",
       },
     ],
   },

@@ -39,6 +39,8 @@ export default function Navbar() {
   const links = [
     { href: "#about", label: "About" },
     { href: "#vision", label: "Vision" },
+    { href: "#Gallery", label: "Gallery" },
+    { href: "#Testimonials", label: "Testimonials" },
     { href: "#contact", label: "Contact" },
   ];
 
@@ -79,7 +81,7 @@ export default function Navbar() {
           <span
             style={{
               fontFamily: "'Cormorant Garamond', serif",
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: 600,
               color: scrolled ? "var(--indigo)" : "var(--ivory)",
               letterSpacing: 0.5,

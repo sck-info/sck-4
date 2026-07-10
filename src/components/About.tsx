@@ -44,7 +44,6 @@ const highlights = [
   "8 states in India",
 ];
 
-
 type HighlightPart = string | ReactElement;
 
 function highlightText(text: string): HighlightPart[] {
@@ -120,7 +119,7 @@ function StatCard({ num, label }: { num: string; label: string }) {
     <div ref={ref} style={{ textAlign: "center" }}>
       <div
         style={{
-          fontFamily: "'Cormorant Garamond', serif",
+          fontFamily: "var(--font-display)",
           fontSize: 36,
           fontWeight: 400,
           color: "var(--indigo)",

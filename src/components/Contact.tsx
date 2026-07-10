@@ -311,25 +311,31 @@ export default function Contact() {
                   label: "Therapy Sessions",
                   icon: "✦",
                   color: "#6B8F71",
-                  url: "https://forms.google.com/therapy",
+                  url: "https://forms.gle/jjHiYLsS41csuk8x7",
                 },
                 {
                   label: "Consultations",
                   icon: "◈",
                   color: "#C4796A",
-                  url: "https://forms.google.com/consultation",
+                  url: "https://forms.gle/9tzkrwSneeeAMoTW9",
                 },
                 {
                   label: "Music Classes",
                   icon: "♪",
                   color: "#4A6FA5",
-                  url: "https://forms.google.com/classes",
+                  url: "https://forms.gle/rriqtYCqQTi88Uyy6",
                 },
                 {
                   label: "Workshops",
                   icon: "◉",
                   color: "#C9873A",
-                  url: "https://forms.google.com/workshops",
+                  url: "https://forms.gle/f5MNNoN6AGKs8TD89",
+                },
+                {
+                  label: "Satsangs",
+                  icon: "♫",
+                  color: "#7A5E9A",
+                  url: "https://forms.gle/y1XBLfrsLnNgsDXo6",
                 },
               ].map((item, i, arr) => (
                 <a
@@ -411,7 +417,7 @@ export default function Contact() {
               color: "rgba(250,247,242,0.6)",
             }}
           >
-            Sharath Chandra Kancherla — Holistic Wellness Coach
+            Sharath Chandra Kancherla — Holistic Lifestyle Coach
           </span>
         </div>
         <p

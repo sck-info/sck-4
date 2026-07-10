@@ -59,7 +59,7 @@ export default function Hero() {
                 <div className="hero-badge">
                   <span
                     style={{
-                      color: "var(--gold)",
+                      color: "var(--light-gold)",
                       fontSize: 12,
                       fontWeight: 500,
                       letterSpacing: 1.5,
@@ -67,7 +67,7 @@ export default function Hero() {
                       fontFamily: "'DM Sans', sans-serif",
                     }}
                   >
-                    Holistic Healing & Ancient Wisdom
+                    Holistic Lifestyle & Ancient Wisdom
                   </span>
                 </div>
               </div>
@@ -98,15 +98,17 @@ export default function Hero() {
                 style={{
                   fontFamily: "'DM Sans', sans-serif",
                   fontSize: "clamp(16px,2vw,18px)",
-                  color: "rgba(250,247,242,.65)",
+                  color: "white",
                   lineHeight: 1.75,
                   maxWidth: 520,
                   marginBottom: "3rem",
                 }}
               >
-                Sharath Chandra Kancherla — Life Skills Facilitator, Mind &
-                Breath Expert, Holistic Wellness Coach & Professional Singer.
-                Inspiring 1.5 lakh+ lives across 10+ countries.
+                Transforming lives through breath, mindfulness, and music.
+                Sharath Chandra Kancherla is a Life Skills Facilitator, Mind &
+                Breath Expert, Holistic Wellness Coach, and Professional Singer,
+                having inspired and empowered 150,000+ people on their journey
+                toward holistic well-being.
               </p>
 
               <div

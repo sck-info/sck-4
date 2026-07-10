@@ -10,6 +10,7 @@ export default function Gallery() {
 
   return (
     <section
+      id="Gallery"
       style={{
         background: "var(--indigo)",
         padding: "clamp(5rem, 10vw, 8rem) 0",

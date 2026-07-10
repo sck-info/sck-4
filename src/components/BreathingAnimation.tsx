@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 type Phase = "inhale" | "hold-in" | "exhale" | "hold-out";
 
 const PHASES: { phase: Phase; label: string; duration: number }[] = [
-  { phase: "inhale", label: "Breathe in", duration: 4000 },
-  { phase: "hold-in", label: "Hold", duration: 4000 },
+  { phase: "inhale", label: "Breathe in", duration: 6000 },
+  { phase: "hold-in", label: "Hold", duration: 8000 },
   { phase: "exhale", label: "Breathe out", duration: 6000 },
   { phase: "hold-out", label: "Hold", duration: 2000 },
 ];

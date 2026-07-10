@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { categories } from "@/data/content";
 import { Session } from "@/types/session";
+import { ArrowUpRight } from "lucide-react";
 
 export default function Sessions() {
   const [activeTab, setActiveTab] = useState(0);
@@ -64,7 +65,7 @@ export default function Sessions() {
                 fontWeight: 500,
               }}
             >
-              What I Offer
+              Offerings
             </span>
           </div>
           <div
@@ -511,11 +512,11 @@ export default function Sessions() {
 
                 <h4
                   style={{
-                    fontFamily: "'Cormorant Garamond', serif",
+                    fontFamily: "var(--font-display)",
                     fontSize: "clamp(20px, 2.5vw, 24px)",
                     fontWeight: 500,
                     color: "var(--indigo)",
-                    marginBottom: "0.5rem",
+                    margin: 0,
                     lineHeight: 1.2,
                   }}
                 >
@@ -553,6 +554,43 @@ export default function Sessions() {
                       {b}
                     </span>
                   ))}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    marginTop: "1.25rem",
+                  }}
+                >
+                  <a
+                    href={session.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Register for ${session.name}`}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      background: cat.color,
+                      color: "white",
+                      padding: "10px 18px",
+                      borderRadius: 9999,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      textDecoration: "none",
+                      width: "fit-content",
+                      transition: "transform 0.2s ease",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.transform = "translateY(-2px)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.transform = "translateY(0)")
+                    }
+                  >
+                    Register
+                    <ArrowUpRight size={18} strokeWidth={2.5} />
+                  </a>
                 </div>
               </div>
             ))}

@@ -6,4 +6,5 @@ export type Session = {
   description: string;
   benefits: string[];
   format: string;
+  url: string;
 };
