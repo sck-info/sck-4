@@ -415,4 +415,16 @@ export const photos = [
   {
     src: "/sharath29.jpeg",
   },
+  {
+    src: "/sharath33.jpeg",
+  },
+  {
+    src: "/sharath34.jpeg",
+  },
+  {
+    src: "/sharath35.jpeg",
+  },
+  {
+    src: "/sharath36.jpeg",
+  },
 ];
