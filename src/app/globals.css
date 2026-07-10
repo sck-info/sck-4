@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=Martel:wght@300;400;700;900&display=swap");
 
 @import "tailwindcss";
 
@@ -40,4 +40,67 @@ body {
 
 .font-display {
   font-family: "Cormorant Garamond", serif;
+}
+
+.font-hindi {
+  font-family: "Martel", serif;
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 4px;
+}
+
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 100vh;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-clay);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-clay);
+}
+
+.scrollbar::-webkit-scrollbar {
+  width: 3px;
+  height: 6px;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+  border-radius: 100vh;
+  background: #d6d7d8;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-clay);
+  border-radius: 100vh;
+  border: 1px solid var(--color-clay);
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-clay);
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Hide site content during intro animation */
+.intro-active main,
+.intro-active nav,
+.intro-active #main-content {
+  opacity: 0 !important;
+  pointer-events: none !important;
 }

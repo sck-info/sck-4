@@ -1,3 +1,4 @@
+import NamasteIntro from "@/components/NamasteIntro";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
@@ -10,14 +11,17 @@ import Gallery from "@/components/Gallery";
 export default function Home() {
   return (
     <>
-      <Navbar />
-      <Hero />
-      <About />
-      <VisionMission />
-      <Sessions />
-      <Gallery />
-      <Testimonials />
-      <Contact />
+      <NamasteIntro />
+      <main id="main-content">
+        <Navbar />
+        <Hero />
+        <About />
+        <VisionMission />
+        <Sessions />
+        <Gallery />
+        <Testimonials />
+        <Contact />
+      </main>
     </>
   );
 }

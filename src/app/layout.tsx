@@ -15,6 +15,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (sessionStorage.getItem("hasSeenIntro") !== "true") {
+                  document.documentElement.classList.add("intro-active");
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <body>
         <SecurityWrapper>{children}</SecurityWrapper>
       </body>
