@@ -97,12 +97,13 @@ function StatCard({ num, label }: { num: string; label: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [triggered, setTriggered] = useState(false);
 
-  const match = num.match(/^([\d.]+)(.*)$/);
-  const numeric = match ? parseFloat(match[1]) : 0;
+  const match = num.match(/^([\d.,]+)(.*)$/);
+  const numericStr = match ? match[1] : "0";
+  const numeric = parseFloat(numericStr.replace(/,/g, ""));
   const suffix = match ? match[2] : num;
 
   const count = useCountUp(numeric, 2000, triggered);
-  const display = Number.isInteger(numeric) ? count : count.toFixed(1);
+  const display = Number.isInteger(numeric) ? count.toLocaleString() : count.toFixed(1);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -126,7 +127,21 @@ function StatCard({ num, label }: { num: string; label: string }) {
           lineHeight: 1,
         }}
       >
-        {triggered ? `${display}${suffix}` : "0"}
+        {triggered ? display : "0"}
+        {suffix && (
+          <span
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontStyle: "italic",
+              fontWeight: 400,
+              color: "var(--rose)",
+              fontSize: suffix === "+" ? 28 : 22,
+              marginLeft: suffix === "+" ? 0 : 4,
+            }}
+          >
+            {suffix}
+          </span>
+        )}
       </div>
 
       <div

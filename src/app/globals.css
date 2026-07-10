@@ -19,6 +19,7 @@
   --text-dark: #1c1f4a;
   --text-mid: #5a5e7a;
   --text-light: #9396ae;
+  --color-clay: var(--rose);
 }
 
 * {
@@ -39,5 +40,68 @@ body {
 }
 
 .font-display {
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-display), serif;
+}
+
+.font-hindi {
+  font-family: var(--font-hindi), serif;
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 4px;
+}
+
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 100vh;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--rose);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+
+.scrollbar::-webkit-scrollbar {
+  width: 3px;
+  height: 6px;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+  border-radius: 100vh;
+  background: #d6d7d8;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  background: var(--rose);
+  border-radius: 100vh;
+  border: 1px solid var(--color-clay);
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Hide site content during intro animation */
+.intro-active main,
+.intro-active nav,
+.intro-active #main-content {
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
