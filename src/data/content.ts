@@ -41,7 +41,7 @@ export const categories = [
     lightColor: "#EAF2EB",
     description:
       "Gentle, evidence-informed body-based therapies that work on the nervous system, energy field, and emotional body to restore natural flow and deep healing.",
-    formUrl: "https://forms.google.com/therapy-registration",
+    formUrl: "https://forms.gle/jjHiYLsS41csuk8x7",
     sanskritQuote:
       "शरीरमाद्यं खलु धर्मसाधनम् • आरोग्यं परमं भाग्यं स्वास्थ्यं सर्वार्थसाधनम्",
     englishQuote:
@@ -102,7 +102,7 @@ export const categories = [
     lightColor: "#FAF0EE",
     description:
       "Ancient divinatory sciences offering deep insight into your life's patterns, timing, and purpose. Any detailed or specialised reading may be subject to revised fees.",
-    formUrl: "https://forms.google.com/consultation-registration",
+    formUrl: "https://forms.gle/9tzkrwSneeeAMoTW9",
     sanskritQuote: "ज्योतिषं ज्ञानचक्षुषां मार्गदर्शकम् • तमसो मा ज्योतिर्गमय",
     englishQuote:
       "Astrology is the guiding vision of knowledge, inspiring us to move beyond confusion and toward truth, clarity, and light.",
@@ -177,7 +177,7 @@ export const categories = [
     lightColor: "#EDF2FA",
     description:
       "Structured music education in Carnatic and light music traditions — offered as intimate 1-on-1 sessions or community group classes. 4 classes per month.",
-    formUrl: "https://forms.google.com/classes-registration",
+    formUrl: "https://forms.gle/rriqtYCqQTi88Uyy6",
     sanskritQuote: "नादब्रह्म परानन्दः • संगीतं मुक्तिदायकम्",
     englishQuote:
       "Sound resonance is the supreme bliss. Dedicated musical practice purifies the soul and unlocks emotional harmony and vocal mastery.",
@@ -222,7 +222,7 @@ export const categories = [
     lightColor: "#FDF4E8",
     description:
       "Deep-dive transformative programmes combining theory, experiential practice, and personal coaching — available online and in-person.",
-    formUrl: "https://forms.google.com/workshops-registration",
+    formUrl: "https://forms.gle/f5MNNoN6AGKs8TD89",
     sanskritQuote: "ज्ञानेन हि सदृशं पवित्रमिह न विद्यते",
     englishQuote:
       "There is no purifier in this world like mindful learning. We adjust subconscious habits, cognitive focus, and nutrition to cultivate balanced life energy.",
@@ -267,7 +267,7 @@ export const categories = [
     lightColor: "#F5F0FA",
     description:
       "Soulful gatherings filled with music, meditation, wisdom, and collective celebration that uplift the mind, open the heart, and create a sense of belonging.",
-    formUrl: "https://forms.google.com/satsang-registration",
+    formUrl: "https://forms.gle/y1XBLfrsLnNgsDXo6",
     sanskritQuote: "सत्सङ्गत्वे निस्सङ्गत्वम्",
     englishQuote:
       "In the company of truth, the mind becomes free. Through music, meditation, and wisdom, satsang nurtures joy, inner peace, and a deeper connection with oneself and others.",
