@@ -7,7 +7,7 @@ import type { ReactElement } from "react";
 
 const slideshowImages = [
   {
-    src: "/images/sck-lifeskills.jpeg",
+    src: "/images/sck-lifeskills1.jpeg",
     tag: "LIFE SKILLS FACILITATOR",
     alt: "Sharath Chandra Kancherla - CST touch",
   },
@@ -252,7 +252,8 @@ function StatsBar({ stats }: { stats: { num: string; label: string }[] }) {
             }}
           >
             More than a decade of nurturing well-being through breathwork,
-            meditation, mindfulness, ancient wisdom and holistic lifestyle techniques.
+            meditation, mindfulness, ancient wisdom and holistic lifestyle
+            techniques.
           </p>
         </div>
 
