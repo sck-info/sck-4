@@ -7,7 +7,7 @@ import type { ReactElement } from "react";
 
 const slideshowImages = [
   {
-    src: "/images/profile-hero1.jpeg",
+    src: "/images/sck-lifeskills.jpeg",
     tag: "LIFE SKILLS FACILITATOR",
     alt: "Sharath Chandra Kancherla - CST touch",
   },
