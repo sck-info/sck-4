@@ -178,7 +178,7 @@ export const categories = [
   },
   {
     id: "classes",
-    label: "Classes",
+    label: "Music Classes",
     icon: "♪",
     color: "#4A6FA5",
     lightColor: "#EDF2FA",

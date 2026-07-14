@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 const sessionCategories = [
   { href: "#therapy", label: "Alternative Therapies" },
   { href: "#consultations", label: "Jyothishya Consultations" },
-  { href: "#classes", label: "Classes" },
+  { href: "#classes", label: "Music Classes" },
   { href: "#workshops", label: "Mind & Body Workshops" },
   { href: "#satsangs", label: "Satsangs" },
 ];

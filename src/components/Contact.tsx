@@ -308,13 +308,13 @@ export default function Contact() {
               </div>
               {[
                 {
-                  label: "Therapy Sessions",
+                  label: "Alternative Therapies",
                   icon: "✦",
                   color: "#6B8F71",
                   url: "https://forms.gle/jjHiYLsS41csuk8x7",
                 },
                 {
-                  label: "Consultations",
+                  label: "Jyothishya Consultations",
                   icon: "◈",
                   color: "#C4796A",
                   url: "https://forms.gle/9tzkrwSneeeAMoTW9",
@@ -326,7 +326,7 @@ export default function Contact() {
                   url: "https://forms.gle/rriqtYCqQTi88Uyy6",
                 },
                 {
-                  label: "Workshops",
+                  label: "Mind & Body Workshops",
                   icon: "◉",
                   color: "#C9873A",
                   url: "https://forms.gle/f5MNNoN6AGKs8TD89",
