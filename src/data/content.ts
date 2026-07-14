@@ -35,7 +35,7 @@ export const profile = {
 export const categories = [
   {
     id: "therapy",
-    label: "Therapy",
+    label: "Alternative Therapies",
     icon: "✦",
     color: "#6B8F71",
     lightColor: "#EAF2EB",
@@ -99,12 +99,12 @@ export const categories = [
   },
   {
     id: "consultations",
-    label: "Consultations",
+    label: "Jyothishya Consultations",
     icon: "◈",
     color: "#C4796A",
     lightColor: "#FAF0EE",
     description:
-      "Ancient divinatory sciences offering deep insight into your life's patterns, timing, and purpose. Any detailed or specialised reading may be subject to revised fees.",
+      "Timeless Vedic guidance to bring clarity, direction, and deeper understanding of your life's journey.",
     formUrl: "https://forms.gle/9tzkrwSneeeAMoTW9",
     sanskritQuote: "ज्योतिषं ज्ञानचक्षुषां मार्गदर्शकम् • तमसो मा ज्योतिर्गमय",
     englishQuote:
@@ -225,7 +225,7 @@ export const categories = [
   },
   {
     id: "workshops",
-    label: "Workshops",
+    label: "Mind & Body Workshops",
     icon: "◉",
     color: "#C9873A",
     lightColor: "#FDF4E8",
@@ -237,12 +237,12 @@ export const categories = [
       "There is no purifier in this world like mindful learning. We adjust subconscious habits, cognitive focus, and nutrition to cultivate balanced life energy.",
     sessions: [
       {
-        name: "NLP Workshop",
+        name: "Neuro Linguistic Programme (NLP)",
         duration: "1 hr per session · 1 to 21 sessions",
         price: "₹21,000",
         priceNote: "Per session · sessions depend on individual",
         description:
-          "A practical methodology for enhancing communication, mindset, and personal growth by understanding the connection between thoughts, language, and behaviour. Number of sessions is personalised.",
+          "A practical approach to understanding how thoughts, language, and behavior influence personal and professional success. This session helps participants develop better communication, confidence, emotional intelligence, and goal-oriented thinking.",
         benefits: [
           "Mindset reprogramming",
           "Communication mastery",
@@ -277,7 +277,7 @@ export const categories = [
     color: "#7A5E9A",
     lightColor: "#F5F0FA",
     description:
-      "Soulful gatherings filled with music, meditation, wisdom, and collective celebration that uplift the mind, open the heart, and create a sense of belonging.",
+      "Satsang is a spiritual gathering dedicated to truth, wisdom, and inner growth through devotional singing, inspiring discourses, meditation, and meaningful discussions.",
     formUrl: "https://forms.gle/y1XBLfrsLnNgsDXo6",
     sanskritQuote: "सत्सङ्गत्वे निस्सङ्गत्वम्",
     englishQuote:
