@@ -269,30 +269,31 @@ export default function Sessions() {
               style={{
                 background: "white",
                 color: cat.color,
-                padding: "14px 32px",
-                borderRadius: 100,
-                fontSize: 15,
+
+                // Responsive sizing
+                padding: "12px 18px",
+                borderRadius: 9999,
+
+                fontSize: "clamp(13px, 3vw, 15px)",
                 fontWeight: 600,
                 textDecoration: "none",
                 fontFamily: "'DM Sans', sans-serif",
+
                 display: "inline-flex",
                 alignItems: "center",
+                justifyContent: "center",
                 gap: 8,
-                flexShrink: 0,
+
+                // Prevent overflow
+                width: "100%",
+                maxWidth: 320,
+                alignSelf: "stretch",
+                flexShrink: 1,
+                whiteSpace: "normal",
+                textAlign: "center",
+
                 transition: "transform 0.2s, box-shadow 0.2s",
                 boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.transform =
-                  "translateY(-2px)";
-                (e.currentTarget as HTMLElement).style.boxShadow =
-                  "0 8px 24px rgba(0,0,0,0.18)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.transform =
-                  "translateY(0)";
-                (e.currentTarget as HTMLElement).style.boxShadow =
-                  "0 2px 12px rgba(0,0,0,0.1)";
               }}
             >
               Register for {cat.label}
