@@ -144,7 +144,7 @@ export default function Contact() {
                       </svg>
                     ),
                     label: "Phone / WhatsApp",
-                    value: "+91 9700477529",
+                    value: "+91 8374896261",
                   },
                   {
                     icon: (
