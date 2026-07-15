@@ -34,6 +34,18 @@ const testimonials = [
     text: "The box breathing guidance and holistic health coaching completely reset my sleep cycle and energy levels. Sharath's deep understanding of wellness integrates ancient Indian traditions with a modern lifestyle.",
     therapy: "Holistic Lifestyle Coaching",
   },
+  {
+    name: "Maneeth",
+    role: "Lawyer",
+    text: "Attending Sharath's Satsang was a truly uplifting experience. The combination of soulful music, guided meditation, and powerful wisdom created an atmosphere of peace that stayed with me long after the satsang ended. I left feeling lighter, more connected, and deeply inspired.",
+    therapy: "Satsang",
+  },
+  {
+    name: "Praneesh",
+    role: "Fitness Enthusiast",
+    text: "The Nutrition Workshop completely changed the way I look at food and health. Sharath explained complex nutritional concepts in a simple, practical way, making it easy to build sustainable habits. I've noticed better energy, improved digestion, and a healthier lifestyle without restrictive dieting.",
+    therapy: "Nutrition Workshop",
+  },
 ];
 
 export default function Testimonials() {
