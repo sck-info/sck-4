@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Martel } from "next/font/google";
 import "./globals.css";
-import SecurityWrapper from "@/components/SecurityWrapper";
 
 const displayFont = Playfair_Display({
   variable: "--font-display",
@@ -20,7 +19,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.sharathkancherla.com"),
   title: {
     default: "Sharath Chandra Kancherla — Holistic Wellness Coach & Healer",
-    template: "%s | Sharath Chandra Kancherla"
+    template: "%s | Sharath Chandra Kancherla",
   },
   description:
     "Life Skills Facilitator, Mind & Breath Expert, AOL Faculty, Professional Singer. CST, Rakkenho, Music Therapy, Vedic Astrology, NLP & more.",
@@ -38,7 +37,7 @@ export const metadata: Metadata = {
     "Music Therapy",
     "Vedic Astrology",
     "NLP Coach",
-    "Wellness Coach India"
+    "Wellness Coach India",
   ],
   alternates: {
     canonical: "/",
@@ -79,13 +78,8 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: [
-      { url: "/favicon.ico" },
-      { url: "/favicon.png", type: "image/png" }
-    ],
-    apple: [
-      { url: "/favicon.png" }
-    ],
+    icon: [{ url: "/favicon.ico" }, { url: "/favicon.png", type: "image/png" }],
+    apple: [{ url: "/favicon.png" }],
   },
 };
 
@@ -95,7 +89,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${displayFont.variable} ${martelFont.variable}`}>
+    <html
+      lang="en"
+      className={`${displayFont.variable} ${martelFont.variable}`}
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -109,9 +106,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>
-        <SecurityWrapper>{children}</SecurityWrapper>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
