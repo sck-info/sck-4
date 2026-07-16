@@ -40,7 +40,7 @@ const highlights = [
   "Infosys, IBM, Microsoft, Google, Cognizant, TCS & Mylan",
   "100+ students",
   "1.5 lakh+ lives",
-  "10+ countries",
+  "5+ countries",
   "8 states in India",
 ];
 
