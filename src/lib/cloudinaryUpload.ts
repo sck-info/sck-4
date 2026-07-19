@@ -10,7 +10,7 @@ const ALLOWED_IMAGE_TYPES = [
 ];
 
 const MAX_INPUT_SIZE = 5 * 1024 * 1024;
-const TARGET_SIZE_BYTES = 150 * 1024;
+const TARGET_SIZE_BYTES = 500 * 1024; // 500KB
 
 type UploadImagesOptions = {
   invalidate?: boolean;
@@ -56,8 +56,8 @@ async function compressToTargetSize(
   if (best.length > TARGET_SIZE_BYTES) {
     const scale = Math.sqrt(TARGET_SIZE_BYTES / best.length);
     const meta = await sharp(best).metadata();
-    const newWidth = Math.floor((meta.width || 800) * scale);
-    const newHeight = Math.floor((meta.height || 600) * scale);
+    const newWidth = Math.floor((meta.width || 1200) * scale);
+    const newHeight = Math.floor((meta.height || 900) * scale);
 
     best = await sharp(buffer)
       .resize(newWidth, newHeight, { fit: "inside", withoutEnlargement: true })
@@ -86,7 +86,12 @@ export async function uploadImages(
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const compressed = await compressToTargetSize(buffer, file.type);
+    let finalBuffer: any = buffer;
+
+    // Only compress if the file exceeds the 1MB target size
+    if (buffer.length > TARGET_SIZE_BYTES) {
+      finalBuffer = await compressToTargetSize(buffer, file.type);
+    }
 
     const publicId =
       typeof options.publicId === "function"
@@ -110,7 +115,7 @@ export async function uploadImages(
             else resolve(result.secure_url);
           }
         )
-        .end(compressed);
+        .end(finalBuffer);
     });
 
     urls.push(url);

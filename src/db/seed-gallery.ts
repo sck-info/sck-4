@@ -15,12 +15,12 @@ const pool = new Pool({
 
 const db = drizzle(pool, { schema });
 
-const TARGET_SIZE_BYTES = 150 * 1024; // 150KB
+const TARGET_SIZE_BYTES = 500 * 1024; // 500KB
 
 async function compressToTargetSize(
-  buffer: Buffer,
+  buffer: any,
   mimeType: string,
-): Promise<Buffer> {
+): Promise<any> {
   const format = mimeType === "image/png" ? "png" : mimeType === "image/webp" ? "webp" : "jpeg";
 
   let quality = 80;
@@ -53,8 +53,8 @@ async function compressToTargetSize(
   if (best.length > TARGET_SIZE_BYTES) {
     const scale = Math.sqrt(TARGET_SIZE_BYTES / best.length);
     const meta = await sharp(best).metadata();
-    const newWidth = Math.floor((meta.width || 800) * scale);
-    const newHeight = Math.floor((meta.height || 600) * scale);
+    const newWidth = Math.floor((meta.width || 1200) * scale);
+    const newHeight = Math.floor((meta.height || 900) * scale);
 
     best = await sharp(buffer)
       .resize(newWidth, newHeight, { fit: "inside", withoutEnlargement: true })
@@ -76,8 +76,13 @@ async function uploadLocalFileToCloudinary(localFileName: string, publicId: stri
   const ext = path.extname(localFileName).toLowerCase();
   const mimeType = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
 
-  console.log(`Compressing and uploading public/${localFileName} to Cloudinary...`);
-  const compressed = await compressToTargetSize(buffer, mimeType);
+  let finalBuffer: any = buffer;
+  if (buffer.length > TARGET_SIZE_BYTES) {
+    console.log(`Compressing and uploading public/${localFileName} to Cloudinary...`);
+    finalBuffer = await compressToTargetSize(buffer, mimeType);
+  } else {
+    console.log(`Bypassing compression for public/${localFileName} (under 1MB)...`);
+  }
 
   const url = await new Promise<string>((resolve, reject) => {
     cloudinary.uploader
@@ -94,7 +99,7 @@ async function uploadLocalFileToCloudinary(localFileName: string, publicId: stri
           else resolve(result.secure_url);
         }
       )
-      .end(compressed);
+      .end(finalBuffer);
   });
 
   return url;
