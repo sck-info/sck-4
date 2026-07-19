@@ -14,3 +14,8 @@ ON contacts FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
 CREATE OR REPLACE TRIGGER metrics_app_event AFTER INSERT OR UPDATE OR DELETE
 ON metrics FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
 
+-- (5) About Slides Trigger
+CREATE OR REPLACE TRIGGER about_slides_app_event AFTER INSERT OR UPDATE OR DELETE
+ON about_slides FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
+
+

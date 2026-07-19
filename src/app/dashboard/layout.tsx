@@ -9,6 +9,7 @@ import {
   Contact,
   LogOut,
   TrendingUp,
+  Images,
 } from "lucide-react";
 import {
   Sidebar,
@@ -52,14 +53,19 @@ function AppSidebar({
       icon: LayoutDashboard,
     },
     {
-      name: "Contacts",
-      href: "/dashboard/contacts",
-      icon: Contact,
+      name: "About Slides",
+      href: "/dashboard/about-slides",
+      icon: Images,
     },
     {
       name: "Metrics",
       href: "/dashboard/metrics",
       icon: TrendingUp,
+    },
+    {
+      name: "Contacts",
+      href: "/dashboard/contacts",
+      icon: Contact,
     },
   ];
 

@@ -6,33 +6,6 @@ import { profile } from "@/data/content";
 import type { ReactElement } from "react";
 import { useRealtime } from "@/hooks/useRealtime";
 
-const slideshowImages = [
-  {
-    src: "/images/sck-lifeskills.jpeg",
-    tag: "LIFE SKILLS FACILITATOR",
-    alt: "Sharath Chandra Kancherla - CST touch",
-  },
-  {
-    src: "/images/sck-music-therapy.jpeg",
-    tag: "MUSIC THERAPIST",
-    alt: "Sharath Chandra Kancherla - Swara Frequencies",
-  },
-  {
-    src: "/images/sck-yoga.jpeg",
-    tag: "YOGA & RAKKENHO",
-    alt: "Sharath Chandra Kancherla - Sole Pressure",
-  },
-  {
-    src: "/images/sck-tutuor.jpeg",
-    tag: "VEDIC ASTROLOGER",
-    alt: "Sharath Chandra Kancherla - Habit Adjustments",
-  },
-  {
-    src: "/images/sck-cool.jpeg",
-    tag: "NLP COACH & MENTOR",
-    alt: "Sharath Chandra Kancherla - Chart Reading",
-  },
-];
 
 const highlights = [
   "Art of Living",
@@ -355,13 +328,24 @@ function StatsBar({ stats }: { stats: { num: string; label: string }[] }) {
 export default function About() {
   const [imgIndex, setImgIndex] = useState(0);
   const [stats, setStats] = useState<{ num: string; label: string }[]>(profile.stats);
+  const [slides, setSlides] = useState<{ src: string; tag: string; alt: string }[]>([
+    {
+      src: "/images/sck-lifeskills.jpeg",
+      tag: "LIFE SKILLS FACILITATOR",
+      alt: "Sharath Chandra Kancherla - CST touch",
+    },
+  ]);
 
   useEffect(() => {
+    if (slides.length <= 1) {
+      setImgIndex(0);
+      return;
+    }
     const slideTimer = setInterval(() => {
-      setImgIndex((prev) => (prev + 1) % slideshowImages.length);
+      setImgIndex((prev) => (prev + 1) % slides.length);
     }, 4000);
     return () => clearInterval(slideTimer);
-  }, []);
+  }, [slides.length]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -377,12 +361,45 @@ export default function About() {
     }
   }, []);
 
+  const fetchSlides = useCallback(async () => {
+    try {
+      const res = await fetch("/api/about-slides");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setSlides(
+            data.map((s: any) => ({
+              src: s.imageUrl,
+              tag: s.tag,
+              alt: s.alt || "",
+            }))
+          );
+        } else {
+          setSlides([
+            {
+              src: "/images/sck-lifeskills.jpeg",
+              tag: "LIFE SKILLS FACILITATOR",
+              alt: "Sharath Chandra Kancherla - CST touch",
+            },
+          ]);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load dynamic slides:", err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchStats();
-  }, [fetchStats]);
+    fetchSlides();
+  }, [fetchStats, fetchSlides]);
 
   useRealtime(["metrics"], () => {
     fetchStats();
+  });
+
+  useRealtime(["about_slides"], () => {
+    fetchSlides();
   });
 
   return (
@@ -453,8 +470,8 @@ export default function About() {
                     }}
                   >
                     <Image
-                      src={slideshowImages[imgIndex].src}
-                      alt={slideshowImages[imgIndex].alt}
+                      src={slides[imgIndex]?.src || "/images/sck-lifeskills.jpeg"}
+                      alt={slides[imgIndex]?.alt || ""}
                       fill
                       priority
                       style={{ objectFit: "cover" }}
@@ -492,7 +509,7 @@ export default function About() {
                     transition={{ duration: 0.3 }}
                     style={{ display: "block" }}
                   >
-                    {slideshowImages[imgIndex].tag}
+                    {slides[imgIndex]?.tag || "LIFE SKILLS FACILITATOR"}
                   </motion.span>
                 </AnimatePresence>
               </div>
