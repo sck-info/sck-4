@@ -22,6 +22,13 @@
       "when": 1784471840141,
       "tag": "0002_add_about_slides",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784472950896,
+      "tag": "0003_add_gallery",
+      "breakpoints": true
     }
   ]
 }

@@ -18,4 +18,9 @@ ON metrics FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
 CREATE OR REPLACE TRIGGER about_slides_app_event AFTER INSERT OR UPDATE OR DELETE
 ON about_slides FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
 
+-- (6) Gallery Trigger
+CREATE OR REPLACE TRIGGER gallery_app_event AFTER INSERT OR UPDATE OR DELETE
+ON gallery FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
+
+
 

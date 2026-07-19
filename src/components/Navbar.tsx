@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 const sessionCategories = [
   { href: "#therapy", label: "Alternative Therapies" },
@@ -10,6 +11,10 @@ const sessionCategories = [
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+  const getHref = (href: string) => (!isHome && href.startsWith("#") ? `/${href}` : href);
+
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [sessionsOpen, setSessionsOpen] = useState(false);
@@ -36,13 +41,7 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const links = [
-    { href: "#about", label: "About" },
-    { href: "#vision", label: "Vision" },
-    { href: "#Gallery", label: "Gallery" },
-    { href: "#Testimonials", label: "Testimonials" },
-    { href: "#contact", label: "Contact" },
-  ];
+  const links: { href: string; label: string }[] = [];
 
   return (
     <nav
@@ -53,9 +52,9 @@ export default function Navbar() {
         right: 0,
         zIndex: 100,
         transition: "all 0.4s ease",
-        background: scrolled ? "rgba(250,247,242,0.92)" : "transparent",
-        backdropFilter: scrolled ? "blur(12px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(28,31,74,0.08)" : "none",
+        background: scrolled || !isHome ? "rgba(250,247,242,0.92)" : "transparent",
+        backdropFilter: scrolled || !isHome ? "blur(12px)" : "none",
+        borderBottom: scrolled || !isHome ? "1px solid rgba(28,31,74,0.08)" : "none",
         padding: "0 2rem",
       }}
     >
@@ -70,7 +69,7 @@ export default function Navbar() {
         }}
       >
         <a
-          href="#"
+          href={getHref("#")}
           style={{
             textDecoration: "none",
             display: "flex",
@@ -83,7 +82,7 @@ export default function Navbar() {
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: 22,
               fontWeight: 600,
-              color: scrolled ? "var(--indigo)" : "var(--ivory)",
+              color: scrolled || !isHome ? "var(--indigo)" : "var(--ivory)",
               letterSpacing: 0.5,
               transition: "color 0.4s",
             }}
@@ -100,7 +99,7 @@ export default function Navbar() {
           {links.map((l) => (
             <a
               key={l.href}
-              href={l.href}
+              href={getHref(l.href)}
               style={{
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: 14,
@@ -111,12 +110,12 @@ export default function Navbar() {
                 transition: "color 0.2s",
               }}
               onMouseEnter={(e) =>
-                ((e.target as HTMLElement).style.color = scrolled
+                ((e.target as HTMLElement).style.color = scrolled || !isHome
                   ? "var(--indigo)"
                   : "var(--ivory)")
               }
               onMouseLeave={(e) =>
-                ((e.target as HTMLElement).style.color = scrolled
+                ((e.target as HTMLElement).style.color = scrolled || !isHome
                   ? "var(--text-mid)"
                   : "rgba(250,247,242,0.8)")
               }
@@ -138,7 +137,7 @@ export default function Navbar() {
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: 14,
                 fontWeight: 500,
-                color: scrolled ? "var(--text-mid)" : "rgba(250,247,242,0.8)",
+                color: scrolled || !isHome ? "var(--text-mid)" : "rgba(250,247,242,0.8)",
                 background: "none",
                 border: "none",
                 cursor: "pointer",
@@ -219,7 +218,7 @@ export default function Navbar() {
               {sessionCategories.map((cat) => (
                 <a
                   key={cat.href}
-                  href={cat.href}
+                  href={getHref(cat.href)}
                   onClick={() => setSessionsOpen(false)}
                   style={{
                     display: "flex",
@@ -263,7 +262,7 @@ export default function Navbar() {
           </div>
 
           <a
-            href="#satsangs"
+            href={getHref("#satsangs")}
             style={{
               background: "var(--indigo)",
               color: "var(--ivory)",
@@ -286,7 +285,7 @@ export default function Navbar() {
             Book a Satsang
           </a>
           <a
-            href="#sessions"
+            href={getHref("#sessions")}
             style={{
               background: "var(--indigo)",
               color: "var(--ivory)",
@@ -319,7 +318,7 @@ export default function Navbar() {
             border: "none",
             cursor: "pointer",
             padding: 8,
-            color: scrolled ? "var(--indigo)" : "var(--ivory)",
+            color: scrolled || !isHome ? "var(--indigo)" : "var(--ivory)",
           }}
           className="mobile-menu-btn"
           aria-label="Menu"
@@ -362,7 +361,7 @@ export default function Navbar() {
           {links.map((l) => (
             <a
               key={l.href}
-              href={l.href}
+              href={getHref(l.href)}
               onClick={() => setMenuOpen(false)}
               style={{
                 color: "var(--text-dark)",
@@ -435,7 +434,7 @@ export default function Navbar() {
                 {sessionCategories.map((cat) => (
                   <a
                     key={cat.href}
-                    href={cat.href}
+                    href={getHref(cat.href)}
                     onClick={() => {
                       setMenuOpen(false);
                       setMobileSessionsOpen(false);

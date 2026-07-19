@@ -10,6 +10,7 @@ import {
   LogOut,
   TrendingUp,
   Images,
+  Camera,
 } from "lucide-react";
 import {
   Sidebar,
@@ -61,6 +62,11 @@ function AppSidebar({
       name: "Metrics",
       href: "/dashboard/metrics",
       icon: TrendingUp,
+    },
+    {
+      name: "Gallery",
+      href: "/dashboard/gallery",
+      icon: Camera,
     },
     {
       name: "Contacts",
