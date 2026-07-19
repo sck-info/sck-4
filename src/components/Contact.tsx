@@ -1,8 +1,54 @@
 "use client";
 
 import { FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
+import { useState, useEffect, useCallback } from "react";
+import { useRealtime } from "@/hooks/useRealtime";
 
 export default function Contact() {
+  const [liveContact, setLiveContact] = useState<{
+    email: string;
+    phone: string;
+    location: string;
+    instagramLink: string;
+    linkedinLink: string;
+    youtubeLink: string;
+  }>({
+    email: "sharathchandra.kancherla@gmail.com",
+    phone: "+91 8374896261",
+    location: "Hyderabad, Telangana",
+    instagramLink: "https://www.instagram.com/sharathkancherla?igsh=MWtvZXI1a3czbzdlYg==",
+    linkedinLink: "https://www.linkedin.com/in/sharath-chandra-kancherla-b38422108?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    youtubeLink: "https://youtube.com/@sharathkancherla?si=d8kXq71Z1eJ0e18K",
+  });
+
+  const fetchActiveContact = useCallback(async () => {
+    try {
+      const res = await fetch("/api/contacts/active");
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data) {
+        setLiveContact({
+          email: data.email || "sharathchandra.kancherla@gmail.com",
+          phone: data.phone || "+91 8374896261",
+          location: data.location || "Hyderabad, Telangana",
+          instagramLink: data.instagramLink || "https://www.instagram.com/sharathkancherla?igsh=MWtvZXI1a3czbzdlYg==",
+          linkedinLink: data.linkedinLink || "https://www.linkedin.com/in/sharath-chandra-kancherla-b38422108?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+          youtubeLink: data.youtubeLink || "https://youtube.com/@sharathkancherla?si=d8kXq71Z1eJ0e18K",
+        });
+      }
+    } catch (err) {
+      console.warn("Failed to fetch live contact details, using defaults:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchActiveContact();
+  }, [fetchActiveContact]);
+
+  useRealtime(["contacts"], () => {
+    fetchActiveContact();
+  });
+
   return (
     <>
       <section
@@ -128,7 +174,7 @@ export default function Contact() {
                       </svg>
                     ),
                     label: "Email",
-                    value: "sharathchandra.kancherla@gmail.com",
+                    value: liveContact.email,
                   },
                   {
                     icon: (
@@ -144,7 +190,7 @@ export default function Contact() {
                       </svg>
                     ),
                     label: "Phone / WhatsApp",
-                    value: "+91 8374896261",
+                    value: liveContact.phone,
                   },
                   {
                     icon: (
@@ -161,9 +207,10 @@ export default function Contact() {
                       </svg>
                     ),
                     label: "Location",
-                    value: "Hyderabad, Telangana",
+                    value: liveContact.location,
                   },
                 ].map((item) => (
+
                   <div
                     key={item.label}
                     style={{ display: "flex", alignItems: "center", gap: 14 }}
@@ -229,20 +276,21 @@ export default function Contact() {
                   {[
                     {
                       icon: <FaInstagram size={18} />,
-                      url: "https://www.instagram.com/sharathkancherla?igsh=MWtvZXI1a3czbzdlYg==",
+                      url: liveContact.instagramLink,
                       label: "Instagram",
                     },
                     {
                       icon: <FaLinkedin size={18} />,
-                      url: "https://www.linkedin.com/in/sharath-chandra-kancherla-b38422108?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+                      url: liveContact.linkedinLink,
                       label: "LinkedIn",
                     },
                     {
                       icon: <FaYoutube size={18} />,
-                      url: "https://youtube.com/@sharathkancherla?si=d8kXq71Z1eJ0e18K",
+                      url: liveContact.youtubeLink,
                       label: "YouTube",
                     },
                   ].map((social) => (
+
                     <a
                       key={social.label}
                       href={social.url}

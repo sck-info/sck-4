@@ -83,6 +83,9 @@ export const metadata: Metadata = {
   },
 };
 
+import { SessionProvider } from "next-auth/react";
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: {
@@ -106,7 +109,13 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <SessionProvider>
+          {children}
+          <Toaster richColors position="top-right" />
+        </SessionProvider>
+      </body>
     </html>
   );
 }
+
