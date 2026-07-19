@@ -1,9 +1,10 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { profile } from "@/data/content";
 import type { ReactElement } from "react";
+import { useRealtime } from "@/hooks/useRealtime";
 
 const slideshowImages = [
   {
@@ -353,6 +354,7 @@ function StatsBar({ stats }: { stats: { num: string; label: string }[] }) {
 
 export default function About() {
   const [imgIndex, setImgIndex] = useState(0);
+  const [stats, setStats] = useState<{ num: string; label: string }[]>(profile.stats);
 
   useEffect(() => {
     const slideTimer = setInterval(() => {
@@ -360,6 +362,28 @@ export default function About() {
     }, 4000);
     return () => clearInterval(slideTimer);
   }, []);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await fetch("/api/metrics");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setStats(data.map((m: any) => ({ num: m.num, label: m.label })));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load dynamic metrics:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  useRealtime(["metrics"], () => {
+    fetchStats();
+  });
 
   return (
     <section
@@ -659,7 +683,7 @@ export default function About() {
         </div>
       </div>
 
-      <StatsBar stats={profile.stats} />
+      <StatsBar stats={stats} />
     </section>
   );
 }
