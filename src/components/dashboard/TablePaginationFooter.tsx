@@ -40,7 +40,7 @@ export default function TablePaginationFooter({
   const currentPage = Math.max(1, pagination.page);
   const totalPages = Math.max(1, pagination.totalPages);
   const limit = pagination.limit || DEFAULT_PAGE_LIMIT;
-  
+
   const limitOptions = useMemo(() => {
     const options = new Set<number>(PAGE_LIMIT_OPTIONS);
     if (limit > 0) options.add(limit);
@@ -103,7 +103,7 @@ export default function TablePaginationFooter({
         }
       }}
       className={cn(
-        "border-0 bg-transparent px-0 font-medium text-black shadow-none hover:bg-transparent hover:text-black cursor-pointer",
+        "border-0 bg-transparent px-0 font-bold text-[#1c1f4a] shadow-none hover:bg-transparent hover:text-[#b86a16] cursor-pointer transition-colors",
         compact ? "h-7 px-0 text-xs" : "h-8 px-0 text-sm",
         previousDisabled && "pointer-events-none opacity-50",
       )}
@@ -122,7 +122,7 @@ export default function TablePaginationFooter({
         }
       }}
       className={cn(
-        "border-0 bg-transparent px-0 font-medium text-black shadow-none hover:bg-transparent hover:text-black cursor-pointer",
+        "border-0 bg-transparent px-0 font-bold text-[#1c1f4a] shadow-none hover:bg-transparent hover:text-[#b86a16] cursor-pointer transition-colors",
         compact ? "h-7 px-0 text-xs" : "h-8 px-0 text-sm",
         nextDisabled && "pointer-events-none opacity-50",
       )}
@@ -133,7 +133,7 @@ export default function TablePaginationFooter({
     <Pagination
       className={cn(
         "mx-0 w-full justify-center overflow-x-auto sm:w-auto sm:justify-start",
-        variant === "top" && "justify-end",
+        variant === "top" && "justify-center sm:justify-end",
       )}
     >
       <PaginationContent className={compact ? "gap-2" : "gap-3"}>
@@ -154,11 +154,11 @@ export default function TablePaginationFooter({
                 }}
                 className={cn(
                   compact
-                    ? "size-7 rounded-md text-xs"
-                    : "size-8 rounded-md text-sm",
-                  "border border-slate-200 bg-white font-medium text-black hover:bg-slate-50 cursor-pointer",
+                    ? "size-7 rounded-lg text-xs"
+                    : "size-8 rounded-lg text-sm",
+                  "border border-[#e8dcc4] bg-[#faf7f2]/30 font-semibold text-[#1c1f4a] hover:bg-[#b86a16]/10 cursor-pointer transition-colors",
                   page === currentPage &&
-                    "border-[#6C63FF] bg-[#6C63FF] text-white hover:bg-[#6C63FF] hover:text-white",
+                    "border-[#b86a16] bg-[#b86a16] text-white hover:bg-[#b86a16]/90 hover:text-white",
                 )}
               >
                 {page}
@@ -177,19 +177,23 @@ export default function TablePaginationFooter({
         value={String(limit)}
         onValueChange={(value) => updatePagination({ limit: value, page: "1" })}
       >
-        <SelectTrigger className="h-9 w-36 rounded-xl border-slate-200 px-3 text-sm text-slate-700 shadow-none cursor-pointer">
+        <SelectTrigger className="h-9 w-32 rounded-xl border-[#e8dcc4] bg-[#faf7f2]/30 px-3 text-xs font-semibold text-[#1c1f4a] shadow-none cursor-pointer hover:bg-[#b86a16]/5 transition-colors">
           <span>Showing</span>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {limitOptions.map((option) => (
-            <SelectItem key={option} value={String(option)} className="cursor-pointer">
+            <SelectItem
+              key={option}
+              value={String(option)}
+              className="cursor-pointer text-xs"
+            >
               {option}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      <span className="whitespace-nowrap text-sm text-black">
+      <span className="whitespace-nowrap text-xs text-[#1c1f4a] font-bold">
         of {pagination.total}
       </span>
     </div>
@@ -200,15 +204,15 @@ export default function TablePaginationFooter({
 
   if (variant === "top") {
     return (
-      <div className="mb-3 hidden justify-end sm:flex">
+      <div className="mb-3 flex justify-center sm:justify-end">
         {paginationNav(true)}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center gap-3 border-t bg-white px-3 py-3 text-sm text-slate-600 sm:flex-row sm:justify-between">
-      {paginationNav(false)}
+    <div className="flex flex-col items-center gap-3 border-t border-[#e8dcc4] bg-[#faf7f2]/10 px-3 py-3 text-xs text-[#5a5e7a] sm:flex-row sm:justify-between rounded-b-2xl">
+      {paginationNav(true)}
       <div className="flex w-full justify-center sm:w-auto sm:justify-end">
         {recordSelector}
       </div>

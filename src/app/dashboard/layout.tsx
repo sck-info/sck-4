@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -46,6 +46,35 @@ function AppSidebar({
 }) {
   const pathname = usePathname();
   const { state } = useSidebar();
+  const [slides, setSlides] = useState<{ imageUrl: string }[]>([]);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  useEffect(() => {
+    const fetchAvatarSlides = async () => {
+      try {
+        const res = await fetch("/api/about-slides");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setSlides(data.map((item: any) => ({ imageUrl: item.imageUrl })));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch sidebar avatar slides:", err);
+      }
+    };
+    fetchAvatarSlides();
+  }, []);
+
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentSlideIndex((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [slides]);
+
+  const currentAvatarUrl = slides[currentSlideIndex]?.imageUrl || "/images/sck-lifeskills.jpeg";
 
   const menuItems = [
     {
@@ -83,17 +112,24 @@ function AppSidebar({
       <SidebarHeader className={`h-20 border-b border-white/10 flex flex-row items-center gap-3 shrink-0 overflow-hidden ${
         isExpanded ? "px-4" : "px-2 justify-center"
       }`}>
-        <div className="w-8 h-8 rounded-lg bg-[#b86a16] flex items-center justify-center font-bold text-lg text-white shrink-0 shadow-sm">
-          S
-        </div>
-        {isExpanded && (
-          <div className="flex flex-col truncate">
-            <h1 className="text-sm font-bold tracking-tight text-white">Sharath Chandra</h1>
-            <p className="text-[10px] text-[#e8962e] tracking-wider uppercase font-bold">
-              Admin Panel
-            </p>
-          </div>
-        )}
+        <Link href="/" className="flex flex-row items-center gap-3 w-full hover:opacity-85 transition-opacity">
+          <img
+            src={currentAvatarUrl}
+            alt="Sharath Chandra Kancherla"
+            className="w-8 h-8 rounded-lg object-cover shrink-0 shadow-sm border border-white/10"
+            onError={(e) => {
+              e.currentTarget.src = "/images/sck-lifeskills.jpeg";
+            }}
+          />
+          {isExpanded && (
+            <div className="flex flex-col truncate">
+              <h1 className="text-sm font-bold tracking-tight text-white">Sharath Chandra</h1>
+              <p className="text-[10px] text-[#e8962e] tracking-wider uppercase font-bold">
+                Admin Panel
+              </p>
+            </div>
+          )}
+        </Link>
       </SidebarHeader>
 
       {/* Navigation Links */}

@@ -51,8 +51,8 @@ export default function Gallery() {
       src: photo.src,
       id: `photo-${index}`,
     });
-
-    if ((index + 1) % 3 === 0) {
+    // Configure here to show the view gallery card after how many photos
+    if ((index + 1) % 4 === 0) {
       listItems.push({
         type: "link" as const,
         id: `gallery-link-${index}`,
@@ -234,7 +234,7 @@ export default function Gallery() {
               style={{
                 display: "flex",
                 gap: 20,
-                animation: "galleryMarquee 75s linear infinite",
+                animation: "galleryMarquee 60s linear infinite",
                 width: "max-content",
                 padding: "1rem 0 2rem",
               }}
