@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, Suspense } from "react";
+import React, { useState, useEffect, useCallback, Suspense, useRef } from "react";
 import { useRealtime } from "@/hooks/useRealtime";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
@@ -92,6 +92,7 @@ function ContactsCrudPageContent() {
   }, [pathname, router, searchParams, pushParams]);
 
   const [contacts, setContacts] = useState<ContactRow[]>([]);
+  const isInitialLoadRef = useRef(true);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState<PaginationMeta>({
     page: 1,
@@ -123,7 +124,10 @@ function ContactsCrudPageContent() {
   const fetchContacts = useCallback(async () => {
     try {
       setError("");
-      setLoading(true);
+      if (isInitialLoadRef.current) {
+        setLoading(true);
+        isInitialLoadRef.current = false;
+      }
       const res = await fetch(`/api/contacts?page=${page}&limit=${limit}`);
       if (!res.ok) throw new Error("Failed to load contacts");
       const result = await res.json();
@@ -388,10 +392,10 @@ function ContactsCrudPageContent() {
                   <TableCell className="py-4 px-6">
                     <button
                       onClick={() => handleToggleActive(contact)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all ${
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
                         contact.isActive
                           ? "bg-[#6b8f71]/15 text-[#6b8f71]"
-                          : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16] cursor-pointer"
+                          : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
                       }`}
                     >
                       <CheckCircle className="w-3.5 h-3.5" />

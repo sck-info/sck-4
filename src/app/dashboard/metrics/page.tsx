@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, Suspense } from "react";
+import React, { useState, useEffect, useCallback, Suspense, useRef } from "react";
 import { useRealtime } from "@/hooks/useRealtime";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
@@ -83,6 +83,7 @@ function MetricsCrudPageContent() {
   }, [pathname, router, searchParams, pushParams]);
 
   const [metricsList, setMetricsList] = useState<MetricRow[]>([]);
+  const isInitialLoadRef = useRef(true);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState<PaginationMeta>({
     page: 1,
@@ -111,7 +112,10 @@ function MetricsCrudPageContent() {
   // Fetch all metrics
   const fetchMetrics = useCallback(async () => {
     try {
-      setLoading(true);
+      if (isInitialLoadRef.current) {
+        setLoading(true);
+        isInitialLoadRef.current = false;
+      }
       const res = await fetch(
         `/api/metrics?all=true&page=${page}&limit=${limit}`,
       );
@@ -342,10 +346,10 @@ function MetricsCrudPageContent() {
                   <TableCell className="py-3 px-4">
                     <button
                       onClick={() => handleToggleActive(metric)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all ${
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
                         metric.isActive
                           ? "bg-[#6b8f71]/15 text-[#6b8f71]"
-                          : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16] cursor-pointer"
+                          : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
                       }`}
                     >
                       <CheckCircle className="w-3.5 h-3.5" />
