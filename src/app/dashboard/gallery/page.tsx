@@ -1,7 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useRealtime } from "@/hooks/useRealtime";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
+import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
 import {
   Camera,
   Plus,
@@ -53,9 +56,43 @@ type GalleryItemRow = {
   updatedAt: string | null;
 };
 
-export default function GalleryCrudPage() {
+function GalleryCrudPageContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const page = searchParams.get("page") || "1";
+  const limit = searchParams.get("limit") || "25";
+
+  const pushParams = useCallback((params: URLSearchParams, replace = false) => {
+    const url = `${pathname}?${params.toString()}`;
+    if (replace) router.replace(url);
+    else router.push(url);
+  }, [pathname, router]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    let changed = false;
+    if (!params.has("page")) {
+      params.set("page", "1");
+      changed = true;
+    }
+    if (!params.has("limit")) {
+      params.set("limit", String(DEFAULT_PAGE_LIMIT));
+      changed = true;
+    }
+    if (changed) {
+      pushParams(params, true);
+    }
+  }, [pathname, router, searchParams, pushParams]);
+
   const [items, setItems] = useState<GalleryItemRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState<PaginationMeta>({
+    page: 1,
+    limit: 25,
+    total: 0,
+    totalPages: 1,
+  });
   const [error, setError] = useState("");
 
   // Delete State
@@ -78,19 +115,23 @@ export default function GalleryCrudPage() {
   // Fetch all gallery items
   const fetchItems = useCallback(async () => {
     try {
-      const res = await fetch("/api/gallery?all=true");
+      setLoading(true);
+      const res = await fetch(
+        `/api/gallery?all=true&page=${page}&limit=${limit}`,
+      );
       if (!res.ok) {
         throw new Error("Failed to load gallery items.");
       }
-      const data = await res.json();
-      setItems(data);
+      const result = await res.json();
+      setItems(result.data);
+      setPagination(result.pagination);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to load gallery items.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, limit]);
 
   useEffect(() => {
     fetchItems();
@@ -172,7 +213,7 @@ export default function GalleryCrudPage() {
       toast.success(
         item.isActive
           ? "Gallery item deactivated successfully!"
-          : "Gallery item activated successfully!"
+          : "Gallery item activated successfully!",
       );
       fetchItems();
     } catch (err: any) {
@@ -199,7 +240,7 @@ export default function GalleryCrudPage() {
       toast.success(
         item.showInScroll
           ? "Removed item from marquee scroller!"
-          : "Added item to marquee scroller!"
+          : "Added item to marquee scroller!",
       );
       fetchItems();
     } catch (err: any) {
@@ -244,7 +285,7 @@ export default function GalleryCrudPage() {
       toast.success(
         editingId
           ? "Gallery item updated successfully!"
-          : "Gallery item created successfully!"
+          : "Gallery item created successfully!",
       );
       setModalOpen(false);
       fetchItems();
@@ -265,7 +306,8 @@ export default function GalleryCrudPage() {
             Manage Gallery Items
           </h1>
           <p className="text-xs text-[#5a5e7a] mt-1">
-            Publish pictures to the masonry gallery page, or select specific highlights to stream in the marquee track.
+            Publish pictures to the masonry gallery page, or select specific
+            highlights to stream in the marquee track.
           </p>
         </div>
         <button
@@ -281,7 +323,9 @@ export default function GalleryCrudPage() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20">
           <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium">Loading gallery items...</p>
+          <p className="text-xs text-[#5a5e7a] font-medium">
+            Loading gallery items...
+          </p>
         </div>
       ) : error ? (
         <div className="p-6 border border-[#c4796a]/20 bg-[#faf0ee] rounded-2xl text-center text-[#c4796a]">
@@ -291,9 +335,12 @@ export default function GalleryCrudPage() {
       ) : items.length === 0 ? (
         <div className="border border-dashed border-[#e8dcc4] bg-white/40 p-12 rounded-[2rem] text-center">
           <Camera className="w-12 h-12 text-[#9396ae] mx-auto mb-4" />
-          <h3 className="text-md font-bold text-[#1c1f4a] font-display">No gallery items</h3>
+          <h3 className="text-md font-bold text-[#1c1f4a] font-display">
+            No gallery items
+          </h3>
           <p className="text-xs text-[#5a5e7a] mt-1 max-w-sm mx-auto">
-            You don't have any images in your gallery list. Upload items to share transformation moments.
+            You don't have any images in your gallery list. Upload items to
+            share transformation moments.
           </p>
           <button
             onClick={handleOpenCreate}
@@ -304,15 +351,28 @@ export default function GalleryCrudPage() {
         </div>
       ) : (
         <div className="p-1">
+          <TablePaginationFooter pagination={pagination} variant="top" />
           <Table>
             <TableHeader className="bg-[#1c1f4a]/5">
               <TableRow className="border-b border-[#e8dcc4]">
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-24">Thumbnail</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-28">Status</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-36">Show In Scroll</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-24">Sort Order</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">Caption / Description</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right w-32">Actions</TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-24">
+                  Thumbnail
+                </TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-28">
+                  Status
+                </TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-36">
+                  Show In Scroll
+                </TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-24">
+                  Sort Order
+                </TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                  Caption / Description
+                </TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right w-32">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -363,7 +423,11 @@ export default function GalleryCrudPage() {
                     {item.sortOrder}
                   </TableCell>
                   <TableCell className="py-3 px-4 text-[#5a5e7a] text-xs font-semibold">
-                    {item.caption || <span className="text-[#9396ae] italic">No description</span>}
+                    {item.caption || (
+                      <span className="text-[#9396ae] italic">
+                        No description
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell className="py-3 px-4 text-right">
                     <div className="inline-flex items-center gap-2">
@@ -387,6 +451,7 @@ export default function GalleryCrudPage() {
               ))}
             </TableBody>
           </Table>
+          <TablePaginationFooter pagination={pagination} variant="bottom" />
         </div>
       )}
 
@@ -408,7 +473,10 @@ export default function GalleryCrudPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="caption" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                <Label
+                  htmlFor="caption"
+                  className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide"
+                >
                   Caption / Alt description
                 </Label>
                 <Input
@@ -416,14 +484,19 @@ export default function GalleryCrudPage() {
                   type="text"
                   placeholder="e.g. Satsang Meditation Hyderabad"
                   value={formData.caption}
-                  onChange={(e) => setFormData({ ...formData, caption: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, caption: e.target.value })
+                  }
                   disabled={formLoading}
                   className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="sortOrder" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                <Label
+                  htmlFor="sortOrder"
+                  className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide"
+                >
                   Display Order Weight
                 </Label>
                 <Input
@@ -431,7 +504,12 @@ export default function GalleryCrudPage() {
                   type="number"
                   placeholder="e.g. 10"
                   value={formData.sortOrder}
-                  onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      sortOrder: parseInt(e.target.value) || 0,
+                    })
+                  }
                   disabled={formLoading}
                   className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
                 />
@@ -457,10 +535,15 @@ export default function GalleryCrudPage() {
                 />
                 <Upload className="w-5 h-5 text-[#9396ae] mb-1.5" />
                 <span className="text-[11px] font-bold text-[#1c1f4a] text-center max-w-[280px] truncate block">
-                  {selectedFile ? selectedFile.name : editingId ? "Click to replace existing image (optional)" : "Click to select local JPEG, PNG, or WEBP"}
+                  {selectedFile
+                    ? selectedFile.name
+                    : editingId
+                      ? "Click to replace existing image (optional)"
+                      : "Click to select local JPEG, PNG, or WEBP"}
                 </span>
                 <span className="text-[9px] text-[#5a5e7a] mt-0.5">
-                  Max Size: 5MB. Target size will compress to &lt; 150KB automatically.
+                  Max Size: 5MB. Target size will compress to &lt; 150KB
+                  automatically.
                 </span>
               </div>
             </div>
@@ -471,11 +554,16 @@ export default function GalleryCrudPage() {
                   type="checkbox"
                   id="showInScroll"
                   checked={formData.showInScroll}
-                  onChange={(e) => setFormData({ ...formData, showInScroll: e.target.checked })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, showInScroll: e.target.checked })
+                  }
                   disabled={formLoading}
                   className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16] focus:ring-[#b86a16] cursor-pointer"
                 />
-                <Label htmlFor="showInScroll" className="text-xs font-semibold text-[#1c1f4a] cursor-pointer selection:bg-transparent">
+                <Label
+                  htmlFor="showInScroll"
+                  className="text-xs font-semibold text-[#1c1f4a] cursor-pointer selection:bg-transparent"
+                >
                   Show this image in the homepage scroller track
                 </Label>
               </div>
@@ -485,11 +573,16 @@ export default function GalleryCrudPage() {
                   type="checkbox"
                   id="isActive"
                   checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isActive: e.target.checked })
+                  }
                   disabled={formLoading}
                   className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16] focus:ring-[#b86a16] cursor-pointer"
                 />
-                <Label htmlFor="isActive" className="text-xs font-semibold text-[#1c1f4a] cursor-pointer selection:bg-transparent">
+                <Label
+                  htmlFor="isActive"
+                  className="text-xs font-semibold text-[#1c1f4a] cursor-pointer selection:bg-transparent"
+                >
                   Make this gallery image active on the website
                 </Label>
               </div>
@@ -531,7 +624,8 @@ export default function GalleryCrudPage() {
               Delete Gallery Item
             </AlertDialogTitle>
             <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              Are you sure you want to delete this gallery item? This will delete the image from Cloudinary permanently.
+              Are you sure you want to delete this gallery item? This will
+              delete the image from Cloudinary permanently.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
@@ -548,5 +642,22 @@ export default function GalleryCrudPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+export default function GalleryCrudPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
+          <p className="text-xs text-[#5a5e7a] font-medium">
+            Loading gallery crud dashboard...
+          </p>
+        </div>
+      }
+    >
+      <GalleryCrudPageContent />
+    </Suspense>
   );
 }

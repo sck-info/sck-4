@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { gallery } from "@/db/schema/gallery";
 import { auth } from "@/lib/auth";
-import { eq, asc, and } from "drizzle-orm";
+import { eq, asc, and, sql } from "drizzle-orm";
 import { uploadImages } from "@/lib/cloudinaryUpload";
+import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
 export async function GET(request: Request) {
   try {
@@ -16,8 +17,25 @@ export async function GET(request: Request) {
       if (!session?.user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-      const list = await db.select().from(gallery).orderBy(asc(gallery.sortOrder));
-      return NextResponse.json(list);
+
+      const { page, limit, offset } = parsePaginationParams(searchParams);
+
+      const countResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(gallery);
+      const total = Number(countResult[0]?.count || 0);
+
+      const list = await db
+        .select()
+        .from(gallery)
+        .orderBy(asc(gallery.sortOrder))
+        .limit(limit)
+        .offset(offset);
+
+      return NextResponse.json({
+        data: list,
+        pagination: createPaginationMeta({ page, limit, total }),
+      });
     }
 
     if (fetchScroll) {
@@ -38,7 +56,10 @@ export async function GET(request: Request) {
     return NextResponse.json(list);
   } catch (err: any) {
     console.error("GET /api/gallery error:", err);
-    return NextResponse.json({ error: err.message || "Failed to fetch gallery items" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Failed to fetch gallery items" },
+      { status: 500 },
+    );
   }
 }
 
@@ -57,17 +78,24 @@ export async function POST(request: Request) {
     const isActiveStr = formData.get("isActive") as string | null;
 
     if (!file) {
-      return NextResponse.json({ error: "Image file is required." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Image file is required." },
+        { status: 400 },
+      );
     }
 
     // Prefix public ID with timestamp to avoid duplicates
     const filenamePrefix = `${Date.now()}_`;
     const urls = await uploadImages([file], "gallery", {
-      publicId: (f) => `${filenamePrefix}${f.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9-_]/g, "_")}`,
+      publicId: (f) =>
+        `${filenamePrefix}${f.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9-_]/g, "_")}`,
     });
 
     if (urls.length === 0) {
-      return NextResponse.json({ error: "Failed to upload image to Cloudinary." }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to upload image to Cloudinary." },
+        { status: 500 },
+      );
     }
 
     const showInScroll = showInScrollStr !== "false";
@@ -88,6 +116,9 @@ export async function POST(request: Request) {
     return NextResponse.json(newItem, { status: 201 });
   } catch (err: any) {
     console.error("POST /api/gallery error:", err);
-    return NextResponse.json({ error: err.message || "Failed to create gallery item" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Failed to create gallery item" },
+      { status: 500 },
+    );
   }
 }

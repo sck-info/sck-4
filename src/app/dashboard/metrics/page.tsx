@@ -1,7 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useRealtime } from "@/hooks/useRealtime";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
+import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
 import {
   TrendingUp,
   Plus,
@@ -50,9 +53,43 @@ type MetricRow = {
   updatedAt: string | null;
 };
 
-export default function MetricsCrudPage() {
+function MetricsCrudPageContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const page = searchParams.get("page") || "1";
+  const limit = searchParams.get("limit") || "25";
+
+  const pushParams = useCallback((params: URLSearchParams, replace = false) => {
+    const url = `${pathname}?${params.toString()}`;
+    if (replace) router.replace(url);
+    else router.push(url);
+  }, [pathname, router]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    let changed = false;
+    if (!params.has("page")) {
+      params.set("page", "1");
+      changed = true;
+    }
+    if (!params.has("limit")) {
+      params.set("limit", String(DEFAULT_PAGE_LIMIT));
+      changed = true;
+    }
+    if (changed) {
+      pushParams(params, true);
+    }
+  }, [pathname, router, searchParams, pushParams]);
+
   const [metricsList, setMetricsList] = useState<MetricRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState<PaginationMeta>({
+    page: 1,
+    limit: 25,
+    total: 0,
+    totalPages: 1,
+  });
   const [error, setError] = useState("");
 
   // Delete State
@@ -74,19 +111,23 @@ export default function MetricsCrudPage() {
   // Fetch all metrics
   const fetchMetrics = useCallback(async () => {
     try {
-      const res = await fetch("/api/metrics?all=true");
+      setLoading(true);
+      const res = await fetch(
+        `/api/metrics?all=true&page=${page}&limit=${limit}`,
+      );
       if (!res.ok) {
         throw new Error("Failed to load metrics data.");
       }
-      const data = await res.json();
-      setMetricsList(data);
+      const result = await res.json();
+      setMetricsList(result.data);
+      setPagination(result.pagination);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to load metrics.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, limit]);
 
   useEffect(() => {
     fetchMetrics();
@@ -166,7 +207,7 @@ export default function MetricsCrudPage() {
       toast.success(
         metric.isActive
           ? "Metric deactivated successfully!"
-          : "Metric activated successfully!"
+          : "Metric activated successfully!",
       );
       fetchMetrics();
     } catch (err: any) {
@@ -203,7 +244,7 @@ export default function MetricsCrudPage() {
       toast.success(
         editingId
           ? "Metric updated successfully!"
-          : "Metric created successfully!"
+          : "Metric created successfully!",
       );
       setModalOpen(false);
       fetchMetrics();
@@ -224,7 +265,8 @@ export default function MetricsCrudPage() {
             Manage Our Impact Metrics
           </h1>
           <p className="text-xs text-[#5a5e7a] mt-1">
-            Display live stats (e.g. Experience years, Sessions done) on the homepage.
+            Display live stats (e.g. Experience years, Sessions done) on the
+            homepage.
           </p>
         </div>
         <button
@@ -240,7 +282,9 @@ export default function MetricsCrudPage() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20">
           <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium">Loading metrics...</p>
+          <p className="text-xs text-[#5a5e7a] font-medium">
+            Loading metrics...
+          </p>
         </div>
       ) : error ? (
         <div className="p-6 border border-[#c4796a]/20 bg-[#faf0ee] rounded-2xl text-center text-[#c4796a]">
@@ -250,9 +294,12 @@ export default function MetricsCrudPage() {
       ) : metricsList.length === 0 ? (
         <div className="border border-dashed border-[#e8dcc4] bg-white/40 p-12 rounded-[2rem] text-center">
           <TrendingUp className="w-12 h-12 text-[#9396ae] mx-auto mb-4" />
-          <h3 className="text-md font-bold text-[#1c1f4a] font-display">No metrics saved</h3>
+          <h3 className="text-md font-bold text-[#1c1f4a] font-display">
+            No metrics saved
+          </h3>
           <p className="text-xs text-[#5a5e7a] mt-1 max-w-sm mx-auto">
-            You don't have any impact metrics created yet. Add a metric to display it on the website.
+            You don't have any impact metrics created yet. Add a metric to
+            display it on the website.
           </p>
           <button
             onClick={handleOpenCreate}
@@ -263,14 +310,25 @@ export default function MetricsCrudPage() {
         </div>
       ) : (
         <div className="p-1">
+          <TablePaginationFooter pagination={pagination} variant="top" />
           <Table>
             <TableHeader className="bg-[#1c1f4a]/5">
               <TableRow className="border-b border-[#e8dcc4]">
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-32">Status</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-32">Sort Order</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-48">Metric Value</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">Label Description</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right w-32">Actions</TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-32">
+                  Status
+                </TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-32">
+                  Sort Order
+                </TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-48">
+                  Metric Value
+                </TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                  Label Description
+                </TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right w-32">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -325,6 +383,7 @@ export default function MetricsCrudPage() {
               ))}
             </TableBody>
           </Table>
+          <TablePaginationFooter pagination={pagination} variant="bottom" />
         </div>
       )}
 
@@ -346,7 +405,10 @@ export default function MetricsCrudPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="num" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                <Label
+                  htmlFor="num"
+                  className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide"
+                >
                   Metric Figure / Value
                 </Label>
                 <Input
@@ -354,14 +416,19 @@ export default function MetricsCrudPage() {
                   type="text"
                   placeholder="13+ or 1.5L+"
                   value={formData.num}
-                  onChange={(e) => setFormData({ ...formData, num: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, num: e.target.value })
+                  }
                   disabled={formLoading}
                   className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs font-semibold text-[#1c1f4a]"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="sortOrder" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                <Label
+                  htmlFor="sortOrder"
+                  className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide"
+                >
                   Display Order Weight
                 </Label>
                 <Input
@@ -369,7 +436,12 @@ export default function MetricsCrudPage() {
                   type="number"
                   placeholder="0, 10, 20"
                   value={formData.sortOrder}
-                  onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      sortOrder: parseInt(e.target.value) || 0,
+                    })
+                  }
                   disabled={formLoading}
                   className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
                 />
@@ -377,7 +449,10 @@ export default function MetricsCrudPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="label" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+              <Label
+                htmlFor="label"
+                className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide"
+              >
                 Label Description
               </Label>
               <Input
@@ -385,7 +460,9 @@ export default function MetricsCrudPage() {
                 type="text"
                 placeholder="Years Experience"
                 value={formData.label}
-                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, label: e.target.value })
+                }
                 disabled={formLoading}
                 className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
               />
@@ -396,11 +473,16 @@ export default function MetricsCrudPage() {
                 type="checkbox"
                 id="isActive"
                 checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                onChange={(e) =>
+                  setFormData({ ...formData, isActive: e.target.checked })
+                }
                 disabled={formLoading}
                 className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16] focus:ring-[#b86a16] cursor-pointer"
               />
-              <Label htmlFor="isActive" className="text-xs font-semibold text-[#1c1f4a] cursor-pointer selection:bg-transparent">
+              <Label
+                htmlFor="isActive"
+                className="text-xs font-semibold text-[#1c1f4a] cursor-pointer selection:bg-transparent"
+              >
                 Activate this metric on the website
               </Label>
             </div>
@@ -441,7 +523,8 @@ export default function MetricsCrudPage() {
               Delete Metric
             </AlertDialogTitle>
             <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              Are you sure you want to delete this impact metric? This action cannot be undone.
+              Are you sure you want to delete this impact metric? This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
@@ -458,5 +541,22 @@ export default function MetricsCrudPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+export default function MetricsCrudPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
+          <p className="text-xs text-[#5a5e7a] font-medium">
+            Loading metrics dashboard...
+          </p>
+        </div>
+      }
+    >
+      <MetricsCrudPageContent />
+    </Suspense>
   );
 }

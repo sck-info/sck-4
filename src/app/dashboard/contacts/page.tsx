@@ -1,7 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useRealtime } from "@/hooks/useRealtime";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
+import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
 import {
   Mail,
   Phone,
@@ -59,9 +62,43 @@ type ContactRow = {
   updatedAt: string;
 };
 
-export default function ContactsCrudPage() {
+function ContactsCrudPageContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const page = searchParams.get("page") || "1";
+  const limit = searchParams.get("limit") || "25";
+
+  const pushParams = useCallback((params: URLSearchParams, replace = false) => {
+    const url = `${pathname}?${params.toString()}`;
+    if (replace) router.replace(url);
+    else router.push(url);
+  }, [pathname, router]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    let changed = false;
+    if (!params.has("page")) {
+      params.set("page", "1");
+      changed = true;
+    }
+    if (!params.has("limit")) {
+      params.set("limit", String(DEFAULT_PAGE_LIMIT));
+      changed = true;
+    }
+    if (changed) {
+      pushParams(params, true);
+    }
+  }, [pathname, router, searchParams, pushParams]);
+
   const [contacts, setContacts] = useState<ContactRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState<PaginationMeta>({
+    page: 1,
+    limit: 25,
+    total: 0,
+    totalPages: 1,
+  });
   const [error, setError] = useState("");
 
   // Delete State
@@ -86,16 +123,18 @@ export default function ContactsCrudPage() {
   const fetchContacts = useCallback(async () => {
     try {
       setError("");
-      const res = await fetch("/api/contacts");
+      setLoading(true);
+      const res = await fetch(`/api/contacts?page=${page}&limit=${limit}`);
       if (!res.ok) throw new Error("Failed to load contacts");
-      const data = await res.json();
-      setContacts(data);
+      const result = await res.json();
+      setContacts(result.data);
+      setPagination(result.pagination);
     } catch (err: any) {
       setError(err.message || "An error occurred while fetching contacts.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, limit]);
 
   useEffect(() => {
     fetchContacts();
@@ -314,6 +353,7 @@ export default function ContactsCrudPage() {
         </div>
       ) : (
         <div className="p-1">
+          <TablePaginationFooter pagination={pagination} variant="top" />
           <Table>
             <TableHeader className="bg-[#1c1f4a]/5">
               <TableRow className="border-b border-[#e8dcc4]">
@@ -460,6 +500,7 @@ export default function ContactsCrudPage() {
               ))}
             </TableBody>
           </Table>
+          <TablePaginationFooter pagination={pagination} variant="bottom" />
         </div>
       )}
 
@@ -680,5 +721,22 @@ export default function ContactsCrudPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+export default function ContactsCrudPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
+          <p className="text-xs text-[#5a5e7a] font-medium">
+            Loading contacts dashboard...
+          </p>
+        </div>
+      }
+    >
+      <ContactsCrudPageContent />
+    </Suspense>
   );
 }

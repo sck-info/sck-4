@@ -35,16 +35,24 @@ export default async function DashboardPage() {
   let activeContactEmail = "None";
 
   try {
-    const contactCount = await db.select({ count: sql<number>`count(*)` }).from(contacts);
+    const contactCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(contacts);
     totalContacts = Number(contactCount[0]?.count || 0);
 
-    const aboutCount = await db.select({ count: sql<number>`count(*)` }).from(aboutSlides);
+    const aboutCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(aboutSlides);
     totalAboutSlides = Number(aboutCount[0]?.count || 0);
 
-    const metricsCount = await db.select({ count: sql<number>`count(*)` }).from(metrics);
+    const metricsCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(metrics);
     totalMetrics = Number(metricsCount[0]?.count || 0);
 
-    const galleryCount = await db.select({ count: sql<number>`count(*)` }).from(gallery);
+    const galleryCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(gallery);
     totalGallery = Number(galleryCount[0]?.count || 0);
 
     const activeList = await db
@@ -99,7 +107,8 @@ export default async function DashboardPage() {
           Overview
         </h1>
         <p className="text-xs text-[#5a5e7a] mt-1">
-          Welcome, {session?.user?.name || "Administrator"}. Here is the overview of your system.
+          Welcome, {session?.user?.name || "Administrator"}. Here is the
+          overview of your system.
         </p>
       </div>
 
@@ -108,18 +117,26 @@ export default async function DashboardPage() {
         {cards.map((card, idx) => {
           const Icon = card.icon;
           return (
-            <Card key={idx} className="flex flex-col justify-between py-4 border-[#e8dcc4] bg-white rounded-xl shadow-xs">
+            <Card
+              key={idx}
+              className="flex flex-col justify-between py-4 border-[#e8dcc4] bg-white rounded-xl shadow-xs"
+            >
               <CardContent className="p-0 px-4 flex flex-col justify-between h-full min-h-[90px]">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-bold text-[#9396ae] uppercase tracking-wider truncate">
                       {card.title}
                     </p>
-                    <h3 className="text-sm font-bold text-[#1c1f4a] mt-1 truncate" title={card.value.toString()}>
+                    <h3
+                      className="text-sm font-bold text-[#1c1f4a] mt-1 truncate"
+                      title={card.value.toString()}
+                    >
                       {card.value}
                     </h3>
                   </div>
-                  <div className={`p-1.5 rounded-lg border shrink-0 ${card.color}`}>
+                  <div
+                    className={`p-1.5 rounded-lg border shrink-0 ${card.color}`}
+                  >
                     <Icon className="w-4 h-4" />
                   </div>
                 </div>
@@ -141,7 +158,9 @@ export default async function DashboardPage() {
               Manage Public Gallery
             </CardTitle>
             <CardDescription className="text-[11px] text-[#5a5e7a] mt-0.5 leading-relaxed">
-              Upload picture files directly to your Cloudinary storage folder, add captions, and choose highlights to feature in the marquee scroll.
+              Upload picture files directly to your Cloudinary storage folder,
+              add captions, and choose highlights to feature in the marquee
+              scroll.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-4 pb-3 pt-1">
@@ -162,7 +181,8 @@ export default async function DashboardPage() {
               Manage About Slideshow
             </CardTitle>
             <CardDescription className="text-[11px] text-[#5a5e7a] mt-0.5 leading-relaxed">
-              Configure and upload slideshow images, tags, and display weight metrics in the landing page About carousel.
+              Configure and upload slideshow images, tags, and display weight
+              metrics in the landing page About carousel.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-4 pb-3 pt-1">
@@ -183,7 +203,8 @@ export default async function DashboardPage() {
               Manage Impact Metrics
             </CardTitle>
             <CardDescription className="text-[11px] text-[#5a5e7a] mt-0.5 leading-relaxed">
-              Update statistics, numbers, and impact labels displayed in the dynamic counts bar.
+              Update statistics, numbers, and impact labels displayed in the
+              dynamic counts bar.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-4 pb-3 pt-1">
@@ -204,7 +225,8 @@ export default async function DashboardPage() {
               Manage Contact Details
             </CardTitle>
             <CardDescription className="text-[11px] text-[#5a5e7a] mt-0.5 leading-relaxed">
-              Create, read, update, or delete dynamic contact details (email, phone, location, and social links) displayed publicly.
+              Create, read, update, or delete dynamic contact details (email,
+              phone, location, and social links) displayed publicly.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-4 pb-3 pt-1">
@@ -225,7 +247,8 @@ export default async function DashboardPage() {
               View Public Website
             </CardTitle>
             <CardDescription className="text-[11px] text-[#5a5e7a] mt-0.5 leading-relaxed">
-              Open the main public facing portfolio. All dynamic database changes reflect instantly in real-time.
+              Open the main public facing portfolio. All dynamic database
+              changes reflect instantly in real-time.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-4 pb-3 pt-1">

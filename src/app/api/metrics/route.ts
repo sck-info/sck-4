@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { metrics } from "@/db/schema/metrics";
 import { auth } from "@/lib/auth";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, sql } from "drizzle-orm";
+import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
 export async function GET(request: Request) {
   try {
@@ -14,8 +15,25 @@ export async function GET(request: Request) {
       if (!session?.user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-      const list = await db.select().from(metrics).orderBy(asc(metrics.sortOrder));
-      return NextResponse.json(list);
+
+      const { page, limit, offset } = parsePaginationParams(searchParams);
+
+      const countResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(metrics);
+      const total = Number(countResult[0]?.count || 0);
+
+      const list = await db
+        .select()
+        .from(metrics)
+        .orderBy(asc(metrics.sortOrder))
+        .limit(limit)
+        .offset(offset);
+
+      return NextResponse.json({
+        data: list,
+        pagination: createPaginationMeta({ page, limit, total }),
+      });
     }
 
     const list = await db
@@ -27,7 +45,10 @@ export async function GET(request: Request) {
     return NextResponse.json(list);
   } catch (err: any) {
     console.error("GET /api/metrics error:", err);
-    return NextResponse.json({ error: err.message || "Failed to fetch metrics" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Failed to fetch metrics" },
+      { status: 500 },
+    );
   }
 }
 
@@ -42,7 +63,10 @@ export async function POST(request: Request) {
     const { num, label, sortOrder, isActive } = body;
 
     if (!num || !label) {
-      return NextResponse.json({ error: "Metric value and label description are required." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Metric value and label description are required." },
+        { status: 400 },
+      );
     }
 
     const [newMetric] = await db
@@ -50,7 +74,8 @@ export async function POST(request: Request) {
       .values({
         num,
         label,
-        sortOrder: typeof sortOrder === "number" ? sortOrder : parseInt(sortOrder) || 0,
+        sortOrder:
+          typeof sortOrder === "number" ? sortOrder : parseInt(sortOrder) || 0,
         isActive: isActive !== false,
       })
       .returning();
@@ -58,6 +83,9 @@ export async function POST(request: Request) {
     return NextResponse.json(newMetric, { status: 201 });
   } catch (err: any) {
     console.error("POST /api/metrics error:", err);
-    return NextResponse.json({ error: err.message || "Failed to create metric" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Failed to create metric" },
+      { status: 500 },
+    );
   }
 }

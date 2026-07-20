@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { contacts } from "@/db/schema/contacts";
 import { auth } from "@/lib/auth";
-import { desc } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import { z } from "zod";
+import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
 const contactSchema = z.object({
   email: z.string().email().optional().or(z.literal("")),
@@ -15,13 +16,33 @@ const contactSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const data = await db.select().from(contacts).orderBy(desc(contacts.createdAt));
-    return NextResponse.json(data);
+    const { searchParams } = new URL(req.url);
+    const { page, limit, offset } = parsePaginationParams(searchParams);
+
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(contacts);
+    const total = Number(countResult[0]?.count || 0);
+
+    const data = await db
+      .select()
+      .from(contacts)
+      .orderBy(desc(contacts.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return NextResponse.json({
+      data,
+      pagination: createPaginationMeta({ page, limit, total }),
+    });
   } catch (error) {
     console.error("GET contacts error:", error);
-    return NextResponse.json({ error: "Failed to fetch contacts" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch contacts" },
+      { status: 500 },
+    );
   }
 }
 
@@ -35,7 +56,10 @@ export async function POST(req: Request) {
     const body = await req.json();
     const parsed = contactSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid data", details: parsed.error.format() }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid data", details: parsed.error.format() },
+        { status: 400 },
+      );
     }
 
     // If setting active, deactivate others
@@ -43,19 +67,25 @@ export async function POST(req: Request) {
       await db.update(contacts).set({ isActive: false });
     }
 
-    const inserted = await db.insert(contacts).values({
-      email: parsed.data.email || null,
-      phone: parsed.data.phone || null,
-      location: parsed.data.location || null,
-      instagramLink: parsed.data.instagramLink || null,
-      linkedinLink: parsed.data.linkedinLink || null,
-      youtubeLink: parsed.data.youtubeLink || null,
-      isActive: parsed.data.isActive,
-    }).returning();
+    const inserted = await db
+      .insert(contacts)
+      .values({
+        email: parsed.data.email || null,
+        phone: parsed.data.phone || null,
+        location: parsed.data.location || null,
+        instagramLink: parsed.data.instagramLink || null,
+        linkedinLink: parsed.data.linkedinLink || null,
+        youtubeLink: parsed.data.youtubeLink || null,
+        isActive: parsed.data.isActive,
+      })
+      .returning();
 
     return NextResponse.json(inserted[0], { status: 201 });
   } catch (error) {
     console.error("POST contacts error:", error);
-    return NextResponse.json({ error: "Failed to create contact" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create contact" },
+      { status: 500 },
+    );
   }
 }

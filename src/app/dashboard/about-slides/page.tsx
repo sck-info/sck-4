@@ -1,7 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useRealtime } from "@/hooks/useRealtime";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
+import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
 import {
   Images,
   Plus,
@@ -53,9 +56,43 @@ type SlideRow = {
   updatedAt: string | null;
 };
 
-export default function AboutSlidesPage() {
+function AboutSlidesPageContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const page = searchParams.get("page") || "1";
+  const limit = searchParams.get("limit") || "25";
+
+  const pushParams = useCallback((params: URLSearchParams, replace = false) => {
+    const url = `${pathname}?${params.toString()}`;
+    if (replace) router.replace(url);
+    else router.push(url);
+  }, [pathname, router]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    let changed = false;
+    if (!params.has("page")) {
+      params.set("page", "1");
+      changed = true;
+    }
+    if (!params.has("limit")) {
+      params.set("limit", String(DEFAULT_PAGE_LIMIT));
+      changed = true;
+    }
+    if (changed) {
+      pushParams(params, true);
+    }
+  }, [pathname, router, searchParams, pushParams]);
+
   const [slides, setSlides] = useState<SlideRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState<PaginationMeta>({
+    page: 1,
+    limit: 25,
+    total: 0,
+    totalPages: 1,
+  });
   const [error, setError] = useState("");
 
   // Delete State
@@ -78,19 +115,23 @@ export default function AboutSlidesPage() {
   // Fetch all slides
   const fetchSlides = useCallback(async () => {
     try {
-      const res = await fetch("/api/about-slides?all=true");
+      setLoading(true);
+      const res = await fetch(
+        `/api/about-slides?all=true&page=${page}&limit=${limit}`,
+      );
       if (!res.ok) {
         throw new Error("Failed to load slides.");
       }
-      const data = await res.json();
-      setSlides(data);
+      const result = await res.json();
+      setSlides(result.data);
+      setPagination(result.pagination);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to load slideshow slides.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, limit]);
 
   useEffect(() => {
     fetchSlides();
@@ -98,7 +139,9 @@ export default function AboutSlidesPage() {
 
   // Realtime hook to automatically update on db mutations
   useRealtime(["about_slides"], () => {
-    console.log("[Realtime Trigger] About slides updated in DB, refetching list...");
+    console.log(
+      "[Realtime Trigger] About slides updated in DB, refetching list...",
+    );
     fetchSlides();
   });
 
@@ -172,7 +215,7 @@ export default function AboutSlidesPage() {
       toast.success(
         slide.isActive
           ? "Slide deactivated successfully!"
-          : "Slide activated successfully!"
+          : "Slide activated successfully!",
       );
       fetchSlides();
     } catch (err: any) {
@@ -198,7 +241,9 @@ export default function AboutSlidesPage() {
     }
 
     try {
-      const url = editingId ? `/api/about-slides/${editingId}` : "/api/about-slides";
+      const url = editingId
+        ? `/api/about-slides/${editingId}`
+        : "/api/about-slides";
       const method = editingId ? "PUT" : "POST";
 
       const bodyData = new FormData();
@@ -223,7 +268,7 @@ export default function AboutSlidesPage() {
       toast.success(
         editingId
           ? "Slide updated successfully!"
-          : "Slide created successfully!"
+          : "Slide created successfully!",
       );
       setModalOpen(false);
       fetchSlides();
@@ -244,7 +289,8 @@ export default function AboutSlidesPage() {
             Manage About Slideshow
           </h1>
           <p className="text-xs text-[#5a5e7a] mt-1">
-            Configure images, tags, and display ordering in the About section slideshow.
+            Configure images, tags, and display ordering in the About section
+            slideshow.
           </p>
         </div>
         <button
@@ -260,7 +306,9 @@ export default function AboutSlidesPage() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20">
           <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium">Loading slides...</p>
+          <p className="text-xs text-[#5a5e7a] font-medium">
+            Loading slides...
+          </p>
         </div>
       ) : error ? (
         <div className="p-6 border border-[#c4796a]/20 bg-[#faf0ee] rounded-2xl text-center text-[#c4796a]">
@@ -270,9 +318,12 @@ export default function AboutSlidesPage() {
       ) : slides.length === 0 ? (
         <div className="border border-dashed border-[#e8dcc4] bg-white/40 p-12 rounded-[2rem] text-center">
           <Images className="w-12 h-12 text-[#9396ae] mx-auto mb-4" />
-          <h3 className="text-md font-bold text-[#1c1f4a] font-display">No slides created</h3>
+          <h3 className="text-md font-bold text-[#1c1f4a] font-display">
+            No slides created
+          </h3>
           <p className="text-xs text-[#5a5e7a] mt-1 max-w-sm mx-auto">
-            You don't have any slideshow images configured. The landing page will fall back to displaying the default main photo.
+            You don't have any slideshow images configured. The landing page
+            will fall back to displaying the default main photo.
           </p>
           <button
             onClick={handleOpenCreate}
@@ -283,14 +334,25 @@ export default function AboutSlidesPage() {
         </div>
       ) : (
         <div className="p-1">
+          <TablePaginationFooter pagination={pagination} variant="top" />
           <Table>
             <TableHeader className="bg-[#1c1f4a]/5">
               <TableRow className="border-b border-[#e8dcc4]">
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-24">Image</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-32">Status</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-32">Sort Order</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">Slide Tag</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right w-32">Actions</TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-24">
+                  Image
+                </TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-32">
+                  Status
+                </TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-32">
+                  Sort Order
+                </TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                  Slide Tag
+                </TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right w-32">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -353,6 +415,7 @@ export default function AboutSlidesPage() {
               ))}
             </TableBody>
           </Table>
+          <TablePaginationFooter pagination={pagination} variant="bottom" />
         </div>
       )}
 
@@ -374,7 +437,10 @@ export default function AboutSlidesPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="tag" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                <Label
+                  htmlFor="tag"
+                  className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide"
+                >
                   Slide Tag / Caption
                 </Label>
                 <Input
@@ -382,14 +448,19 @@ export default function AboutSlidesPage() {
                   type="text"
                   placeholder="e.g. MUSIC THERAPIST"
                   value={formData.tag}
-                  onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tag: e.target.value })
+                  }
                   disabled={formLoading}
                   className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs uppercase"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="sortOrder" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                <Label
+                  htmlFor="sortOrder"
+                  className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide"
+                >
                   Display Order Weight
                 </Label>
                 <Input
@@ -397,7 +468,12 @@ export default function AboutSlidesPage() {
                   type="number"
                   placeholder="e.g. 10"
                   value={formData.sortOrder}
-                  onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      sortOrder: parseInt(e.target.value) || 0,
+                    })
+                  }
                   disabled={formLoading}
                   className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
                 />
@@ -405,7 +481,10 @@ export default function AboutSlidesPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="alt" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+              <Label
+                htmlFor="alt"
+                className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide"
+              >
                 Image Alt Description (Optional)
               </Label>
               <Input
@@ -413,7 +492,9 @@ export default function AboutSlidesPage() {
                 type="text"
                 placeholder="e.g. Sharath Kancherla playing sitar"
                 value={formData.alt}
-                onChange={(e) => setFormData({ ...formData, alt: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, alt: e.target.value })
+                }
                 disabled={formLoading}
                 className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
               />
@@ -438,10 +519,15 @@ export default function AboutSlidesPage() {
                 />
                 <Upload className="w-5 h-5 text-[#9396ae] mb-1.5" />
                 <span className="text-[11px] font-bold text-[#1c1f4a] text-center max-w-[280px] truncate block">
-                  {selectedFile ? selectedFile.name : editingId ? "Click to replace existing image (optional)" : "Click to select local JPEG, PNG, or WEBP"}
+                  {selectedFile
+                    ? selectedFile.name
+                    : editingId
+                      ? "Click to replace existing image (optional)"
+                      : "Click to select local JPEG, PNG, or WEBP"}
                 </span>
                 <span className="text-[9px] text-[#5a5e7a] mt-0.5">
-                  Max Size: 5MB. Target size will compress to &lt; 150KB automatically.
+                  Max Size: 5MB. Target size will compress to &lt; 150KB
+                  automatically.
                 </span>
               </div>
             </div>
@@ -451,11 +537,16 @@ export default function AboutSlidesPage() {
                 type="checkbox"
                 id="isActive"
                 checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                onChange={(e) =>
+                  setFormData({ ...formData, isActive: e.target.checked })
+                }
                 disabled={formLoading}
                 className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16] focus:ring-[#b86a16] cursor-pointer"
               />
-              <Label htmlFor="isActive" className="text-xs font-semibold text-[#1c1f4a] cursor-pointer selection:bg-transparent">
+              <Label
+                htmlFor="isActive"
+                className="text-xs font-semibold text-[#1c1f4a] cursor-pointer selection:bg-transparent"
+              >
                 Activate this slide in the rotation slideshow
               </Label>
             </div>
@@ -496,7 +587,8 @@ export default function AboutSlidesPage() {
               Delete Slide
             </AlertDialogTitle>
             <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              Are you sure you want to delete this slideshow slide? This will delete the image from Cloudinary.
+              Are you sure you want to delete this slideshow slide? This will
+              delete the image from Cloudinary.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
@@ -513,5 +605,22 @@ export default function AboutSlidesPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+export default function AboutSlidesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
+          <p className="text-xs text-[#5a5e7a] font-medium">
+            Loading about slides dashboard...
+          </p>
+        </div>
+      }
+    >
+      <AboutSlidesPageContent />
+    </Suspense>
   );
 }

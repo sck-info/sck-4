@@ -39,11 +39,34 @@ export default function Gallery() {
     fetchScrollPhotos();
   });
 
-  // Append a special Link card at the end of the image stream
-  const listItems = [
-    ...dbPhotos.map((p, idx) => ({ type: "photo" as const, src: p.src, id: `photo-${idx}` })),
-    { type: "link" as const, id: "gallery-link" }
-  ];
+  // Build items stream with a "View Gallery" card inserted every 3 photos
+  const listItems: (
+    | { type: "photo"; src: string; id: string }
+    | { type: "link"; id: string }
+  )[] = [];
+
+  dbPhotos.forEach((photo, index) => {
+    listItems.push({
+      type: "photo" as const,
+      src: photo.src,
+      id: `photo-${index}`,
+    });
+
+    if ((index + 1) % 3 === 0) {
+      listItems.push({
+        type: "link" as const,
+        id: `gallery-link-${index}`,
+      });
+    }
+  });
+
+  // Make sure we have a link card at the end of the stream if it doesn't end with a multiple of 3
+  if (listItems.length > 0 && listItems[listItems.length - 1].type !== "link") {
+    listItems.push({
+      type: "link" as const,
+      id: "gallery-link-final",
+    });
+  }
 
   // Double it for infinite marquee loop
   const doubled = [...listItems, ...listItems];
@@ -110,7 +133,13 @@ export default function Gallery() {
       {/* Scrolling / Centered Card track */}
       <div style={{ position: "relative" }}>
         {dbPhotos.length === 0 ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: "1rem 0" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "1rem 0",
+            }}
+          >
             <Link
               href="/gallery"
               style={{
@@ -131,17 +160,24 @@ export default function Gallery() {
                 textAlign: "center",
                 boxShadow: "0 4px 24px rgba(28,31,74,0.15)",
                 cursor: "pointer",
-                transition: "transform 0.3s, box-shadow 0.3s, border-color 0.3s",
+                transition:
+                  "transform 0.3s, box-shadow 0.3s, border-color 0.3s",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(-6px) scale(1.02)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 16px 40px rgba(28,31,74,0.25)";
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--gold)";
+                (e.currentTarget as HTMLElement).style.transform =
+                  "translateY(-6px) scale(1.02)";
+                (e.currentTarget as HTMLElement).style.boxShadow =
+                  "0 16px 40px rgba(28,31,74,0.25)";
+                (e.currentTarget as HTMLElement).style.borderColor =
+                  "var(--gold)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(0) scale(1)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(28,31,74,0.08)";
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(232, 150, 46, 0.4)";
+                (e.currentTarget as HTMLElement).style.transform =
+                  "translateY(0) scale(1)";
+                (e.currentTarget as HTMLElement).style.boxShadow =
+                  "0 4px 24px rgba(28,31,74,0.08)";
+                (e.currentTarget as HTMLElement).style.borderColor =
+                  "rgba(232, 150, 46, 0.4)";
               }}
             >
               <div className="w-10 h-10 rounded-full bg-[#b86a16]/20 border border-[#b86a16]/40 flex items-center justify-center mb-4 transition-colors">
@@ -173,7 +209,8 @@ export default function Gallery() {
                 bottom: 0,
                 width: 120,
                 zIndex: 2,
-                background: "linear-gradient(to right, var(--indigo), transparent)",
+                background:
+                  "linear-gradient(to right, var(--indigo), transparent)",
                 pointerEvents: "none",
               }}
             />
@@ -186,7 +223,8 @@ export default function Gallery() {
                 bottom: 0,
                 width: 120,
                 zIndex: 2,
-                background: "linear-gradient(to left, var(--indigo), transparent)",
+                background:
+                  "linear-gradient(to left, var(--indigo), transparent)",
                 pointerEvents: "none",
               }}
             />
@@ -196,7 +234,7 @@ export default function Gallery() {
               style={{
                 display: "flex",
                 gap: 20,
-                animation: "galleryMarquee 90s linear infinite",
+                animation: "galleryMarquee 75s linear infinite",
                 width: "max-content",
                 padding: "1rem 0 2rem",
               }}
@@ -217,7 +255,8 @@ export default function Gallery() {
                         flexDirection: "column",
                         alignItems: "center",
                         justifyContent: "center",
-                        background: "linear-gradient(135deg, #1c1f4a 0%, #0e1026 100%)",
+                        background:
+                          "linear-gradient(135deg, #1c1f4a 0%, #0e1026 100%)",
                         border: "1px dashed rgba(232, 150, 46, 0.4)",
                         color: "white",
                         textDecoration: "none",
@@ -225,19 +264,26 @@ export default function Gallery() {
                         textAlign: "center",
                         boxShadow: "0 4px 24px rgba(28,31,74,0.08)",
                         cursor: "pointer",
-                        transition: "transform 0.3s, box-shadow 0.3s, border-color 0.3s",
+                        transition:
+                          "transform 0.3s, box-shadow 0.3s, border-color 0.3s",
                       }}
                       onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.transform = "translateY(-6px) scale(1.02)";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "0 16px 40px rgba(28,31,74,0.25)";
-                        (e.currentTarget as HTMLElement).style.borderColor = "var(--gold)";
+                        (e.currentTarget as HTMLElement).style.transform =
+                          "translateY(-6px) scale(1.02)";
+                        (e.currentTarget as HTMLElement).style.boxShadow =
+                          "0 16px 40px rgba(28,31,74,0.25)";
+                        (e.currentTarget as HTMLElement).style.borderColor =
+                          "var(--gold)";
                         const track = trackRef.current;
                         if (track) track.style.animationPlayState = "paused";
                       }}
                       onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.transform = "translateY(0) scale(1)";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(28,31,74,0.08)";
-                        (e.currentTarget as HTMLElement).style.borderColor = "rgba(232, 150, 46, 0.4)";
+                        (e.currentTarget as HTMLElement).style.transform =
+                          "translateY(0) scale(1)";
+                        (e.currentTarget as HTMLElement).style.boxShadow =
+                          "0 4px 24px rgba(28,31,74,0.08)";
+                        (e.currentTarget as HTMLElement).style.borderColor =
+                          "rgba(232, 150, 46, 0.4)";
                         const track = trackRef.current;
                         if (track) track.style.animationPlayState = "running";
                       }}
