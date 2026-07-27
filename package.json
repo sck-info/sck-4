@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:function": "npx tsx scripts/db-apply.ts triggers/universal_function.sql",
+    "db:trigger": "npx tsx scripts/db-apply.ts triggers/universal_triggers.sql",
+    "db:realtime": "npx tsx scripts/db-apply.ts triggers/realtime.sql",
+    "db:setup-all": "npm run db:function && npm run db:trigger && npm run db:realtime"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.19",
