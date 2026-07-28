@@ -45,12 +45,12 @@ import { toast } from "sonner";
 
 const ADMIN_MENU_ITEMS = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Users", href: "/dashboard/users", icon: Users },
-  { name: "Queries", href: "/dashboard/queries", icon: MessageSquare },
   { name: "About Slides", href: "/dashboard/about-slides", icon: Images },
   { name: "Metrics", href: "/dashboard/metrics", icon: TrendingUp },
   { name: "Gallery", href: "/dashboard/gallery", icon: Camera },
   { name: "Contacts", href: "/dashboard/contacts", icon: Contact },
+  { name: "Queries", href: "/dashboard/queries", icon: MessageSquare },
+  { name: "Users", href: "/dashboard/users", icon: Users },
 ];
 
 const USER_MENU_ITEMS = [
@@ -131,7 +131,7 @@ function AppSidebar({
           {isExpanded && (
             <div className="flex flex-col truncate">
               <h1 className="text-sm font-bold tracking-tight text-white">
-                Sharath Chandra
+                Sharath Kancherla
               </h1>
               <p className="text-[10px] text-[#e8962e] tracking-wider uppercase font-bold">
                 {role === "ADMIN" ? "Admin Panel" : "User Panel"}
