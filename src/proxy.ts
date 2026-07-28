@@ -5,32 +5,33 @@ function requestedPath(req: { nextUrl: { pathname: string; search: string } }) {
   return `${req.nextUrl.pathname}${req.nextUrl.search}`;
 }
 
-function safeRedirectPath(value: string | null) {
-  if (!value || value === "/login") return "/dashboard";
-  if (!value.startsWith("/") || value.startsWith("//")) return "/dashboard";
-  return value;
-}
-
 export default auth(async (req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
+  const role = req.auth?.user?.role;
+  const isPhoneVerified = (req.auth?.user as any)?.isPhoneVerified;
 
   const isAuthRoute =
     pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password");
 
-  // If targeting dashboard but not logged in, redirect to login
-  if (!isLoggedIn && pathname.startsWith("/dashboard")) {
-    const loginUrl = new URL("/login", req.url);
-    loginUrl.searchParams.set("redirect", requestedPath(req));
-    return NextResponse.redirect(loginUrl);
+  if (!isLoggedIn) {
+    if (pathname.startsWith("/dashboard") || pathname.startsWith("/verify-phone")) {
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("redirect", requestedPath(req));
+      return NextResponse.redirect(loginUrl);
+    }
+    return NextResponse.next();
   }
 
-  // If logged in and hitting an auth route, redirect to dashboard
-  if (isLoggedIn && isAuthRoute) {
-    const redirect = safeRedirectPath(req.nextUrl.searchParams.get("redirect"));
-    return NextResponse.redirect(new URL(redirect, req.url));
+  if (isAuthRoute) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
+  if (role === "USER" && !isPhoneVerified && !pathname.startsWith("/verify-phone")) {
+    return NextResponse.redirect(new URL("/verify-phone", req.url));
   }
 
   return NextResponse.next();

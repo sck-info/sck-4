@@ -41,8 +41,10 @@ import { toast } from "sonner";
 
 function AppSidebar({
   onSignOutClick,
+  role,
 }: {
   onSignOutClick: () => void;
+  role?: string;
 }) {
   const pathname = usePathname();
   const { state } = useSidebar();
@@ -125,7 +127,7 @@ function AppSidebar({
             <div className="flex flex-col truncate">
               <h1 className="text-sm font-bold tracking-tight text-white">Sharath Chandra</h1>
               <p className="text-[10px] text-[#e8962e] tracking-wider uppercase font-bold">
-                Admin Panel
+                {role === "ADMIN" ? "Admin Panel" : "User Panel"}
               </p>
             </div>
           )}
@@ -191,7 +193,7 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-[#faf7f2] font-sans selection:bg-[#b86a16]/20">
-        <AppSidebar onSignOutClick={() => setLogoutDialogOpen(true)} />
+        <AppSidebar onSignOutClick={() => setLogoutDialogOpen(true)} role={session?.user?.role} />
 
         <SidebarInset className="min-w-0 h-screen flex flex-col overflow-hidden bg-[#faf7f2]">
           {/* Main Top Header with profile info and trigger button */}
@@ -199,7 +201,9 @@ export default function DashboardLayout({
             <div className="flex items-center gap-3">
               <SidebarTrigger className="text-[#1c1f4a] hover:bg-[#b86a16]/5 hover:text-[#b86a16] cursor-pointer" />
               <Separator orientation="vertical" className="h-4" />
-              <span className="text-xs font-semibold text-[#5a5e7a]">Administrator Console</span>
+              <span className="text-xs font-semibold text-[#5a5e7a]">
+            {session?.user?.role === "ADMIN" ? "Administrator Console" : "User Portal"}
+          </span>
             </div>
 
             {/* Profile widget in Top Bar header */}

@@ -6,7 +6,7 @@ DECLARE
 BEGIN
   rec := COALESCE(NEW, OLD);
 
-  safe_data := to_jsonb(rec) - 'password' - 'two_factor_secret';
+  safe_data := to_jsonb(rec) - 'password' - 'two_factor_secret' - 'token';
 
   PERFORM pg_notify(
     'app_events',

@@ -4,7 +4,8 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Loader2, Lock, Mail, ArrowRight, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, Mail, Phone, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,8 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const isEmail = email.includes("@");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
@@ -37,11 +40,10 @@ function LoginForm() {
       });
 
       if (res?.error) {
-        setError("Invalid email or password.");
+        setError("Invalid email/phone or password.");
       } else {
         toast.success("Successfully logged in!");
-        router.push(redirect);
-        router.refresh();
+        window.location.href = "/";
       }
     } catch (err) {
       console.error(err);
@@ -53,7 +55,6 @@ function LoginForm() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center p-6 bg-[#faf7f2] overflow-hidden selection:bg-[#b86a16]/20">
-      {/* Decorative Circles */}
       <div className="pointer-events-none absolute -top-40 -right-40 w-96 h-96 rounded-full border border-[#b86a16]/10" />
       <div className="pointer-events-none absolute -bottom-40 -left-40 w-[30rem] h-[30rem] rounded-full border border-[#b86a16]/10" />
 
@@ -74,7 +75,7 @@ function LoginForm() {
               Welcome Back
             </CardTitle>
             <CardDescription className="text-sm text-[#5a5e7a]">
-              Please sign in to access your portal.
+              Sign in with your email or phone number.
             </CardDescription>
           </CardHeader>
 
@@ -92,15 +93,19 @@ function LoginForm() {
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
-                  Email Address
+                  Email or Phone Number
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  {isEmail ? (
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  ) : (
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  )}
                   <Input
                     id="email"
-                    type="email"
+                    type="text"
                     required
-                    placeholder="you@example.com"
+                    placeholder="you@example.com or phone number"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={loading}
@@ -136,10 +141,19 @@ function LoginForm() {
                 </div>
               </div>
 
+              <div className="flex justify-end">
+                <Link
+                  href="/forgot-password"
+                  className="text-[10px] text-[#b86a16] hover:text-[#b86a16]/80 font-semibold transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
               <Button
                 type="submit"
                 disabled={loading || !email || !password}
-                className="w-full h-11 mt-4 bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full font-semibold text-sm flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(28,31,74,0.15)] hover:shadow-[0_12px_24px_rgba(28,31,74,0.22)] transition-all cursor-pointer"
+                className="w-full h-11 mt-2 bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full font-semibold text-sm flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(28,31,74,0.15)] hover:shadow-[0_12px_24px_rgba(28,31,74,0.22)] transition-all cursor-pointer"
               >
                 {loading ? (
                   <>
@@ -154,6 +168,15 @@ function LoginForm() {
                 )}
               </Button>
             </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-xs text-[#5a5e7a]">
+                Don&apos;t have an account?{" "}
+                <Link href="/register" className="text-[#b86a16] hover:text-[#b86a16]/80 font-semibold transition-colors">
+                  Register here
+                </Link>
+              </p>
+            </div>
           </CardContent>
         </Card>
       </motion.div>

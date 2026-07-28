@@ -7,7 +7,10 @@ declare module "next-auth" {
       role: string;
       name: string;
       email: string;
+      phone: string;
+      phoneCode: string;
       sessionVersion: number;
+      isPhoneVerified: boolean;
     };
   }
 
@@ -16,7 +19,10 @@ declare module "next-auth" {
     role: string;
     name: string;
     email: string;
+    phone: string;
+    phoneCode: string;
     sessionVersion: number;
+    isPhoneVerified: boolean;
   }
 }
 
@@ -26,6 +32,9 @@ declare module "next-auth/jwt" {
     role: string;
     name: string;
     email: string;
+    phone: string;
+    phoneCode: string;
     sessionVersion: number;
+    isPhoneVerified: boolean;
   }
 }

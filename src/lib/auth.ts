@@ -24,6 +24,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        const input = credentials.email as string;
+        const isEmail = input.includes("@");
+
+        const condition = isEmail
+          ? eq(users.email, input)
+          : eq(users.phone, input.replace(/\D/g, "").replace(/^91/, ""));
+
         const result = await db
           .select({
             id: users.id,
@@ -32,10 +39,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             password: users.password,
             role: roles.roleName,
             sessionVersion: users.sessionVersion,
+            isPhoneVerified: users.isPhoneVerified,
+            phone: users.phone,
+            phoneCode: users.phoneCode,
           })
           .from(users)
           .innerJoin(roles, eq(users.roleId, roles.id))
-          .where(eq(users.email, credentials.email as string))
+          .where(condition)
           .limit(1);
 
         const user = result[0];
@@ -54,6 +64,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           role: user.role,
           sessionVersion: user.sessionVersion ?? 1,
+          isPhoneVerified: user.isPhoneVerified ?? false,
+          phone: user.phone ?? "",
+          phoneCode: user.phoneCode ?? "",
         };
       },
     }),
@@ -67,10 +80,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.name = user.name;
         token.email = user.email;
         token.sessionVersion = user.sessionVersion;
+        token.isPhoneVerified = user.isPhoneVerified;
+        token.phone = user.phone;
+        token.phoneCode = user.phoneCode;
       }
 
       if (trigger === "update" && session?.sessionVersion !== undefined) {
         token.sessionVersion = session.sessionVersion;
+      }
+
+      if (trigger === "update" && session?.isPhoneVerified !== undefined) {
+        token.isPhoneVerified = session.isPhoneVerified;
       }
 
       return token;
@@ -83,6 +103,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.name = token.name as string;
         session.user.email = token.email as string;
         session.user.sessionVersion = token.sessionVersion as number;
+        session.user.isPhoneVerified = token.isPhoneVerified as boolean;
+        session.user.phone = token.phone as string;
+        session.user.phoneCode = token.phoneCode as string;
       }
       return session;
     },

@@ -29,6 +29,20 @@
       "when": 1784472950896,
       "tag": "0003_add_gallery",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785242579677,
+      "tag": "0004_add_phone_otp_fields_to_users",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1785244931834,
+      "tag": "0005_add_password_reset_tokens",
+      "breakpoints": true
     }
   ]
 }
