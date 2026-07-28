@@ -33,6 +33,26 @@ function LoginForm() {
     setError("");
 
     try {
+      const preRes = await fetch("/api/auth/prelogin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const preData = await preRes.json();
+
+      if (preData.status === "ACCOUNT_NOT_FOUND") {
+        setError("Account not found. Please check your email/phone or register.");
+        setLoading(false);
+        return;
+      }
+
+      if (preData.status === "ACCOUNT_DEACTIVATED") {
+        setError("Your account has been deactivated. Please contact support.");
+        setLoading(false);
+        return;
+      }
+
       const res = await signIn("credentials", {
         email,
         password,
@@ -40,10 +60,10 @@ function LoginForm() {
       });
 
       if (res?.error) {
-        setError("Invalid email/phone or password.");
+        setError("Wrong password. Please try again.");
       } else {
         toast.success("Successfully logged in!");
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       }
     } catch (err) {
       console.error(err);

@@ -178,3 +178,58 @@ input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
   display: none;
 }
+
+/* react-day-picker v10 base styles */
+.rdp-root {
+  --rdp-accent-color: #b86a16;
+  --rdp-accent-background-color: rgba(184, 106, 22, 0.1);
+  --rdp-day-width: 36px;
+  --rdp-day-height: 36px;
+  --rdp-day-font-size: 0.875rem;
+}
+.rdp-root .rdp-day_button {
+  border-radius: 8px;
+  font-weight: 500;
+}
+.rdp-root .rdp-selected .rdp-day_button {
+  background: #b86a16;
+  color: white;
+}
+.rdp-root .rdp-today .rdp-day_button {
+  border: 1px solid #b86a16;
+}
+.rdp-root .rdp-disabled {
+  opacity: 0.4;
+}
+.rdp-root .rdp-nav {
+  display: flex;
+  gap: 4px;
+}
+.rdp-root .rdp-button_next,
+.rdp-root .rdp-button_previous {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+.rdp-root .rdp-button_next:hover,
+.rdp-root .rdp-button_previous:hover {
+  background: rgba(184, 106, 22, 0.1);
+}
+.rdp-root .rdp-month_caption {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #1c1f4a;
+}
+.rdp-root .rdp-weekday {
+  font-size: 0.75rem;
+  color: #9396ae;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding-bottom: 4px;
+}

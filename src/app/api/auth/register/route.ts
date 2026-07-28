@@ -13,7 +13,7 @@ function generateOtp(): string {
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password, phone, phoneCode } = await req.json();
+    const { name, email, password, phone, phoneCode, gender, dateOfBirth, age } = await req.json();
 
     if (!name || !email || !password || !phone || !phoneCode) {
       return NextResponse.json({ error: "All fields are required." }, { status: 400 });
@@ -61,6 +61,10 @@ export async function POST(req: Request) {
       password: hashedPassword,
       phone: cleanPhone,
       phoneCode,
+      gender: gender || null,
+      dateOfBirth: dateOfBirth || null,
+      age: age || null,
+      isActive: true,
       isPhoneVerified: false,
       otp,
       otpExpiry,

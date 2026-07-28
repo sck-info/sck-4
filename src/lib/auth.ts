@@ -42,6 +42,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             isPhoneVerified: users.isPhoneVerified,
             phone: users.phone,
             phoneCode: users.phoneCode,
+            isActive: users.isActive,
           })
           .from(users)
           .innerJoin(roles, eq(users.roleId, roles.id))
@@ -50,6 +51,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const user = result[0];
         if (!user) return null;
+
+        if (!user.isActive) return null;
 
         const isValid = await bcrypt.compare(
           credentials.password as string,

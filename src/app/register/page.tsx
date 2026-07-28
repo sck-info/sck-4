@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
+import { format } from "date-fns";
 import {
   Eye,
   EyeOff,
@@ -15,7 +16,8 @@ import {
   Phone,
   ArrowRight,
   ShieldCheck,
-  ArrowLeft,
+  Venus,
+  Mars,
 } from "lucide-react";
 import {
   Card,
@@ -27,6 +29,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "sonner";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
@@ -40,6 +50,9 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState<string>("");
+  const [gender, setGender] = useState<string>("");
+  const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>();
+  const [age, setAge] = useState<string>("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -96,6 +109,9 @@ export default function RegisterPage() {
           password,
           phone: number,
           phoneCode: code,
+          gender: gender || null,
+          dateOfBirth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : null,
+          age: age ? parseInt(age) : null,
         }),
       });
 
@@ -208,7 +224,7 @@ export default function RegisterPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-2xl relative z-10"
       >
         <Card className="bg-white/80 backdrop-blur-md border border-[#e8dcc4] rounded-[2.5rem] p-6 shadow-[0_20px_50px_rgba(28,31,74,0.05)]">
           <CardHeader className="text-center pb-6">
@@ -241,151 +257,187 @@ export default function RegisterPage() {
             <form onSubmit={handleSubmit} className="space-y-5">
               {step === "details" ? (
                 <>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="name"
-                      className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider"
-                    >
-                      Full Name
-                    </Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                      <Input
-                        id="name"
-                        type="text"
-                        required
-                        placeholder="Your full name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                        Full Name
+                      </Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        <Input
+                          id="name"
+                          type="text"
+                          required
+                          placeholder="Your full name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          disabled={loading}
+                          className="pl-10 h-11 bg-[#faf7f2]/50 border-[#e8dcc4] rounded-xl focus-visible:ring-[#b86a16]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                        Email Address
+                      </Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        <Input
+                          id="email"
+                          type="email"
+                          required
+                          placeholder="you@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          disabled={loading}
+                          className="pl-10 h-11 bg-[#faf7f2]/50 border-[#e8dcc4] rounded-xl focus-visible:ring-[#b86a16]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                        Phone Number
+                      </Label>
+                      <div>
+                        <PhoneInput
+                          international
+                          defaultCountry="IN"
+                          countries={["IN"]}
+                          value={phone}
+                          onChange={(value) => setPhone(value || "")}
+                          disabled={loading}
+                          className="h-11 bg-[#faf7f2]/50 border border-[#e8dcc4] rounded-xl focus-within:ring-[#b86a16] [&_.PhoneInput]:h-full [&_.PhoneInputCountry]:ml-3 [&_.PhoneInputCountrySelect]:cursor-pointer [&_input]:bg-transparent [&_input]:border-0 [&_input]:outline-none [&_input]:h-full [&_input]:w-full [&_input]:text-sm [&_input]:pl-2"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                        Gender
+                      </Label>
+                      <Select value={gender} onValueChange={setGender} disabled={loading}>
+                        <SelectTrigger className="h-11 bg-[#faf7f2]/50 border-[#e8dcc4] rounded-xl w-full">
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Male">
+                            <span className="flex items-center gap-2"><Mars className="w-3.5 h-3.5" /> Male</span>
+                          </SelectItem>
+                          <SelectItem value="Female">
+                            <span className="flex items-center gap-2"><Venus className="w-3.5 h-3.5" /> Female</span>
+                          </SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                        Date of Birth
+                      </Label>
+                      <DatePicker
+                        value={dateOfBirth}
+                        onChange={(d) => {
+                          setDateOfBirth(d);
+                          if (d) {
+                            const calculated = new Date().getFullYear() - d.getFullYear();
+                            setAge(calculated.toString());
+                          }
+                        }}
                         disabled={loading}
-                        className="pl-10 h-11 bg-[#faf7f2]/50 border-[#e8dcc4] rounded-xl focus-visible:ring-[#b86a16]"
                       />
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="email"
-                      className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider"
-                    >
-                      Email Address
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                      <Input
-                        id="email"
-                        type="email"
-                        required
-                        placeholder="you@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={loading}
-                        className="pl-10 h-11 bg-[#faf7f2]/50 border-[#e8dcc4] rounded-xl focus-visible:ring-[#b86a16]"
-                      />
+                    <div className="space-y-2">
+                      <Label htmlFor="age" className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                        Age
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="age"
+                          type="number"
+                          min={1}
+                          max={150}
+                          placeholder="Enter age"
+                          value={age}
+                          onChange={(e) => {
+                            setAge(e.target.value);
+                            if (e.target.value) {
+                              const yr = new Date().getFullYear() - parseInt(e.target.value);
+                              setDateOfBirth(new Date(yr, 0, 1));
+                            }
+                          }}
+                          disabled={loading}
+                          className="h-11 bg-[#faf7f2]/50 border-[#e8dcc4] rounded-xl focus-visible:ring-[#b86a16]"
+                        />
+                      </div>
+                      {age && (
+                        <p className="text-[9px] text-[#9396ae] mt-1">
+                          Age provided. DOB is auto-calculated and may not be exact.
+                        </p>
+                      )}
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="phone"
-                      className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider"
-                    >
-                      Phone Number
-                    </Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none z-10" />
-                      <PhoneInput
-                        international
-                        defaultCountry="IN"
-                        countries={["IN"]}
-                        value={phone}
-                        onChange={(value) => setPhone(value || "")}
-                        disabled={loading}
-                        className="pl-10 h-11 bg-[#faf7f2]/50 border border-[#e8dcc4] rounded-xl focus-within:ring-[#b86a16] [&_.PhoneInputCountry]:ml-1 [&_.PhoneInputCountrySelect]:cursor-pointer [&_input]:bg-transparent [&_input]:border-0 [&_input]:outline-none [&_input]:h-full [&_input]:w-full [&_input]:text-sm [&_input]:pl-2"
-                      />
+                    <div className="space-y-2">
+                      <Label htmlFor="password" className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                        Password
+                      </Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          required
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          disabled={loading}
+                          className="pl-10 pr-10 h-11 bg-[#faf7f2]/50 border-[#e8dcc4] rounded-xl focus-visible:ring-[#b86a16]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1c1f4a] transition-colors"
+                          tabIndex={-1}
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="password"
-                      className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider"
-                    >
-                      Password
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        required
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={loading}
-                        className="pl-10 pr-10 h-11 bg-[#faf7f2]/50 border-[#e8dcc4] rounded-xl focus-visible:ring-[#b86a16]"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1c1f4a] transition-colors"
-                        tabIndex={-1}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="confirmPassword"
-                      className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider"
-                    >
-                      Confirm Password
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                      <Input
-                        id="confirmPassword"
-                        type={showConfirmPassword ? "text" : "password"}
-                        required
-                        placeholder="••••••••"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        disabled={loading}
-                        className="pl-10 pr-10 h-11 bg-[#faf7f2]/50 border-[#e8dcc4] rounded-xl focus-visible:ring-[#b86a16]"
-                      />
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1c1f4a] transition-colors"
-                        tabIndex={-1}
-                      >
-                        {showConfirmPassword ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </button>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword" className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                        Confirm Password
+                      </Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        <Input
+                          id="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          required
+                          placeholder="••••••••"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          disabled={loading}
+                          className="pl-10 pr-10 h-11 bg-[#faf7f2]/50 border-[#e8dcc4] rounded-xl focus-visible:ring-[#b86a16]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1c1f4a] transition-colors"
+                          tabIndex={-1}
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </div>
                   </div>
 
                   <Button
                     type="submit"
-                    disabled={
-                      loading ||
-                      !name ||
-                      !email ||
-                      !phone ||
-                      !password ||
-                      !confirmPassword
-                    }
+                    disabled={loading || !name || !email || !phone || !password || !confirmPassword}
                     className="w-full h-11 mt-4 bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full font-semibold text-sm flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(28,31,74,0.15)] hover:shadow-[0_12px_24px_rgba(28,31,74,0.22)] transition-all cursor-pointer"
                   >
                     {loading ? (
@@ -404,10 +456,7 @@ export default function RegisterPage() {
               ) : (
                 <>
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="otp"
-                      className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider"
-                    >
+                    <Label htmlFor="otp" className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
                       OTP Code
                     </Label>
                     <div className="relative">
@@ -419,9 +468,7 @@ export default function RegisterPage() {
                         placeholder="Enter 6-digit OTP"
                         maxLength={6}
                         value={otp}
-                        onChange={(e) =>
-                          setOtp(e.target.value.replace(/\D/g, ""))
-                        }
+                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                         disabled={loading}
                         className="pl-10 h-11 bg-[#faf7f2]/50 border-[#e8dcc4] rounded-xl focus-visible:ring-[#b86a16] text-center text-lg tracking-[0.5em] font-bold"
                       />
@@ -462,10 +509,7 @@ export default function RegisterPage() {
               <div className="mt-6 text-center">
                 <p className="text-xs text-[#5a5e7a]">
                   Already have an account?{" "}
-                  <Link
-                    href="/login"
-                    className="text-[#b86a16] hover:text-[#b86a16]/80 font-semibold transition-colors"
-                  >
+                  <Link href="/login" className="text-[#b86a16] hover:text-[#b86a16]/80 font-semibold transition-colors">
                     Sign in
                   </Link>
                 </p>

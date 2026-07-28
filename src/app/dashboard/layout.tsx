@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { useRealtimeLogout } from "@/hooks/useRealtimeLogout";
 import {
   LayoutDashboard,
   Contact,
@@ -11,6 +12,8 @@ import {
   TrendingUp,
   Images,
   Camera,
+  Users,
+  UserCircle,
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,6 +43,7 @@ import { toast } from "sonner";
 
 const ADMIN_MENU_ITEMS = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Users", href: "/dashboard/users", icon: Users },
   { name: "About Slides", href: "/dashboard/about-slides", icon: Images },
   { name: "Metrics", href: "/dashboard/metrics", icon: TrendingUp },
   { name: "Gallery", href: "/dashboard/gallery", icon: Camera },
@@ -188,6 +192,8 @@ export default function DashboardLayout({
   const { data: session, status } = useSession();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
+  useRealtimeLogout();
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-[#faf7f2] font-sans selection:bg-[#b86a16]/20">
@@ -209,19 +215,22 @@ export default function DashboardLayout({
             </div>
 
             {status === "authenticated" && session?.user && (
-              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white border border-[#e8dcc4]/60 shadow-xs">
+              <Link
+                href="/dashboard/profile"
+                className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white border border-[#e8dcc4]/60 shadow-xs hover:bg-[#faf7f2] transition-colors"
+              >
                 <div className="w-7 h-7 rounded-full bg-[#b86a16] flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-xs">
                   {session.user.name ? session.user.name[0] : "A"}
                 </div>
                 <div className="flex flex-col text-left min-w-0 max-w-[120px] sm:max-w-[180px]">
                   <span className="text-[11px] font-bold text-[#1c1f4a] leading-none truncate">
-                    {session.user.name || "Administrator"}
+                    {session.user.name || "User"}
                   </span>
                   <span className="text-[9px] text-[#5a5e7a] leading-none mt-0.5 truncate">
                     {session.user.email}
                   </span>
                 </div>
-              </div>
+              </Link>
             )}
           </header>
 
