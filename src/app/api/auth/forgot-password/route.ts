@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
     const user = result[0];
     const token = crypto.randomBytes(32).toString("hex");
-    const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
     await db.insert(passwordResetTokens).values({
       userId: user.id,
