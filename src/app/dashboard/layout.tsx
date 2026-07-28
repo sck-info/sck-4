@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useRealtimeLogout } from "@/hooks/useRealtimeLogout";
+import { useRealtime } from "@/hooks/useRealtime";
 import {
   LayoutDashboard,
   Contact,
@@ -191,6 +192,40 @@ export default function DashboardLayout({
 }) {
   const { data: session, status } = useSession();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const [profileName, setProfileName] = useState(session?.user?.name || "User");
+  const [profileEmail, setProfileEmail] = useState(session?.user?.email || "");
+
+  const fetchProfile = React.useCallback(async () => {
+    try {
+      const res = await fetch("/api/profile");
+      if (res.ok) {
+        const data = await res.json();
+        setProfileName(data.name || "User");
+        setProfileEmail(data.email || "");
+      }
+    } catch (err) {
+      console.error("Failed to fetch profile in layout:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (session?.user) {
+      setProfileName(session.user.name || "User");
+      setProfileEmail(session.user.email || "");
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchProfile();
+    }
+  }, [status, fetchProfile]);
+
+  useRealtime(["users"], () => {
+    if (status === "authenticated") {
+      fetchProfile();
+    }
+  });
 
   useRealtimeLogout();
 
@@ -220,14 +255,14 @@ export default function DashboardLayout({
                 className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white border border-[#e8dcc4]/60 shadow-xs hover:bg-[#faf7f2] transition-colors"
               >
                 <div className="w-7 h-7 rounded-full bg-[#b86a16] flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-xs">
-                  {session.user.name ? session.user.name[0] : "A"}
+                  {profileName ? profileName[0] : "U"}
                 </div>
                 <div className="flex flex-col text-left min-w-0 max-w-[120px] sm:max-w-[180px]">
                   <span className="text-[11px] font-bold text-[#1c1f4a] leading-none truncate">
-                    {session.user.name || "User"}
+                    {profileName}
                   </span>
                   <span className="text-[9px] text-[#5a5e7a] leading-none mt-0.5 truncate">
-                    {session.user.email}
+                    {profileEmail}
                   </span>
                 </div>
               </Link>

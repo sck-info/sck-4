@@ -74,22 +74,22 @@ export function DatePicker({ value, onChange, disabled, placeholder = "Pick a da
       <PopoverContent className="w-auto p-4" align="start">
         <div className="flex gap-2 mb-3">
           <Select value={months[month]} onValueChange={handleMonthChange}>
-            <SelectTrigger className="flex-1 h-8 text-xs">
+            <SelectTrigger className="flex-1 text-xs" size="sm">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-48">
               {months.map((m) => (
-                <SelectItem key={m} value={m} className="text-xs">{m}</SelectItem>
+                <SelectItem key={m} value={m} className="text-xs py-1 min-h-0">{m}</SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={year.toString()} onValueChange={handleYearChange}>
-            <SelectTrigger className="w-20 h-8 text-xs">
+            <SelectTrigger className="w-20 text-xs" size="sm">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-48">
               {years.map((y) => (
-                <SelectItem key={y} value={y.toString()} className="text-xs">{y}</SelectItem>
+                <SelectItem key={y} value={y.toString()} className="text-xs py-1 min-h-0">{y}</SelectItem>
               ))}
             </SelectContent>
           </Select>

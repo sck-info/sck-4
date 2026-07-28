@@ -15,19 +15,24 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const { isActive } = await req.json();
+    const body = await req.json();
+    const { isActive, name, gender, dateOfBirth, age } = body;
 
-    if (typeof isActive !== "boolean") {
-      return NextResponse.json({ error: "isActive must be a boolean." }, { status: 400 });
+    const updates: Record<string, any> = { updatedAt: new Date() };
+
+    if (typeof isActive === "boolean") {
+      updates.isActive = isActive;
+      updates.sessionVersion = sql`${users.sessionVersion} + 1`;
     }
+
+    if (name !== undefined) updates.name = name;
+    if (gender !== undefined) updates.gender = gender;
+    if (dateOfBirth !== undefined) updates.dateOfBirth = dateOfBirth;
+    if (age !== undefined) updates.age = age;
 
     const updated = await db
       .update(users)
-      .set({
-        isActive,
-        sessionVersion: sql`${users.sessionVersion} + 1`,
-        updatedAt: new Date(),
-      })
+      .set(updates)
       .where(eq(users.id, id))
       .returning({ id: users.id, name: users.name, isActive: users.isActive });
 
