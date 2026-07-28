@@ -38,6 +38,17 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
+const ADMIN_MENU_ITEMS = [
+  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "About Slides", href: "/dashboard/about-slides", icon: Images },
+  { name: "Metrics", href: "/dashboard/metrics", icon: TrendingUp },
+  { name: "Gallery", href: "/dashboard/gallery", icon: Camera },
+  { name: "Contacts", href: "/dashboard/contacts", icon: Contact },
+];
+
+const USER_MENU_ITEMS = [
+  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+];
 
 function AppSidebar({
   onSignOutClick,
@@ -76,45 +87,27 @@ function AppSidebar({
     return () => clearInterval(interval);
   }, [slides]);
 
-  const currentAvatarUrl = slides[currentSlideIndex]?.imageUrl || "/images/sck-lifeskills.jpeg";
+  const currentAvatarUrl =
+    slides[currentSlideIndex]?.imageUrl || "/images/sck-lifeskills.jpeg";
 
-  const menuItems = [
-    {
-      name: "Overview",
-      href: "/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      name: "About Slides",
-      href: "/dashboard/about-slides",
-      icon: Images,
-    },
-    {
-      name: "Metrics",
-      href: "/dashboard/metrics",
-      icon: TrendingUp,
-    },
-    {
-      name: "Gallery",
-      href: "/dashboard/gallery",
-      icon: Camera,
-    },
-    {
-      name: "Contacts",
-      href: "/dashboard/contacts",
-      icon: Contact,
-    },
-  ];
+  const menuItems = role === "ADMIN" ? ADMIN_MENU_ITEMS : USER_MENU_ITEMS;
 
   const isExpanded = state === "expanded";
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-white/10 bg-[#1c1f4a]">
-      {/* Header */}
-      <SidebarHeader className={`h-20 border-b border-white/10 flex flex-row items-center gap-3 shrink-0 overflow-hidden ${
-        isExpanded ? "px-4" : "px-2 justify-center"
-      }`}>
-        <Link href="/" className="flex flex-row items-center gap-3 w-full hover:opacity-85 transition-opacity">
+    <Sidebar
+      collapsible="icon"
+      className="border-r border-white/10 bg-[#1c1f4a]"
+    >
+      <SidebarHeader
+        className={`h-20 border-b border-white/10 flex flex-row items-center gap-3 shrink-0 overflow-hidden ${
+          isExpanded ? "px-4" : "px-2 justify-center"
+        }`}
+      >
+        <Link
+          href="/"
+          className="flex flex-row items-center gap-3 w-full hover:opacity-85 transition-opacity"
+        >
           <img
             src={currentAvatarUrl}
             alt="Sharath Chandra Kancherla"
@@ -125,7 +118,9 @@ function AppSidebar({
           />
           {isExpanded && (
             <div className="flex flex-col truncate">
-              <h1 className="text-sm font-bold tracking-tight text-white">Sharath Chandra</h1>
+              <h1 className="text-sm font-bold tracking-tight text-white">
+                Sharath Chandra
+              </h1>
               <p className="text-[10px] text-[#e8962e] tracking-wider uppercase font-bold">
                 {role === "ADMIN" ? "Admin Panel" : "User Panel"}
               </p>
@@ -134,7 +129,6 @@ function AppSidebar({
         </Link>
       </SidebarHeader>
 
-      {/* Navigation Links */}
       <SidebarContent className="py-6 px-2">
         <SidebarMenu>
           {menuItems.map((item) => {
@@ -152,9 +146,14 @@ function AppSidebar({
                       : "text-white/70 hover:bg-white/10 hover:text-white"
                   }`}
                 >
-                  <Link href={item.href} className="flex items-center gap-2.5 w-full">
+                  <Link
+                    href={item.href}
+                    className="flex items-center gap-2.5 w-full"
+                  >
                     <Icon className="w-4 h-4 shrink-0" />
-                    {isExpanded && <span className="truncate">{item.name}</span>}
+                    {isExpanded && (
+                      <span className="truncate">{item.name}</span>
+                    )}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -163,7 +162,6 @@ function AppSidebar({
         </SidebarMenu>
       </SidebarContent>
 
-      {/* Footer with Session & Signout */}
       <SidebarFooter className="border-t border-white/10 p-2 shrink-0 overflow-hidden">
         <SidebarMenu>
           <SidebarMenuItem>
@@ -193,20 +191,23 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-[#faf7f2] font-sans selection:bg-[#b86a16]/20">
-        <AppSidebar onSignOutClick={() => setLogoutDialogOpen(true)} role={session?.user?.role} />
+        <AppSidebar
+          onSignOutClick={() => setLogoutDialogOpen(true)}
+          role={session?.user?.role}
+        />
 
         <SidebarInset className="min-w-0 h-screen flex flex-col overflow-hidden bg-[#faf7f2]">
-          {/* Main Top Header with profile info and trigger button */}
           <header className="flex items-center justify-between px-6 h-16 border-b border-[#e8dcc4]/60 bg-white/40 backdrop-blur-md shrink-0">
             <div className="flex items-center gap-3">
               <SidebarTrigger className="text-[#1c1f4a] hover:bg-[#b86a16]/5 hover:text-[#b86a16] cursor-pointer" />
               <Separator orientation="vertical" className="h-4" />
               <span className="text-xs font-semibold text-[#5a5e7a]">
-            {session?.user?.role === "ADMIN" ? "Administrator Console" : "User Portal"}
-          </span>
+                {session?.user?.role === "ADMIN"
+                  ? "Administrator Console"
+                  : "User Portal"}
+              </span>
             </div>
 
-            {/* Profile widget in Top Bar header */}
             {status === "authenticated" && session?.user && (
               <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white border border-[#e8dcc4]/60 shadow-xs">
                 <div className="w-7 h-7 rounded-full bg-[#b86a16] flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-xs">
@@ -224,10 +225,7 @@ export default function DashboardLayout({
             )}
           </header>
 
-          {/* Scrollable Container */}
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-            {children}
-          </main>
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
         </SidebarInset>
       </div>
 

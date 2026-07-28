@@ -1,6 +1,13 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
+const ADMIN_ROUTES = [
+  "/dashboard/about-slides",
+  "/dashboard/metrics",
+  "/dashboard/gallery",
+  "/dashboard/contacts",
+];
+
 function requestedPath(req: { nextUrl: { pathname: string; search: string } }) {
   return `${req.nextUrl.pathname}${req.nextUrl.search}`;
 }
@@ -32,6 +39,14 @@ export default auth(async (req) => {
 
   if (role === "USER" && !isPhoneVerified && !pathname.startsWith("/verify-phone")) {
     return NextResponse.redirect(new URL("/verify-phone", req.url));
+  }
+
+  if (pathname.startsWith("/dashboard")) {
+    const isAdminRoute = ADMIN_ROUTES.some((route) => pathname.startsWith(route));
+
+    if (isAdminRoute && role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/not-authorized", req.url));
+    }
   }
 
   return NextResponse.next();
