@@ -155,6 +155,47 @@ export default function Contact() {
                 session fits what you&apos;re looking for.
               </p>
 
+              <div style={{ marginBottom: "2.5rem" }}>
+                <a
+                  href="/contact"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    background: "var(--gold)",
+                    color: "var(--indigo)",
+                    padding: "0.85rem 2rem",
+                    borderRadius: 50,
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    boxShadow: "0 10px 20px rgba(232,150,46,0.2)",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 15px 25px rgba(232,150,46,0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 10px 20px rgba(232,150,46,0.2)";
+                  }}
+                >
+                  Send a Message
+                  <svg
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </a>
+              </div>
+
               {/* Contact details */}
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 16 }}

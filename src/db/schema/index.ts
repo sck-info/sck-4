@@ -5,6 +5,7 @@ export * from "./metrics";
 export * from "./about_slides";
 export * from "./gallery";
 export * from "./password_reset_tokens";
+export * from "./user_queries";
 
 
 

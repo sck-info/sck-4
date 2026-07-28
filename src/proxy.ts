@@ -10,6 +10,7 @@ const ADMIN_ROUTES = [
   "/dashboard/gallery",
   "/dashboard/contacts",
   "/dashboard/users",
+  "/dashboard/queries",
 ];
 
 function requestedPath(req: { nextUrl: { pathname: string; search: string } }) {

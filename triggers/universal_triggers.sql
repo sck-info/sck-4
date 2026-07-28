@@ -25,6 +25,6 @@ ON gallery FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
 -- (7) Password Reset Tokens Trigger
 CREATE OR REPLACE TRIGGER password_reset_tokens_app_event AFTER INSERT OR UPDATE OR DELETE
 ON password_reset_tokens FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
-
-
-
+-- (8) User Queries Trigger
+CREATE OR REPLACE TRIGGER user_queries_app_event AFTER INSERT OR UPDATE OR DELETE
+ON user_queries FOR EACH ROW EXECUTE FUNCTION notify_app_event ();

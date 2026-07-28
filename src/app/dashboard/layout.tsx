@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -15,6 +15,7 @@ import {
   Camera,
   Users,
   UserCircle,
+  MessageSquare,
 } from "lucide-react";
 import {
   Sidebar,
@@ -45,6 +46,7 @@ import { toast } from "sonner";
 const ADMIN_MENU_ITEMS = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { name: "Users", href: "/dashboard/users", icon: Users },
+  { name: "Queries", href: "/dashboard/queries", icon: MessageSquare },
   { name: "About Slides", href: "/dashboard/about-slides", icon: Images },
   { name: "Metrics", href: "/dashboard/metrics", icon: TrendingUp },
   { name: "Gallery", href: "/dashboard/gallery", icon: Camera },
@@ -67,22 +69,27 @@ function AppSidebar({
   const [slides, setSlides] = useState<{ imageUrl: string }[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
-  useEffect(() => {
-    const fetchAvatarSlides = async () => {
-      try {
-        const res = await fetch("/api/about-slides");
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setSlides(data.map((item: any) => ({ imageUrl: item.imageUrl })));
-          }
+  const fetchAvatarSlides = useCallback(async () => {
+    try {
+      const res = await fetch("/api/about-slides");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setSlides(data.map((item: any) => ({ imageUrl: item.imageUrl })));
         }
-      } catch (err) {
-        console.error("Failed to fetch sidebar avatar slides:", err);
       }
-    };
-    fetchAvatarSlides();
+    } catch (err) {
+      console.error("Failed to fetch sidebar avatar slides:", err);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchAvatarSlides();
+  }, [fetchAvatarSlides]);
+
+  useRealtime(["about_slides"], () => {
+    fetchAvatarSlides();
+  });
 
   useEffect(() => {
     if (slides.length <= 1) return;

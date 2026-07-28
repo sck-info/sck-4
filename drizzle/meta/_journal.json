@@ -50,6 +50,13 @@
       "when": 1785247642637,
       "tag": "0006_add_gender_dob_age_isactive_to_users",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1785252718074,
+      "tag": "0007_add_user_queries",
+      "breakpoints": true
     }
   ]
 }
