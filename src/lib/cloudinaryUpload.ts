@@ -1,5 +1,4 @@
 import { v2 as cloudinary } from "cloudinary";
-import sharp from "sharp";
 
 cloudinary.config();
 
@@ -24,6 +23,7 @@ async function compressToTargetSize(
   buffer: Buffer,
   mimeType: string,
 ): Promise<Buffer> {
+  const sharp = (await import("sharp")).default;
   const format = mimeType === "image/png" ? "png" : mimeType === "image/webp" ? "webp" : "jpeg";
 
   let quality = 80;

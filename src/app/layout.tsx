@@ -101,7 +101,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                if (sessionStorage.getItem("hasSeenIntro") !== "true") {
+                if (window.location.pathname === "/" && sessionStorage.getItem("hasSeenIntro") !== "true") {
                   document.documentElement.classList.add("intro-active");
                 }
               } catch (e) {}

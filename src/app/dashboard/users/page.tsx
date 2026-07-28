@@ -37,6 +37,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -114,6 +124,7 @@ function UsersPageContent() {
   });
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState("");
+  const [confirmUser, setConfirmUser] = useState<UserRow | null>(null);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -154,12 +165,17 @@ function UsersPageContent() {
     setModalOpen(true);
   };
 
-  const handleToggleActive = async (user: UserRow) => {
+  const handleToggleActive = (user: UserRow) => {
+    setConfirmUser(user);
+  };
+
+  const handleConfirmToggleActive = async () => {
+    if (!confirmUser) return;
     try {
-      const res = await fetch(`/api/users/${user.id}`, {
+      const res = await fetch(`/api/users/${confirmUser.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: !user.isActive }),
+        body: JSON.stringify({ isActive: !confirmUser.isActive }),
       });
 
       if (!res.ok) {
@@ -167,10 +183,14 @@ function UsersPageContent() {
         throw new Error(data.error || "Failed to update user.");
       }
 
-      toast.success(`User ${user.isActive ? "deactivated" : "activated"} successfully.`);
+      toast.success(
+        `User ${confirmUser.isActive ? "deactivated" : "activated"} successfully.`
+      );
       fetchUsers();
     } catch (err: any) {
       toast.error(err.message || "Failed to update user.");
+    } finally {
+      setConfirmUser(null);
     }
   };
 
@@ -211,13 +231,13 @@ function UsersPageContent() {
   };
 
   return (
-    <div className="space-y-8 max-w-6xl">
+    <div className="space-y-6 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#1c1f4a] font-display">
+          <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
             Manage Users
           </h1>
-          <p className="text-sm text-[#5a5e7a] mt-1">
+          <p className="text-xs text-[#5a5e7a] mt-1">
             View and manage registered users.
           </p>
         </div>
@@ -251,13 +271,13 @@ function UsersPageContent() {
           <Table>
             <TableHeader className="bg-[#1c1f4a]/5">
               <TableRow className="border-b border-[#e8dcc4]">
-                <TableHead className="py-4 px-6 font-bold text-[#1c1f4a]">Name</TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[#1c1f4a]">Email</TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[#1c1f4a]">Phone</TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[#1c1f4a]">Gender</TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[#1c1f4a]">DOB / Age</TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[#1c1f4a]">Status</TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[#1c1f4a] text-right">Actions</TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">Name</TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">Email</TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">Phone</TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">Gender</TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">DOB / Age</TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">Status</TableHead>
+                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -268,7 +288,7 @@ function UsersPageContent() {
                     !user.isActive ? "opacity-60" : ""
                   }`}
                 >
-                  <TableCell className="py-4 px-6">
+                  <TableCell className="py-3 px-4">
                     <div className="flex items-center gap-2.5">
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0 ${
                         user.isActive ? "bg-[#6b8f71]" : "bg-[#c4796a]"
@@ -278,13 +298,13 @@ function UsersPageContent() {
                       <span className="text-sm font-medium text-[#1c1f4a]">{user.name}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="py-4 px-6 text-[#1c1f4a] font-medium">
+                  <TableCell className="py-3 px-4 text-[#1c1f4a] font-medium">
                     <span className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-[#9396ae] shrink-0" />
                       {user.email}
                     </span>
                   </TableCell>
-                  <TableCell className="py-4 px-6 text-[#5a5e7a]">
+                  <TableCell className="py-3 px-4 text-[#5a5e7a]">
                     {user.phone ? (
                       <span className="flex items-center gap-2">
                         <Phone className="w-4 h-4 text-[#9396ae] shrink-0" />
@@ -294,15 +314,15 @@ function UsersPageContent() {
                       <span className="text-white/0 font-mono select-none">--</span>
                     )}
                   </TableCell>
-                  <TableCell className="py-4 px-6 text-[#5a5e7a]">
+                  <TableCell className="py-3 px-4 text-[#5a5e7a]">
                     {user.gender || <span className="text-white/0 font-mono select-none">--</span>}
                   </TableCell>
-                  <TableCell className="py-4 px-6 text-[#5a5e7a]">
+                  <TableCell className="py-3 px-4 text-[#5a5e7a]">
                     {user.dateOfBirth || (user.age ? `${user.age}y` : "") || (
                       <span className="text-white/0 font-mono select-none">--</span>
                     )}
                   </TableCell>
-                  <TableCell className="py-4 px-6">
+                  <TableCell className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide ${
                         user.isPhoneVerified
@@ -323,7 +343,7 @@ function UsersPageContent() {
                       </button>
                     </div>
                   </TableCell>
-                  <TableCell className="py-4 px-6 text-right">
+                  <TableCell className="py-3 px-4 text-right">
                     <div className="inline-flex items-center gap-2">
                       <button
                         onClick={() => handleOpenEdit(user)}
@@ -465,6 +485,32 @@ function UsersPageContent() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={confirmUser !== null} onOpenChange={(open) => !open && setConfirmUser(null)}>
+        <AlertDialogContent className="w-[320px] max-w-[90vw] bg-white rounded-3xl border-0 shadow-xl p-6">
+          <AlertDialogHeader className="text-center flex flex-col items-center">
+            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">
+              {confirmUser?.isActive ? "Deactivate User Account" : "Activate User Account"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
+              {confirmUser?.isActive
+                ? `Are you sure you want to deactivate ${confirmUser.name}'s account? They will be logged out immediately and lose access.`
+                : `Are you sure you want to activate ${confirmUser?.name}'s account?`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
+            <AlertDialogCancel className="flex-1 border border-[#c4796a] text-[#c4796a] hover:bg-[#c4796a]/5 rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmToggleActive}
+              className="flex-1 bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer"
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

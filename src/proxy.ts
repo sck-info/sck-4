@@ -56,9 +56,10 @@ export default auth(async (req) => {
 
     if (user.length > 0) {
       if (!user[0].isActive) {
-        const loginUrl = new URL("/login", req.url);
-        loginUrl.searchParams.set("reason", "deactivated");
-        return NextResponse.redirect(loginUrl);
+        const response = NextResponse.redirect(new URL("/", req.url));
+        response.cookies.delete("next-auth.session-token");
+        response.cookies.delete("__Secure-next-auth.session-token");
+        return response;
       }
 
       if (tokenSessionVersion !== undefined && user[0].sessionVersion !== tokenSessionVersion) {

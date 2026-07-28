@@ -33,7 +33,8 @@ export function useRealtimeLogout() {
 
           if (isActive === false) {
             toast.error("Your account has been deactivated.");
-            setTimeout(() => signOut({ callbackUrl: "/login" }), 2000);
+            sessionStorage.clear();
+            setTimeout(() => signOut({ callbackUrl: "/" }), 2000);
             return;
           }
 
