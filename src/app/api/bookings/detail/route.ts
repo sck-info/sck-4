@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { bookings, offeringSubCategories, offeringSlots } from "@/db/schema";
+import { bookings, offeringSubCategories, offeringSlots, feedbacks } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, and } from "drizzle-orm";
 
@@ -21,6 +21,7 @@ export async function GET(req: Request) {
     const list = await db
       .select({
         id: bookings.id,
+        userId: bookings.userId,
         status: bookings.status,
         subCategory: {
           name: offeringSubCategories.name,
@@ -30,18 +31,29 @@ export async function GET(req: Request) {
           startTime: offeringSlots.startTime,
           endTime: offeringSlots.endTime,
         },
+        feedback: {
+          id: feedbacks.id,
+          rating: feedbacks.rating,
+          rawFeedback: feedbacks.rawFeedback,
+        },
       })
       .from(bookings)
       .innerJoin(offeringSubCategories, eq(bookings.subCategoryId, offeringSubCategories.id))
       .leftJoin(offeringSlots, eq(bookings.slotId, offeringSlots.id))
-      .where(and(eq(bookings.id, bookingId), eq(bookings.userId, session.user.id)))
+      .leftJoin(feedbacks, eq(bookings.id, feedbacks.bookingId))
+      .where(eq(bookings.id, bookingId))
       .limit(1);
 
     if (list.length === 0) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: list[0] });
+    const item = list[0];
+    if (item.userId !== session.user.id) {
+      return NextResponse.json({ error: "This booking is not for you" }, { status: 403 });
+    }
+
+    return NextResponse.json({ success: true, data: item });
   } catch (err) {
     console.error("GET booking detail error:", err);
     return NextResponse.json({ error: "Failed to fetch booking details" }, { status: 500 });
