@@ -23,11 +23,15 @@ export async function POST(req: Request) {
       mediaUrl = (formData.get("mediaUrl") as string) || "";
 
       const file = formData.get("file") as File | null;
+      console.log(`[Manual API] Multipart request received. MediaType: ${mediaType}, MediaSource: ${mediaSource}, File present: ${!!file}`);
       if (file && file.size > 0) {
+        console.log(`[Manual API] Uploaded File: ${file.name}, MIME: ${file.type}, Size: ${file.size} bytes`);
         const buffer = Buffer.from(await file.arrayBuffer());
         fileBase64 = buffer.toString("base64");
         fileName = file.name;
         fileMime = file.type;
+      } else if (file) {
+        console.warn(`[Manual API] Uploaded file size is 0 bytes`);
       }
     } else {
       const body = await req.json();
@@ -39,6 +43,7 @@ export async function POST(req: Request) {
       fileBase64 = body.fileBase64 || "";
       fileName = body.fileName || "";
       fileMime = body.fileMime || "";
+      console.log(`[Manual API] JSON request received. MediaType: ${mediaType}, MediaSource: ${mediaSource}`);
     }
 
     let phonesList: string[] = [];
@@ -108,15 +113,19 @@ export async function POST(req: Request) {
     }
 
     // Call WhatsApp helper for each recipient
+    console.log(`[Manual API] Dispatching message to ${phonesList.length} phones. Attachment size: ${attachment ? attachment.contentBase64?.length : 0} chars`);
+    let successCount = 0;
     for (const phone of phonesList) {
       try {
-        await sendWhatsApp(phone, message, attachment);
+        const res = await sendWhatsApp(phone, message, attachment);
+        console.log(`[Manual API] Dispatch successful for ${phone}. Gateway response:`, res);
+        successCount++;
       } catch (err) {
         console.error(`[Manual API] Failed to send to ${phone}:`, err);
       }
     }
 
-    return NextResponse.json({ success: true, count: phonesList.length });
+    return NextResponse.json({ success: true, count: successCount });
   } catch (err: any) {
     console.error("Manual message API error:", err);
     return NextResponse.json(

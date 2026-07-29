@@ -145,7 +145,7 @@ function LocationsDashboardContent() {
       setLocPagination(result.pagination);
     } catch (err: any) {
       console.error(err);
-      toast.error("Error loading clinical/virtual locations");
+      toast.error("Error loading locations/virtual locations");
     } finally {
       setLoadingLoc(false);
     }
@@ -259,7 +259,7 @@ function LocationsDashboardContent() {
             Session Locations
           </h1>
           <p className="text-xs text-[#5a5e7a] mt-1">
-            Configure physical clinics, online Zoom meeting integrations, and
+            Configure physical locations, online Zoom meeting integrations, and
             custom slots formats.
           </p>
         </div>
@@ -439,7 +439,7 @@ function LocationsDashboardContent() {
                 onChange={(e) =>
                   setLocFormData({ ...locFormData, name: e.target.value })
                 }
-                placeholder="e.g. Hyderabad Hitech Clinic / Skype Virtual Room"
+                placeholder="e.g. Hyderabad Hitech City / Skype Virtual Room"
                 className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs"
                 disabled={locFormLoading}
                 required

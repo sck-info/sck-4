@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, Suspense, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  Suspense,
+  useRef,
+} from "react";
 import { useRealtime } from "@/hooks/useRealtime";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
@@ -76,11 +82,14 @@ function MetricsCrudPageContent() {
   const [localSearch, setLocalSearch] = useState(searchQuery);
   const [localStatus, setLocalStatus] = useState(statusFilter);
 
-  const pushParams = useCallback((params: URLSearchParams, replace = false) => {
-    const url = `${pathname}?${params.toString()}`;
-    if (replace) router.replace(url);
-    else router.push(url);
-  }, [pathname, router]);
+  const pushParams = useCallback(
+    (params: URLSearchParams, replace = false) => {
+      const url = `${pathname}?${params.toString()}`;
+      if (replace) router.replace(url);
+      else router.push(url);
+    },
+    [pathname, router],
+  );
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -138,8 +147,11 @@ function MetricsCrudPageContent() {
         setLoading(true);
         isInitialLoadRef.current = false;
       }
-      const searchPart = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
-      const statusPart = statusFilter !== "all" ? `&status=${statusFilter}` : "";
+      const searchPart = searchQuery
+        ? `&search=${encodeURIComponent(searchQuery)}`
+        : "";
+      const statusPart =
+        statusFilter !== "all" ? `&status=${statusFilter}` : "";
 
       const res = await fetch(
         `/api/metrics?all=true&page=${page}&limit=${limit}${searchPart}${statusPart}`,
@@ -189,7 +201,10 @@ function MetricsCrudPageContent() {
     setEditingId(null);
     setFormError("");
     // Autofill max display order + 10 logic
-    const maxVal = metricsList.reduce((max, m) => (m.sortOrder > max ? m.sortOrder : max), 0);
+    const maxVal = metricsList.reduce(
+      (max, m) => (m.sortOrder > max ? m.sortOrder : max),
+      0,
+    );
     setFormData({
       num: "",
       label: "",
@@ -315,7 +330,8 @@ function MetricsCrudPageContent() {
             Manage Our Impact Metrics
           </h1>
           <p className="text-xs text-[#5a5e7a] mt-1">
-            Display live stats (e.g. Experience years, Sessions done) on the homepage.
+            Display live stats (e.g. Experience years, Sessions done) on the
+            homepage.
           </p>
         </div>
         <button
@@ -330,7 +346,9 @@ function MetricsCrudPageContent() {
       {/* Filter Toolbar (Clear first, then Apply) */}
       <div className="flex flex-col sm:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
         <div className="flex-1 min-w-[200px] space-y-1 w-full">
-          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Search Metrics</Label>
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
+            Search Metrics
+          </Label>
           <div className="relative">
             <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-[#9396ae]" />
             <Input
@@ -344,7 +362,9 @@ function MetricsCrudPageContent() {
         </div>
 
         <div className="w-full sm:w-48 space-y-1">
-          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Display status</Label>
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
+            Display status
+          </Label>
           <Select value={localStatus} onValueChange={setLocalStatus}>
             <SelectTrigger className="w-full h-9 text-xs border-[#e8dcc4] bg-white rounded-xl text-[#1c1f4a]">
               <SelectValue placeholder="All Status" />
@@ -396,7 +416,8 @@ function MetricsCrudPageContent() {
             No metrics found
           </h3>
           <p className="text-xs text-[#5a5e7a] mt-1 max-w-sm mx-auto">
-            Try adjusting your search criteria or status filter to locate impact metrics.
+            Try adjusting your search criteria or status filter to locate impact
+            metrics.
           </p>
         </div>
       ) : (
@@ -502,7 +523,9 @@ function MetricsCrudPageContent() {
               </Label>
               <Input
                 value={formData.num}
-                onChange={(e) => setFormData({ ...formData, num: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, num: e.target.value })
+                }
                 placeholder="e.g. 15+, 100%"
                 className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs"
                 disabled={formLoading}
@@ -516,8 +539,10 @@ function MetricsCrudPageContent() {
               </Label>
               <Input
                 value={formData.label}
-                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                placeholder="e.g. Years of clinical experience"
+                onChange={(e) =>
+                  setFormData({ ...formData, label: e.target.value })
+                }
+                placeholder="e.g. Years of experience"
                 className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs"
                 disabled={formLoading}
                 required
@@ -532,7 +557,12 @@ function MetricsCrudPageContent() {
                 <Input
                   type="text"
                   value={formData.sortOrder}
-                  onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      sortOrder: parseInt(e.target.value) || 0,
+                    })
+                  }
                   placeholder="Sort order number..."
                   className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs font-mono"
                   disabled={formLoading}
@@ -546,7 +576,9 @@ function MetricsCrudPageContent() {
                 </Label>
                 <Select
                   value={formData.isActive ? "true" : "false"}
-                  onValueChange={(val) => setFormData({ ...formData, isActive: val === "true" })}
+                  onValueChange={(val) =>
+                    setFormData({ ...formData, isActive: val === "true" })
+                  }
                   disabled={formLoading}
                 >
                   <SelectTrigger className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
@@ -575,7 +607,11 @@ function MetricsCrudPageContent() {
                 disabled={formLoading}
                 className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-xl text-xs font-semibold"
               >
-                {formLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Metric"}
+                {formLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  "Save Metric"
+                )}
               </Button>
             </div>
           </form>
@@ -590,7 +626,8 @@ function MetricsCrudPageContent() {
               Delete Impact Metric
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
-              Are you sure you want to permanently delete this impact metric from the database? This action is irreversible.
+              Are you sure you want to permanently delete this impact metric
+              from the database? This action is irreversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-0">
@@ -612,11 +649,13 @@ function MetricsCrudPageContent() {
 
 export default function MetricsCrudPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[40vh]">
-        <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[40vh]">
+          <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin" />
+        </div>
+      }
+    >
       <MetricsCrudPageContent />
     </Suspense>
   );

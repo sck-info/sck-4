@@ -311,7 +311,7 @@ export default function ManualBroadcastPage() {
               </Label>
               <Input
                 type="text"
-                placeholder="e.g. 918332889468, 919876543210"
+                placeholder="e.g. 919876543210"
                 value={customPhones}
                 onChange={(e) => setCustomPhones(e.target.value)}
                 className="w-full text-xs text-[#5a5e7a] border border-[#e8dcc4] bg-white rounded-xl h-9 px-3 outline-none"
