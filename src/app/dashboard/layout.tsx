@@ -86,6 +86,7 @@ const ADMIN_MENU_SECTIONS = [
 
 const USER_MENU_ITEMS = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "My Bookings", href: "/dashboard/bookings", icon: ClipboardList },
 ];
 
 function AppSidebar({

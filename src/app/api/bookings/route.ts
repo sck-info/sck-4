@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { bookings, users, offeringSubCategories, offeringSlots } from "@/db/schema";
+import { bookings, users, offeringSubCategories, offeringSlots, feedbacks } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, and, sql, desc } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
@@ -8,7 +8,7 @@ import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 export async function GET(req: Request) {
   try {
     const session = await auth();
-    if (!session?.user || session.user.role !== "ADMIN") {
+    if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -23,6 +23,11 @@ export async function GET(req: Request) {
     }
     if (subCategoryId) {
       conditions.push(eq(bookings.subCategoryId, subCategoryId));
+    }
+
+    // Security Filter: non-admin users can ONLY retrieve their own bookings
+    if (session.user.role !== "ADMIN") {
+      conditions.push(eq(bookings.userId, session.user.id));
     }
 
     const condition = conditions.length > 0 ? and(...conditions) : undefined;
@@ -60,11 +65,17 @@ export async function GET(req: Request) {
           startTime: offeringSlots.startTime,
           endTime: offeringSlots.endTime,
         },
+        feedback: {
+          id: feedbacks.id,
+          rating: feedbacks.rating,
+          rawFeedback: feedbacks.rawFeedback,
+        },
       })
       .from(bookings)
       .innerJoin(users, eq(bookings.userId, users.id))
       .innerJoin(offeringSubCategories, eq(bookings.subCategoryId, offeringSubCategories.id))
       .leftJoin(offeringSlots, eq(bookings.slotId, offeringSlots.id))
+      .leftJoin(feedbacks, eq(bookings.id, feedbacks.bookingId))
       .where(condition)
       .orderBy(desc(bookings.createdAt))
       .limit(limit)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const testimonials = [
@@ -49,20 +49,37 @@ const testimonials = [
 ];
 
 export default function Testimonials() {
+  const [items, setItems] = useState<typeof testimonials>(testimonials);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  useEffect(() => {
+    const fetchActiveFeedbacks = async () => {
+      try {
+        const res = await fetch("/api/feedbacks/active");
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setItems(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to load active testimonials:", err);
+      }
+    };
+    fetchActiveFeedbacks();
+  }, []);
+
   const nextSlide = () =>
-    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+    setCurrentIndex((prev) => (prev + 1) % items.length);
 
   const prevSlide = () =>
     setCurrentIndex(
-      (prev) => (prev - 1 + testimonials.length) % testimonials.length,
+      (prev) => (prev - 1 + items.length) % items.length,
     );
 
   const prevIndex =
-    (currentIndex - 1 + testimonials.length) % testimonials.length;
+    (currentIndex - 1 + items.length) % items.length;
 
-  const nextIndex = (currentIndex + 1) % testimonials.length;
+  const nextIndex = (currentIndex + 1) % items.length;
 
   return (
     <section
@@ -187,17 +204,17 @@ export default function Testimonials() {
         <div className="testimonial-carousel">
           {/* Previous Card */}
           <div className="side-card">
-            <TestimonialCard data={testimonials[prevIndex]} />
+            <TestimonialCard data={items[prevIndex]} />
           </div>
 
           {/* Active Card */}
           <div className="active-card">
-            <TestimonialCard data={testimonials[currentIndex]} active />
+            <TestimonialCard data={items[currentIndex]} active />
           </div>
 
           {/* Next Card */}
           <div className="side-card">
-            <TestimonialCard data={testimonials[nextIndex]} />
+            <TestimonialCard data={items[nextIndex]} />
           </div>
         </div>
 
@@ -230,7 +247,7 @@ export default function Testimonials() {
           </button>
 
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            {testimonials.map((_, index) => (
+            {items.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}

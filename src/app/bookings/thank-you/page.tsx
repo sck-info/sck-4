@@ -21,17 +21,6 @@ function ThankYouContent() {
 
     const fetchBooking = async () => {
       try {
-        const res = await fetch(`/api/bookings?page=1&limit=1`);
-        // Note: For security and simplicity, we can fetch this booking from public/user profile or directly query the bookings list
-        // Let's call a general user profile endpoint or query booking details.
-        // Wait! We can fetch the specific booking by fetching the user's booking list and filter.
-        // Since we'll build a user bookings page in Phase 6, we can write a quick fetch here.
-        // Let's query the specific booking details via a dedicated endpoint, but wait, do we have an API for individual bookings?
-        // Yes, we wrote /api/bookings/[id] but that checks if the user is ADMIN!
-        // Let's check how a client fetches their bookings. We will write the user endpoint details, or we can just fetch it here.
-        // Wait, to be super clean, let's create a public/user endpoint /api/user/bookings/[id] or let's create a route `/api/bookings/detail?id=[id]` that resolves the active user's booking details safely!
-        // Yes, a route like `/api/bookings/detail` is extremely safe and clean.
-        // Let's check if we can query it directly. Let's write the route `/api/bookings/detail/route.ts` first, then fetch it.
         const detailRes = await fetch(`/api/bookings/detail?bookingId=${bookingId}`);
         const json = await detailRes.json();
         if (json.success) {
