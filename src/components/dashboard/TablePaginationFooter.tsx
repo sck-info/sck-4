@@ -211,7 +211,7 @@ export default function TablePaginationFooter({
   }
 
   return (
-    <div className="flex flex-col items-center gap-3 border-t border-[#e8dcc4] bg-[#faf7f2]/10 px-3 py-3 text-xs text-[#5a5e7a] sm:flex-row sm:justify-between rounded-b-2xl">
+    <div className="flex flex-col items-center gap-3 px-1 py-2 text-xs text-[#5a5e7a] sm:flex-row sm:justify-between">
       {paginationNav(true)}
       <div className="flex w-full justify-center sm:w-auto sm:justify-end">
         {recordSelector}

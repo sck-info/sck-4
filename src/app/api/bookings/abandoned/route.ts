@@ -18,6 +18,8 @@ export async function GET(req: Request) {
     const categoryId = searchParams.get("categoryId");
     const subCategoryId = searchParams.get("subCategoryId");
     const isExport = searchParams.get("export") === "true";
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
 
     const conditions = [];
     if (search) {
@@ -28,6 +30,12 @@ export async function GET(req: Request) {
           users.phone ? ilike(users.phone, `%${search}%`) : undefined
         )
       );
+    }
+    if (startDate) {
+      conditions.push(sql`date(${bookingDrafts.createdAt}) >= ${startDate}`);
+    }
+    if (endDate) {
+      conditions.push(sql`date(${bookingDrafts.createdAt}) <= ${endDate}`);
     }
     if (categoryId) {
       conditions.push(eq(offeringSubCategories.categoryId, categoryId));

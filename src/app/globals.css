@@ -191,9 +191,33 @@ input[type="password"]::-ms-clear {
   border-radius: 8px;
   font-weight: 500;
 }
-.rdp-root .rdp-selected .rdp-day_button {
+.rdp-root .rdp-selected:not(.rdp-range_middle) .rdp-day_button {
   background: #b86a16;
   color: white;
+}
+.rdp-root .rdp-range_middle .rdp-day_button {
+  background: rgba(184, 106, 22, 0.12) !important;
+  color: #b86a16 !important;
+  border-radius: 0 !important;
+}
+.rdp-root .rdp-range_start .rdp-day_button {
+  background: #b86a16 !important;
+  color: white !important;
+  border-top-left-radius: 8px !important;
+  border-bottom-left-radius: 8px !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+.rdp-root .rdp-range_end .rdp-day_button {
+  background: #b86a16 !important;
+  color: white !important;
+  border-top-right-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+.rdp-root .rdp-range_start.rdp-range_end .rdp-day_button {
+  border-radius: 8px !important;
 }
 .rdp-root .rdp-today .rdp-day_button {
   border: 1px solid #b86a16;

@@ -385,74 +385,76 @@ function ScheduledMessagesContent() {
           </p>
         </div>
       ) : (
-        <div className="p-1 space-y-4">
+        <div className="space-y-4">
           <TablePaginationFooter pagination={pagination} variant="top" />
-          <div className="w-full overflow-x-auto border border-[#e8dcc4] rounded-2xl bg-white shadow-sm">
-            <Table className="w-full min-w-[700px]">
-              <TableHeader className="bg-[#1c1f4a]/5">
-                <TableRow className="border-b border-[#e8dcc4]">
-                  <TableHead className="py-3.5 px-4 font-bold text-[#1c1f4a] text-xs">
-                    Broadcast Template Message
-                  </TableHead>
-                  <TableHead className="py-3.5 px-4 font-bold text-[#1c1f4a] text-xs">
-                    Target Broadcast Date
-                  </TableHead>
-                  <TableHead className="py-3.5 px-4 font-bold text-[#1c1f4a] text-xs">
-                    Dispatch Time
-                  </TableHead>
-                  <TableHead className="py-3.5 px-4 font-bold text-[#1c1f4a] text-xs">
-                    Status
-                  </TableHead>
-                  <TableHead className="py-3.5 px-4 font-bold text-[#1c1f4a] text-xs text-right">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {scheduledList.map((msg) => (
-                  <TableRow
-                    key={msg.id}
-                    className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-all"
-                  >
-                    <TableCell className="py-3.5 px-4 text-xs font-medium text-[#1c1f4a] max-w-md whitespace-pre-wrap leading-relaxed">
-                      {msg.message}
-                    </TableCell>
-                    <TableCell className="py-3.5 px-4 text-xs font-semibold text-[#1c1f4a]">
-                      {msg.scheduledDate}
-                    </TableCell>
-                    <TableCell className="py-3.5 px-4 text-xs text-[#5a5e7a] font-medium">
-                      {msg.isSent && msg.sentAt ? (
-                        <span>{new Date(msg.sentAt).toLocaleString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}</span>
-                      ) : (
-                        <span className="text-gray-400 italic">Scheduled 6:00 AM</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="py-3.5 px-4 text-xs">
-                      {msg.isSent ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase bg-[#6b8f71]/15 text-[#6b8f71]">
-                          <CheckCircle className="w-3 h-3" /> Dispatched
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase bg-[#b86a16]/15 text-[#b86a16]">
-                          ✦ Pending Queue
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="py-3.5 px-4 text-right">
-                      {!msg.isSent && (
-                        <button
-                          onClick={() => setActionId(msg.id)}
-                          className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
-                          title="Cancel scheduled broadcast"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </TableCell>
+          <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
+            <div className="w-full overflow-x-auto">
+              <Table className="w-full min-w-[700px]">
+                <TableHeader className="bg-[#1c1f4a]/5">
+                  <TableRow className="border-b border-[#e8dcc4]">
+                    <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                      Broadcast Template Message
+                    </TableHead>
+                    <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                      Target Broadcast Date
+                    </TableHead>
+                    <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                      Dispatch Time
+                    </TableHead>
+                    <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                      Status
+                    </TableHead>
+                    <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs text-right">
+                      Actions
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {scheduledList.map((msg) => (
+                    <TableRow
+                      key={msg.id}
+                      className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-all"
+                    >
+                      <TableCell className="py-3 px-4 text-xs font-medium text-[#1c1f4a] max-w-md whitespace-pre-wrap leading-relaxed">
+                        {msg.message}
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-xs font-semibold text-[#1c1f4a]">
+                        {msg.scheduledDate}
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] font-medium">
+                        {msg.isSent && msg.sentAt ? (
+                          <span>{new Date(msg.sentAt).toLocaleString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}</span>
+                        ) : (
+                          <span className="text-gray-400 italic">Scheduled 6:00 AM</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-xs">
+                        {msg.isSent ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase bg-[#6b8f71]/15 text-[#6b8f71]">
+                            <CheckCircle className="w-3 h-3" /> Dispatched
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase bg-[#b86a16]/15 text-[#b86a16]">
+                            ✦ Pending Queue
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        {!msg.isSent && (
+                          <button
+                            onClick={() => setActionId(msg.id)}
+                            className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
+                            title="Cancel scheduled broadcast"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
           <TablePaginationFooter pagination={pagination} variant="bottom" />
         </div>

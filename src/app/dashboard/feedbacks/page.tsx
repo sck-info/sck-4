@@ -325,83 +325,85 @@ function FeedbacksPageContent() {
           </p>
         </div>
       ) : (
-        <div className="p-1">
+        <div className="space-y-4">
           <TablePaginationFooter pagination={pagination} variant="top" />
-          <Table>
-            <TableHeader className="bg-[#1c1f4a]/5">
-              <TableRow className="border-b border-[#e8dcc4]">
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Customer Name</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Session Offering</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Rating</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Raw Comments</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Testimonial (Compiled)</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {feedbacks.map((item) => (
-                <TableRow
-                  key={item.id}
-                  className={`border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors ${
-                    !item.isActive ? "opacity-75" : ""
-                  }`}
-                >
-                  <TableCell className="py-3.5 px-4 font-bold text-[#1c1f4a] text-xs">{item.userName}</TableCell>
-                  <TableCell className="py-3.5 px-4 text-xs font-semibold text-[#1c1f4a]">{item.subCategoryName}</TableCell>
-                  <TableCell className="py-3.5 px-4 text-xs">
-                    <div className="text-[#b86a16] font-bold flex gap-0.5" title={`${item.rating} stars`}>
-                      {"★".repeat(item.rating)}{"☆".repeat(5 - item.rating)}
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-3.5 px-4 text-xs text-[#5a5e7a] max-w-[200px] truncate" title={item.comments || ""}>
-                    {item.comments || <span className="text-gray-400 italic">No comments</span>}
-                  </TableCell>
-                  <TableCell className="py-3.5 px-4 text-xs text-[#1c1f4a] font-medium max-w-[250px] truncate" title={item.enhancedFeedback || ""}>
-                    {item.enhancedFeedback ? (
-                      <span className="flex items-center gap-1.5">
-                        <Heart className="w-3.5 h-3.5 text-[#b86a16] fill-[#b86a16]/20 shrink-0" />
-                        {item.enhancedFeedback}
-                      </span>
-                    ) : (
-                      <span className="text-gray-400 italic">Not compiled yet</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-3.5 px-4 text-right">
-                    <div className="inline-flex gap-2">
-                      <button
-                        onClick={() => {
-                          setEditingFeedback(item);
-                          setFormData({ enhancedFeedback: item.enhancedFeedback || item.comments || "" });
-                        }}
-                        className="p-1.5 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
-                        title="Compile / Edit Testimonial"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleToggleShowcase(item)}
-                        className={`p-1.5 border border-transparent rounded-xl transition-all cursor-pointer ${
-                          item.isActive
-                            ? "bg-[#6b8f71]/10 border-[#6b8f71]/35 text-[#6b8f71]"
-                            : "hover:bg-gray-100 hover:border-gray-300 text-[#5a5e7a]"
-                        }`}
-                        title={item.isActive ? "Hide Testimonial" : "Showcase Testimonial"}
-                      >
-                        <CheckCircle className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => setDeleteFeedbackId(item.id)}
-                        className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
-                        title="Delete Feedback"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </TableCell>
+          <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
+            <Table>
+              <TableHeader className="bg-[#1c1f4a]/5">
+                <TableRow className="border-b border-[#e8dcc4]">
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Customer Name</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Session Offering</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Rating</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Raw Comments</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Testimonial (Compiled)</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {feedbacks.map((item) => (
+                  <TableRow
+                    key={item.id}
+                    className={`border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors ${
+                      !item.isActive ? "opacity-75" : ""
+                    }`}
+                  >
+                    <TableCell className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">{item.userName}</TableCell>
+                    <TableCell className="py-3 px-4 text-xs font-semibold text-[#1c1f4a]">{item.subCategoryName}</TableCell>
+                    <TableCell className="py-3 px-4 text-xs">
+                      <div className="text-[#b86a16] font-bold flex gap-0.5" title={`${item.rating} stars`}>
+                        {"★".repeat(item.rating)}{"☆".repeat(5 - item.rating)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] max-w-[200px] truncate" title={item.comments || ""}>
+                      {item.comments || <span className="text-gray-400 italic">No comments</span>}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs text-[#1c1f4a] font-medium max-w-[250px] truncate" title={item.enhancedFeedback || ""}>
+                      {item.enhancedFeedback ? (
+                        <span className="flex items-center gap-1.5">
+                          <Heart className="w-3.5 h-3.5 text-[#b86a16] fill-[#b86a16]/20 shrink-0" />
+                          {item.enhancedFeedback}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 italic">Not compiled yet</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-right">
+                      <div className="inline-flex gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingFeedback(item);
+                            setFormData({ enhancedFeedback: item.enhancedFeedback || item.comments || "" });
+                          }}
+                          className="p-1.5 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
+                          title="Compile / Edit Testimonial"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleToggleShowcase(item)}
+                          className={`p-1.5 border border-transparent rounded-xl transition-all cursor-pointer ${
+                            item.isActive
+                              ? "bg-[#6b8f71]/10 border-[#6b8f71]/35 text-[#6b8f71]"
+                              : "hover:bg-gray-100 hover:border-gray-300 text-[#5a5e7a]"
+                          }`}
+                          title={item.isActive ? "Hide Testimonial" : "Showcase Testimonial"}
+                        >
+                          <CheckCircle className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteFeedbackId(item.id)}
+                          className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
+                          title="Delete Feedback"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           <TablePaginationFooter pagination={pagination} variant="bottom" />
         </div>
       )}

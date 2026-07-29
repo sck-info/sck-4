@@ -5,6 +5,8 @@ import { useRealtime } from "@/hooks/useRealtime";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
 import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { DateRange } from "react-day-picker";
 import {
   Calendar,
   Clock,
@@ -82,6 +84,13 @@ function AbandonedBookingsContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+ 
+  const formatLocalDateYMD = (d: Date) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
 
   // URL Query Params
   const page = searchParams.get("page") || "1";
@@ -89,11 +98,23 @@ function AbandonedBookingsContent() {
   const categoryFilter = searchParams.get("category") || "all";
   const subCategoryFilter = searchParams.get("subCategory") || "all";
   const searchQuery = searchParams.get("search") || "";
-
+ 
+  const defaultFrom = new Date();
+  defaultFrom.setMonth(defaultFrom.getMonth() - 1);
+  const defaultFromStr = defaultFrom.toISOString().split("T")[0];
+  const defaultToStr = new Date().toISOString().split("T")[0];
+ 
+  const startDateParam = searchParams.get("startDate") || defaultFromStr;
+  const endDateParam = searchParams.get("endDate") || defaultToStr;
+ 
   // Local state for filters (Do not auto-apply)
   const [localSearch, setLocalSearch] = useState(searchQuery);
   const [localCategory, setLocalCategory] = useState(categoryFilter);
   const [localSubCategory, setLocalSubCategory] = useState(subCategoryFilter);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(startDateParam),
+    to: new Date(endDateParam),
+  });
 
   const pushParams = useCallback(
     (params: URLSearchParams, replace = false) => {
@@ -105,33 +126,20 @@ function AbandonedBookingsContent() {
   );
 
   // Sync URL search parameters
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    let changed = false;
-    if (!params.has("page")) {
-      params.set("page", "1");
-      changed = true;
-    }
-    if (!params.has("limit")) {
-      params.set("limit", String(DEFAULT_PAGE_LIMIT));
-      changed = true;
-    }
-    if (changed) {
-      pushParams(params, true);
-    }
-  }, [searchParams, pushParams]);
-
   // Sync local inputs when URL filter parameters change
   useEffect(() => {
     setLocalSearch(searchQuery);
     setLocalCategory(categoryFilter);
     setLocalSubCategory(subCategoryFilter);
-  }, [searchQuery, categoryFilter, subCategoryFilter]);
+    setDateRange({
+      from: new Date(startDateParam),
+      to: new Date(endDateParam),
+    });
+  }, [searchQuery, categoryFilter, subCategoryFilter, startDateParam, endDateParam]);
 
   // Data states
   const [leads, setLeads] = useState<AbandonedBookingRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [firstLoad, setFirstLoad] = useState(true);
   const [exporting, setExporting] = useState(false);
 
   const [categories, setCategories] = useState<{ id: string; name: string }[]>(
@@ -217,8 +225,10 @@ function AbandonedBookingsContent() {
         const subObj = subCategories.find((s) => s.name === subCategoryFilter);
         const subPart = subObj ? `&subCategoryId=${subObj.id}` : "";
 
+        const datePart = `&startDate=${startDateParam}&endDate=${endDateParam}`;
+ 
         const res = await fetch(
-          `/api/bookings/abandoned?page=${page}&limit=${limit}${searchPart}${catPart}${subPart}`,
+          `/api/bookings/abandoned?page=${page}&limit=${limit}${searchPart}${catPart}${subPart}${datePart}`,
         );
         if (!res.ok) throw new Error("Failed to load draft bookings");
         const json = await res.json();
@@ -229,7 +239,6 @@ function AbandonedBookingsContent() {
         toast.error("Error loading abandoned bookings queue");
       } finally {
         setLoading(false);
-        setFirstLoad(false);
       }
     },
     [
@@ -240,12 +249,14 @@ function AbandonedBookingsContent() {
       searchQuery,
       page,
       limit,
+      startDateParam,
+      endDateParam,
     ],
   );
 
   useEffect(() => {
-    fetchLeads(firstLoad);
-  }, [fetchLeads, firstLoad]);
+    fetchLeads(true);
+  }, [fetchLeads]);
 
   // Real-time listener
   useRealtime(["booking_drafts"], () => fetchLeads(true));
@@ -270,6 +281,16 @@ function AbandonedBookingsContent() {
     params.set("search", localSearch.trim());
     params.set("category", localCategory);
     params.set("subCategory", localSubCategory);
+    if (dateRange?.from) {
+      params.set("startDate", formatLocalDateYMD(dateRange.from));
+    } else {
+      params.delete("startDate");
+    }
+    if (dateRange?.to) {
+      params.set("endDate", formatLocalDateYMD(dateRange.to));
+    } else {
+      params.delete("endDate");
+    }
     params.set("page", "1");
     pushParams(params);
   };
@@ -278,11 +299,19 @@ function AbandonedBookingsContent() {
     setLocalSearch("");
     setLocalCategory("all");
     setLocalSubCategory("all");
-
+    const dFrom = new Date();
+    dFrom.setMonth(dFrom.getMonth() - 1);
+    setDateRange({
+      from: dFrom,
+      to: new Date(),
+    });
+ 
     const params = new URLSearchParams(searchParams.toString());
     params.set("search", "");
     params.set("category", "all");
     params.set("subCategory", "all");
+    params.set("startDate", formatLocalDateYMD(dFrom));
+    params.set("endDate", formatLocalDateYMD(new Date()));
     params.set("page", "1");
     pushParams(params);
   };
@@ -297,9 +326,10 @@ function AbandonedBookingsContent() {
       const catPart = catObj ? `&categoryId=${catObj.id}` : "";
       const subObj = subCategories.find((s) => s.name === subCategoryFilter);
       const subPart = subObj ? `&subCategoryId=${subObj.id}` : "";
-
+      const datePart = `&startDate=${startDateParam}&endDate=${endDateParam}`;
+ 
       const res = await fetch(
-        `/api/bookings/abandoned?export=true${searchPart}${catPart}${subPart}`,
+        `/api/bookings/abandoned?export=true${searchPart}${catPart}${subPart}${datePart}`,
       );
       if (!res.ok) throw new Error("Failed to export leads");
       const json = await res.json();
@@ -517,6 +547,11 @@ function AbandonedBookingsContent() {
             </SelectContent>
           </Select>
         </div>
+ 
+        <div className="w-full md:w-56 space-y-1">
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Date range</Label>
+          <DateRangePicker value={dateRange} onChange={setDateRange} />
+        </div>
 
         {/* Manual Filter Action Buttons */}
         <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
@@ -539,170 +574,171 @@ function AbandonedBookingsContent() {
       </div>
 
       {/* Main Leads Table with Responsive scrollbar */}
-      <div className="border border-[#e8dcc4] rounded-2xl overflow-hidden bg-white shadow-sm">
-        <div className="overflow-x-auto min-w-full">
-          <Table>
-            <TableHeader className="bg-[#1c1f4a]/5 border-b border-[#e8dcc4]/50">
-              <TableRow>
-                <TableHead className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider py-3.5 pl-5">
-                  Seeker Profile
-                </TableHead>
-                <TableHead className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider py-3.5">
-                  Offering Details
-                </TableHead>
-                <TableHead className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider py-3.5">
-                  Session Format
-                </TableHead>
-                <TableHead className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider py-3.5">
-                  Selected Slot
-                </TableHead>
-                <TableHead className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider py-3.5">
-                  Last Active
-                </TableHead>
-                <TableHead className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider py-3.5 text-right pr-5">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="divide-y divide-[#e8dcc4]/40">
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12">
-                    <Loader2 className="w-6 h-6 text-[#b86a16] animate-spin mx-auto" />
-                    <p className="text-xs text-[#5a5e7a] mt-2">
-                      Loading abandoned bookings queue...
-                    </p>
-                  </TableCell>
+      <div className="space-y-4">
+        {leads.length > 0 && <TablePaginationFooter pagination={pagination} variant="top" />}
+        <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
+          <div className="overflow-x-auto min-w-full">
+            <Table>
+              <TableHeader className="bg-[#1c1f4a]/5">
+                <TableRow className="border-b border-[#e8dcc4]">
+                  <TableHead className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider py-3 px-4">
+                    Seeker Profile
+                  </TableHead>
+                  <TableHead className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider py-3 px-4">
+                    Offering Details
+                  </TableHead>
+                  <TableHead className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider py-3 px-4">
+                    Session Format
+                  </TableHead>
+                  <TableHead className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider py-3 px-4">
+                    Selected Slot
+                  </TableHead>
+                  <TableHead className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider py-3 px-4">
+                    Last Active
+                  </TableHead>
+                  <TableHead className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider py-3 px-4 text-right">
+                    Actions
+                  </TableHead>
                 </TableRow>
-              ) : leads.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-16">
-                    <AlertTriangle className="w-8 h-8 text-[#b86a16]/60 mx-auto mb-2" />
-                    <p className="text-xs font-bold text-[#1c1f4a]">
-                      No abandoned leads found.
-                    </p>
-                    <p className="text-[10px] text-[#5a5e7a] mt-1">
-                      Try resetting filters or checking back later.
-                    </p>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                leads.map((row) => {
-                  return (
-                    <TableRow
-                      key={row.id}
-                      className="hover:bg-[#faf7f2]/20 transition-colors"
-                    >
-                      {/* Seeker Profile Column */}
-                      <TableCell className="py-4 pl-5">
-                        <div className="flex items-start gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-[#b86a16]/10 text-[#b86a16] flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
-                            {row.user?.name ? (
-                              row.user.name.charAt(0).toUpperCase()
-                            ) : (
-                              <User className="w-3.5 h-3.5" />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs font-bold text-[#1c1f4a] truncate max-w-[180px]">
-                              {row.user?.name}
-                            </p>
-                            <div className="flex flex-col gap-0.5 mt-0.5">
-                              <span className="text-[10px] text-[#5a5e7a] flex items-center gap-1">
-                                <Mail className="w-2.5 h-2.5 text-gray-400 shrink-0" />
-                                {row.user?.email}
-                              </span>
-                              {row.user?.phone && (
+              </TableHeader>
+              <TableBody className="divide-y divide-[#e8dcc4]/40">
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-12">
+                      <Loader2 className="w-6 h-6 text-[#b86a16] animate-spin mx-auto" />
+                      <p className="text-xs text-[#5a5e7a] mt-2">
+                        Loading abandoned bookings queue...
+                      </p>
+                    </TableCell>
+                  </TableRow>
+                ) : leads.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-16">
+                      <AlertTriangle className="w-8 h-8 text-[#b86a16]/60 mx-auto mb-2" />
+                      <p className="text-xs font-bold text-[#1c1f4a]">
+                        No abandoned leads found.
+                      </p>
+                      <p className="text-[10px] text-[#5a5e7a] mt-1">
+                        Try resetting filters or checking back later.
+                      </p>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  leads.map((row) => {
+                    return (
+                      <TableRow
+                        key={row.id}
+                        className="hover:bg-[#faf7f2]/20 transition-colors border-b border-[#e8dcc4]/60 last:border-b-0"
+                      >
+                        {/* Seeker Profile Column */}
+                        <TableCell className="py-3 px-4">
+                          <div className="flex items-start gap-2.5">
+                            <div className="w-7 h-7 rounded-full bg-[#b86a16]/10 text-[#b86a16] flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                              {row.user?.name ? (
+                                row.user.name.charAt(0).toUpperCase()
+                              ) : (
+                                <User className="w-3.5 h-3.5" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-[#1c1f4a] truncate max-w-[180px]">
+                                {row.user?.name}
+                              </p>
+                              <div className="flex flex-col gap-0.5 mt-0.5">
                                 <span className="text-[10px] text-[#5a5e7a] flex items-center gap-1">
-                                  <Phone className="w-2.5 h-2.5 text-gray-400 shrink-0" />
-                                  {row.user.phone}
+                                  <Mail className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                                  {row.user?.email}
+                                </span>
+                                {row.user?.phone && (
+                                  <span className="text-[10px] text-[#5a5e7a] flex items-center gap-1">
+                                    <Phone className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                                    {row.user.phone}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+
+                        {/* Offering Details Column */}
+                        <TableCell className="py-3 px-4">
+                          <span className="inline-block text-[9px] font-bold text-[#b86a16] bg-[#b86a16]/5 border border-[#b86a16]/15 rounded-md px-1.5 py-0.5 uppercase tracking-wide">
+                            {row.category?.name}
+                          </span>
+                          <p className="text-xs font-bold text-[#1c1f4a] mt-1 truncate max-w-[180px]">
+                            {row.subCategory?.name}
+                          </p>
+                        </TableCell>
+
+                        {/* Format Column */}
+                        <TableCell className="py-3 px-4 text-xs font-semibold text-[#1c1f4a]">
+                          {row.selectedFormat ? (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="capitalize">
+                                {row.selectedFormat}
+                              </span>
+                              {row.location?.name && (
+                                <span className="text-[10px] font-medium text-[#5a5e7a]">
+                                  {row.location.name}
                                 </span>
                               )}
                             </div>
-                          </div>
-                        </div>
-                      </TableCell>
-
-                      {/* Offering Details Column */}
-                      <TableCell className="py-4">
-                        <span className="inline-block text-[9px] font-bold text-[#b86a16] bg-[#b86a16]/5 border border-[#b86a16]/15 rounded-md px-1.5 py-0.5 uppercase tracking-wide">
-                          {row.category?.name}
-                        </span>
-                        <p className="text-xs font-bold text-[#1c1f4a] mt-1 truncate max-w-[180px]">
-                          {row.subCategory?.name}
-                        </p>
-                      </TableCell>
-
-                      {/* Format Column */}
-                      <TableCell className="py-4 text-xs font-semibold text-[#1c1f4a]">
-                        {row.selectedFormat ? (
-                          <div className="flex flex-col gap-0.5">
-                            <span className="capitalize">
-                              {row.selectedFormat}
+                          ) : (
+                            <span className="text-gray-400 italic">
+                              Not selected yet
                             </span>
-                            {row.location?.name && (
-                              <span className="text-[10px] font-medium text-[#5a5e7a]">
-                                {row.location.name}
+                          )}
+                        </TableCell>
+
+                        {/* Date & Time Column */}
+                        <TableCell className="py-3 px-4 text-xs font-semibold text-[#1c1f4a]">
+                          {row.slot ? (
+                            <div className="space-y-0.5">
+                              <span className="flex items-center gap-1 font-bold">
+                                <Calendar className="w-3 h-3 text-[#b86a16]" />
+                                {formatDate(row.slot.slotDate)}
                               </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400 italic">
-                            Not selected yet
-                          </span>
-                        )}
-                      </TableCell>
-
-                      {/* Date & Time Column */}
-                      <TableCell className="py-4 text-xs font-semibold text-[#1c1f4a]">
-                        {row.slot ? (
-                          <div className="space-y-0.5">
-                            <span className="flex items-center gap-1 font-bold">
-                              <Calendar className="w-3 h-3 text-[#b86a16]" />
-                              {formatDate(row.slot.slotDate)}
+                              <span className="flex items-center gap-1 text-[10px] font-semibold text-[#5a5e7a]">
+                                <Clock className="w-3 h-3 text-gray-400" />
+                                {formatTimeRange(
+                                  row.slot.startTime,
+                                  row.slot.endTime,
+                                )}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 italic">
+                              Not selected yet
                             </span>
-                            <span className="flex items-center gap-1 text-[10px] font-semibold text-[#5a5e7a]">
-                              <Clock className="w-3 h-3 text-gray-400" />
-                              {formatTimeRange(
-                                row.slot.startTime,
-                                row.slot.endTime,
-                              )}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-gray-400 italic">
-                            Not selected yet
-                          </span>
-                        )}
-                      </TableCell>
+                          )}
+                        </TableCell>
 
-                      {/* Last Active Timestamp */}
-                      <TableCell className="py-4 text-xs font-semibold text-[#1c1f4a]">
-                        {formatDate(row.updatedAt)}
-                      </TableCell>
+                        {/* Last Active Timestamp */}
+                        <TableCell className="py-3 px-4 text-xs font-semibold text-[#1c1f4a]">
+                          {formatDate(row.updatedAt)}
+                        </TableCell>
 
-                      {/* View Details Action */}
-                      <TableCell className="py-4 text-right pr-5">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => setViewLeadDetails(row)}
-                          className="h-8 w-8 p-0 hover:bg-[#faf7f2] hover:text-[#b86a16] text-[#1c1f4a] cursor-pointer rounded-lg"
-                          title="View Entered Responses"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+                        {/* View Details Action */}
+                        <TableCell className="py-3 px-4 text-right">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setViewLeadDetails(row)}
+                            className="h-8 w-8 p-0 hover:bg-[#faf7f2] hover:text-[#b86a16] text-[#1c1f4a] cursor-pointer rounded-lg inline-flex items-center justify-center"
+                            title="View Entered Responses"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
-
-        {/* Table Pagination Footer */}
-        {leads.length > 0 && <TablePaginationFooter pagination={pagination} />}
+        {leads.length > 0 && <TablePaginationFooter pagination={pagination} variant="bottom" />}
       </div>
 
       {/* Answer Preview Dialog Modal */}

@@ -158,21 +158,13 @@ function OfferingsDashboardContent() {
       const json = await res.json();
       setCategories(json.data);
 
-      // Default the URL parameter if missing
-      if (json.data.length > 0 && !activeTabName) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("tab", json.data[0].name);
-        params.set("page", "1");
-        params.set("limit", String(DEFAULT_PAGE_LIMIT));
-        pushParams(params, true);
-      }
     } catch (err) {
       console.error(err);
       toast.error("Error loading offering categories");
     } finally {
       setLoadingCats(false);
     }
-  }, [activeTabName, searchParams, pushParams]);
+  }, []);
 
   // Fetch Sub-Categories belonging to the active Category
   const fetchSubCategories = useCallback(async () => {
@@ -570,71 +562,73 @@ function OfferingsDashboardContent() {
                 <p className="text-xs text-[#5a5e7a]">No offerings found fitting this filter. Click Add Offering to create program configurations.</p>
               </div>
             ) : (
-              <div className={`p-1 bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs transition-opacity duration-200 ${loadingSubs ? "opacity-50 pointer-events-none" : ""}`}>
+              <div className="space-y-4">
                 <TablePaginationFooter pagination={subPagination} variant="top" />
-                <Table>
-                  <TableHeader className="bg-[#1c1f4a]/5">
-                    <TableRow className="border-b border-[#e8dcc4]">
-                      <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">Offering Name</TableHead>
-                      <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">Booking Type</TableHead>
-                      <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">Tags / Highlights</TableHead>
-                      <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">Sort Order</TableHead>
-                      <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">Status</TableHead>
-                      <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {subCategories.map((sub) => (
-                      <TableRow key={sub.id} className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors">
-                        <TableCell className="py-2.5 px-3">
-                          <div>
-                            <div className="text-xs font-bold text-[#1c1f4a]">{sub.name}</div>
-                            {sub.description && <div className="text-[10px] text-[#5a5e7a] truncate max-w-[220px] mt-0.5">{sub.description}</div>}
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-2.5 px-3 text-xs">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-semibold ${
-                            sub.requiresBooking ? "bg-[#b86a16]/10 text-[#b86a16]" : "bg-[#9396ae]/15 text-[#1c1f4a]"
-                          }`}>
-                            {sub.requiresBooking ? "Slot Booking" : "Direct Form"}
-                          </span>
-                        </TableCell>
-                        <TableCell className="py-2.5 px-3 text-xs">
-                          <div className="flex flex-wrap gap-1">
-                            {Array.isArray(sub.topTags) && sub.topTags.map((tag) => (
-                              <span key={tag} className="bg-[#b86a16] text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">
-                                {tag}
-                              </span>
-                            ))}
-                            {Array.isArray(sub.tags) && sub.tags.map((tag) => (
-                              <span key={tag} className="bg-gray-100 text-[#5a5e7a] text-[8px] font-medium px-1.5 py-0.5 rounded">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-2.5 px-3 text-xs font-mono text-[#5a5e7a]">{sub.sortOrder}</TableCell>
-                        <TableCell className="py-2.5 px-3 text-xs">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                            sub.isActive ? "bg-[#6b8f71]/15 text-[#6b8f71]" : "bg-red-100 text-red-600"
-                          }`}>
-                            {sub.isActive ? "Active" : "Hidden"}
-                          </span>
-                        </TableCell>
-                        <TableCell className="py-2.5 px-3 text-right">
-                          <div className="inline-flex gap-1.5">
-                            <button onClick={() => handleOpenEditSub(sub)} className="p-1.5 hover:bg-[#b86a16]/10 text-[#b86a16] rounded-lg border border-transparent hover:border-[#b86a16]/30 transition-all cursor-pointer">
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button onClick={() => setDeleteSubId(sub.id)} className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] rounded-lg border border-transparent hover:border-[#c4796a]/30 transition-all cursor-pointer">
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </TableCell>
+                <div className={`bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs transition-opacity duration-200 ${loadingSubs ? "opacity-50 pointer-events-none" : ""}`}>
+                  <Table>
+                    <TableHeader className="bg-[#1c1f4a]/5">
+                      <TableRow className="border-b border-[#e8dcc4]">
+                        <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Offering Name</TableHead>
+                        <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Booking Type</TableHead>
+                        <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Tags / Highlights</TableHead>
+                        <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Sort Order</TableHead>
+                        <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Status</TableHead>
+                        <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs text-right">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {subCategories.map((sub) => (
+                        <TableRow key={sub.id} className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors">
+                          <TableCell className="py-3 px-4">
+                            <div>
+                              <div className="text-xs font-bold text-[#1c1f4a]">{sub.name}</div>
+                              {sub.description && <div className="text-[10px] text-[#5a5e7a] truncate max-w-[220px] mt-0.5">{sub.description}</div>}
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-xs">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-semibold ${
+                              sub.requiresBooking ? "bg-[#b86a16]/10 text-[#b86a16]" : "bg-[#9396ae]/15 text-[#1c1f4a]"
+                            }`}>
+                              {sub.requiresBooking ? "Slot Booking" : "Direct Form"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-xs">
+                            <div className="flex flex-wrap gap-1">
+                              {Array.isArray(sub.topTags) && sub.topTags.map((tag) => (
+                                <span key={tag} className="bg-[#b86a16] text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">
+                                  {tag}
+                                </span>
+                              ))}
+                              {Array.isArray(sub.tags) && sub.tags.map((tag) => (
+                                <span key={tag} className="bg-gray-100 text-[#5a5e7a] text-[8px] font-medium px-1.5 py-0.5 rounded">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-xs font-mono text-[#5a5e7a]">{sub.sortOrder}</TableCell>
+                          <TableCell className="py-3 px-4 text-xs">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                              sub.isActive ? "bg-[#6b8f71]/15 text-[#6b8f71]" : "bg-red-100 text-red-600"
+                            }`}>
+                              {sub.isActive ? "Active" : "Hidden"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-right">
+                            <div className="inline-flex gap-1.5">
+                              <button onClick={() => handleOpenEditSub(sub)} className="p-1.5 hover:bg-[#b86a16]/10 text-[#b86a16] rounded-lg border border-transparent hover:border-[#b86a16]/30 transition-all cursor-pointer">
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button onClick={() => setDeleteSubId(sub.id)} className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] rounded-lg border border-transparent hover:border-[#c4796a]/30 transition-all cursor-pointer">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
                 <TablePaginationFooter pagination={subPagination} variant="bottom" />
               </div>
             )}

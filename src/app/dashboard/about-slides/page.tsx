@@ -428,7 +428,7 @@ function AboutSlidesPageContent() {
           </p>
         </div>
       ) : (
-        <div className="p-1">
+        <div className="space-y-4">
           <TablePaginationFooter pagination={pagination} variant="top" />
           <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
             <Table>

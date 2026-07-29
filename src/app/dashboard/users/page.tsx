@@ -371,141 +371,143 @@ function UsersPageContent() {
           </p>
         </div>
       ) : (
-        <div className="p-1">
+        <div className="space-y-4">
           <TablePaginationFooter pagination={pagination} variant="top" />
-          <Table>
-            <TableHeader className="bg-[#1c1f4a]/5">
-              <TableRow className="border-b border-[#e8dcc4]">
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
-                  Name
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
-                  Email
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
-                  Phone
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
-                  Gender
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
-                  DOB / Age
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
-                  Status
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow
-                  key={user.id}
-                  className={`border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors ${
-                    !user.isActive ? "opacity-60" : ""
-                  }`}
-                >
-                  <TableCell className="py-3 px-4">
-                    <div className="flex items-center gap-2.5">
-                      <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0 ${
-                          user.isActive ? "bg-[#6b8f71]" : "bg-[#c4796a]"
-                        }`}
-                      >
-                        {user.name[0]}
-                      </div>
-                      <span className="text-sm font-medium text-[#1c1f4a]">
-                        {user.name}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-[#1c1f4a] font-medium">
-                    <span className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-[#9396ae] shrink-0" />
-                      {user.email}
-                    </span>
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-[#5a5e7a]">
-                    {user.phone ? (
-                      <span className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-[#9396ae] shrink-0" />
-                        {user.phone}
-                      </span>
-                    ) : (
-                      <span className="text-white/0 font-mono select-none">
-                        --
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-[#5a5e7a]">
-                    {user.gender || (
-                      <span className="text-white/0 font-mono select-none">
-                        --
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-[#5a5e7a]">
-                    {user.dateOfBirth || (user.age ? `${user.age}y` : "") || (
-                      <span className="text-white/0 font-mono select-none">
-                        --
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide ${
-                          user.isPhoneVerified
-                            ? "bg-[#6b8f71]/15 text-[#6b8f71]"
-                            : "bg-[#c4796a]/10 text-[#c4796a]"
-                        }`}
-                      >
-                        {user.isPhoneVerified ? "Verified" : "Unverified"}
-                      </span>
-                      <button
-                        onClick={() => handleToggleActive(user)}
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
-                          user.isActive
-                            ? "bg-[#6b8f71]/15 text-[#6b8f71]"
-                            : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
-                        }`}
-                      >
-                        {user.isActive ? "Active" : "Activate"}
-                      </button>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-right">
-                    <div className="inline-flex items-center gap-2">
-                      <button
-                        onClick={() => handleOpenEdit(user)}
-                        className="p-2 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
-                        title="Edit"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleToggleActive(user)}
-                        className={`p-2 border border-transparent rounded-xl transition-all cursor-pointer ${
-                          user.isActive
-                            ? "hover:bg-[#c4796a]/10 text-[#c4796a] hover:border-[#c4796a]/30"
-                            : "hover:bg-[#6b8f71]/10 text-[#6b8f71] hover:border-[#6b8f71]/30"
-                        }`}
-                        title={user.isActive ? "Deactivate" : "Activate"}
-                      >
-                        {user.isActive ? (
-                          <UserX className="w-4 h-4" />
-                        ) : (
-                          <UserCheck className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </TableCell>
+          <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
+            <Table>
+              <TableHeader className="bg-[#1c1f4a]/5">
+                <TableRow className="border-b border-[#e8dcc4]">
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                    Name
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                    Email
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                    Phone
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                    Gender
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                    DOB / Age
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                    Status
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right">
+                    Actions
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow
+                    key={user.id}
+                    className={`border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors ${
+                      !user.isActive ? "opacity-60" : ""
+                    }`}
+                  >
+                    <TableCell className="py-3 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={`w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0 ${
+                            user.isActive ? "bg-[#6b8f71]" : "bg-[#c4796a]"
+                          }`}
+                        >
+                          {user.name[0]}
+                        </div>
+                        <span className="text-sm font-medium text-[#1c1f4a]">
+                          {user.name}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-[#1c1f4a] font-medium">
+                      <span className="flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-[#9396ae] shrink-0" />
+                        {user.email}
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-[#5a5e7a]">
+                      {user.phone ? (
+                        <span className="flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-[#9396ae] shrink-0" />
+                          {user.phone}
+                        </span>
+                      ) : (
+                        <span className="text-white/0 font-mono select-none">
+                          --
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-[#5a5e7a]">
+                      {user.gender || (
+                        <span className="text-white/0 font-mono select-none">
+                          --
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-[#5a5e7a]">
+                      {user.dateOfBirth || (user.age ? `${user.age}y` : "") || (
+                        <span className="text-white/0 font-mono select-none">
+                          --
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide ${
+                            user.isPhoneVerified
+                              ? "bg-[#6b8f71]/15 text-[#6b8f71]"
+                              : "bg-[#c4796a]/10 text-[#c4796a]"
+                          }`}
+                        >
+                          {user.isPhoneVerified ? "Verified" : "Unverified"}
+                        </span>
+                        <button
+                          onClick={() => handleToggleActive(user)}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
+                            user.isActive
+                              ? "bg-[#6b8f71]/15 text-[#6b8f71]"
+                              : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
+                          }`}
+                        >
+                          {user.isActive ? "Active" : "Activate"}
+                        </button>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-right">
+                      <div className="inline-flex items-center gap-2">
+                        <button
+                          onClick={() => handleOpenEdit(user)}
+                          className="p-2 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleToggleActive(user)}
+                          className={`p-2 border border-transparent rounded-xl transition-all cursor-pointer ${
+                            user.isActive
+                              ? "hover:bg-[#c4796a]/10 text-[#c4796a] hover:border-[#c4796a]/30"
+                              : "hover:bg-[#6b8f71]/10 text-[#6b8f71] hover:border-[#6b8f71]/30"
+                          }`}
+                          title={user.isActive ? "Deactivate" : "Activate"}
+                        >
+                          {user.isActive ? (
+                            <UserX className="w-4 h-4" />
+                          ) : (
+                            <UserCheck className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           <TablePaginationFooter pagination={pagination} variant="bottom" />
         </div>
       )}

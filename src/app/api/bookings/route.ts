@@ -21,6 +21,8 @@ export async function GET(req: Request) {
     const categoryName = searchParams.get("category");
     const subCategoryName = searchParams.get("subCategory");
     const searchQuery = searchParams.get("search");
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
 
     const conditions = [];
     if (searchQuery) {
@@ -32,6 +34,13 @@ export async function GET(req: Request) {
           ilike(users.phone, searchPattern)
         ) as any
       );
+    }
+
+    if (startDate) {
+      conditions.push(sql`date(${bookings.createdAt}) >= ${startDate}`);
+    }
+    if (endDate) {
+      conditions.push(sql`date(${bookings.createdAt}) <= ${endDate}`);
     }
 
     if (status && status !== "all") {

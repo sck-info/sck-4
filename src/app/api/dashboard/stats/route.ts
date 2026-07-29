@@ -92,19 +92,15 @@ export async function GET() {
       .orderBy(sql`${bookings.createdAt} desc`)
       .limit(6);
 
-    // 7. Recent Inquiries List (Queries)
-    const recentQueriesList = await db
+    // 7. Bookings by Subcategory (Offering Program Wise stats)
+    const bookingsBySubCategoryList = await db
       .select({
-        id: userQueries.id,
-        name: userQueries.name,
-        email: userQueries.email,
-        message: userQueries.message,
-        status: userQueries.status,
-        createdAt: userQueries.createdAt,
+        subCategoryName: offeringSubCategories.name,
+        count: sql<number>`count(*)`
       })
-      .from(userQueries)
-      .orderBy(sql`${userQueries.createdAt} desc`)
-      .limit(5);
+      .from(bookings)
+      .innerJoin(offeringSubCategories, eq(bookings.subCategoryId, offeringSubCategories.id))
+      .groupBy(offeringSubCategories.name);
 
     return NextResponse.json({
       data: {
@@ -142,13 +138,9 @@ export async function GET() {
           status: row.status,
           createdAt: row.createdAt,
         })),
-        recentQueries: recentQueriesList.map((row) => ({
-          id: row.id,
-          name: row.name,
-          email: row.email,
-          message: row.message,
-          status: row.status,
-          createdAt: row.createdAt,
+        bookingsBySubCategory: bookingsBySubCategoryList.map((row) => ({
+          name: row.subCategoryName.toUpperCase(),
+          Bookings: Number(row.count),
         })),
       }
     });

@@ -17,6 +17,8 @@ export async function GET(req: Request) {
     const subCategoryId = searchParams.get("subCategoryId");
     const status = searchParams.get("status");
     const dateParam = searchParams.get("date");
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
 
     const conditions = [];
     if (subCategoryId && subCategoryId !== "all") {
@@ -27,6 +29,12 @@ export async function GET(req: Request) {
     }
     if (dateParam) {
       conditions.push(eq(offeringSlots.slotDate, dateParam));
+    }
+    if (startDate) {
+      conditions.push(sql`date(${offeringSlots.slotDate}) >= ${startDate}`);
+    }
+    if (endDate) {
+      conditions.push(sql`date(${offeringSlots.slotDate}) <= ${endDate}`);
     }
     const condition = conditions.length > 0 ? and(...conditions) : undefined;
 

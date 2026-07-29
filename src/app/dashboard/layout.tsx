@@ -103,9 +103,11 @@ const USER_MENU_ITEMS = [
 function AppSidebar({
   onSignOutClick,
   role,
+  sessionLoading,
 }: {
   onSignOutClick: () => void;
   role?: string;
+  sessionLoading?: boolean;
 }) {
   const pathname = usePathname();
   const { state } = useSidebar();
@@ -183,7 +185,19 @@ function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent className="py-4 px-2 overflow-y-auto scrollbar">
-        {role === "ADMIN" ? (
+        {sessionLoading ? (
+          <div className="space-y-4 px-3 py-2">
+            <div className="space-y-2">
+              <div className="h-3 bg-white/10 rounded-md animate-pulse w-1/3" />
+              <div className="h-9 bg-white/5 rounded-xl animate-pulse" />
+              <div className="h-9 bg-white/5 rounded-xl animate-pulse" />
+            </div>
+            <div className="space-y-2 mt-4">
+              <div className="h-3 bg-white/10 rounded-md animate-pulse w-1/4" />
+              <div className="h-9 bg-white/5 rounded-xl animate-pulse" />
+            </div>
+          </div>
+        ) : role === "ADMIN" ? (
           ADMIN_MENU_SECTIONS.map((section, idx) => (
             <div key={section.title} className={idx > 0 ? "mt-4" : ""}>
               {isExpanded && (
@@ -325,6 +339,7 @@ export default function DashboardLayout({
         <AppSidebar
           onSignOutClick={() => setLogoutDialogOpen(true)}
           role={session?.user?.role}
+          sessionLoading={status === "loading"}
         />
 
         <SidebarInset className="min-w-0 h-screen flex flex-col overflow-hidden bg-[#faf7f2]">

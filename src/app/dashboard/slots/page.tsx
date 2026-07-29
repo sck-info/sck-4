@@ -5,6 +5,8 @@ import { useRealtime } from "@/hooks/useRealtime";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
 import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { DateRange } from "react-day-picker";
 import {
   Calendar,
   Clock,
@@ -108,20 +110,35 @@ function SlotsDashboardContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+ 
+  const formatLocalDateYMD = (d: Date) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
 
   // URL pagination params
   const page = searchParams.get("page") || "1";
   const limit = searchParams.get("limit") || "25";
   const statusFilter = searchParams.get("status") || "all";
   const subCategoryFilter = searchParams.get("subCategory") || "all";
-  const dateFilter = searchParams.get("date") || "";
-
+ 
+  const defaultFrom = new Date();
+  defaultFrom.setMonth(defaultFrom.getMonth() - 1);
+  const defaultFromStr = defaultFrom.toISOString().split("T")[0];
+  const defaultToStr = new Date().toISOString().split("T")[0];
+ 
+  const startDateParam = searchParams.get("startDate") || defaultFromStr;
+  const endDateParam = searchParams.get("endDate") || defaultToStr;
+ 
   // Local filter states
   const [localStatus, setLocalStatus] = useState(statusFilter);
   const [localSubCategory, setLocalSubCategory] = useState(subCategoryFilter);
-  const [localDate, setLocalDate] = useState<Date | undefined>(
-    dateFilter ? new Date(dateFilter) : undefined,
-  );
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(startDateParam),
+    to: new Date(endDateParam),
+  });
 
   const pushParams = useCallback(
     (params: URLSearchParams, replace = false) => {
@@ -132,28 +149,15 @@ function SlotsDashboardContent() {
     [pathname, router],
   );
 
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    let changed = false;
-    if (!params.has("page")) {
-      params.set("page", "1");
-      changed = true;
-    }
-    if (!params.has("limit")) {
-      params.set("limit", String(DEFAULT_PAGE_LIMIT));
-      changed = true;
-    }
-    if (changed) {
-      pushParams(params, true);
-    }
-  }, [searchParams, pushParams]);
-
   // Sync local states with URL params
   useEffect(() => {
     setLocalStatus(statusFilter);
     setLocalSubCategory(subCategoryFilter);
-    setLocalDate(dateFilter ? new Date(dateFilter) : undefined);
-  }, [statusFilter, subCategoryFilter, dateFilter]);
+    setDateRange({
+      from: new Date(startDateParam),
+      to: new Date(endDateParam),
+    });
+  }, [statusFilter, subCategoryFilter, startDateParam, endDateParam]);
 
   // Data lists
   const [slots, setSlots] = useState<SlotRow[]>([]);
@@ -192,7 +196,7 @@ function SlotsDashboardContent() {
         subCategoryFilter !== "all"
           ? `&subCategoryId=${subCategoryFilter}`
           : "";
-      const datePart = dateFilter ? `&date=${dateFilter}` : "";
+      const datePart = `&startDate=${startDateParam}&endDate=${endDateParam}`;
 
       const res = await fetch(
         `/api/slots?page=${page}&limit=${limit}${statusPart}${subPart}${datePart}`,
@@ -207,7 +211,7 @@ function SlotsDashboardContent() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, statusFilter, subCategoryFilter, dateFilter]);
+  }, [page, limit, statusFilter, subCategoryFilter, startDateParam, endDateParam]);
 
   // Fetch helper lists (locations, offerings)
   const fetchHelpers = async () => {
@@ -354,13 +358,15 @@ function SlotsDashboardContent() {
     const params = new URLSearchParams(searchParams.toString());
     params.set("status", localStatus);
     params.set("subCategory", localSubCategory);
-    if (localDate) {
-      const yyyy = localDate.getFullYear();
-      const mm = String(localDate.getMonth() + 1).padStart(2, "0");
-      const dd = String(localDate.getDate()).padStart(2, "0");
-      params.set("date", `${yyyy}-${mm}-${dd}`);
+    if (dateRange?.from) {
+      params.set("startDate", formatLocalDateYMD(dateRange.from));
     } else {
-      params.delete("date");
+      params.delete("startDate");
+    }
+    if (dateRange?.to) {
+      params.set("endDate", formatLocalDateYMD(dateRange.to));
+    } else {
+      params.delete("endDate");
     }
     params.set("page", "1");
     pushParams(params);
@@ -369,12 +375,18 @@ function SlotsDashboardContent() {
   const handleClearFilters = () => {
     setLocalStatus("all");
     setLocalSubCategory("all");
-    setLocalDate(undefined);
+    const dFrom = new Date();
+    dFrom.setMonth(dFrom.getMonth() - 1);
+    setDateRange({
+      from: dFrom,
+      to: new Date(),
+    });
 
     const params = new URLSearchParams(searchParams.toString());
     params.set("status", "all");
     params.set("subCategory", "all");
-    params.delete("date");
+    params.set("startDate", formatLocalDateYMD(dFrom));
+    params.set("endDate", formatLocalDateYMD(new Date()));
     params.set("page", "1");
     pushParams(params);
   };
@@ -438,14 +450,13 @@ function SlotsDashboardContent() {
           </Select>
         </div>
 
-        <div className="w-full md:w-48 space-y-1">
+        <div className="w-full md:w-56 space-y-1">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
-            Filter Date
+            Filter Date Range
           </Label>
-          <DatePicker
-            value={localDate}
-            onChange={setLocalDate}
-            placeholder="Pick date filter"
+          <DateRangePicker
+            value={dateRange}
+            onChange={setDateRange}
           />
         </div>
 
@@ -489,7 +500,7 @@ function SlotsDashboardContent() {
       ) : (
         <div className="space-y-4">
           <TablePaginationFooter pagination={pagination} variant="top" />
-          <div className="p-1 bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
+          <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
             <Table>
               <TableHeader className="bg-[#1c1f4a]/5">
                 <TableRow className="border-b border-[#e8dcc4]">

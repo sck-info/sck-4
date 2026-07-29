@@ -19,15 +19,8 @@ import {
   HelpCircle,
   Layers,
   Sparkles,
-  ArrowRight,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import {
   ResponsiveContainer,
@@ -57,21 +50,9 @@ type SlotStatusRow = {
   count: number;
 };
 
-type RecentBooking = {
-  id: string;
-  seekerName: string;
-  seekerEmail: string;
-  status: string;
-  createdAt: string;
-};
-
-type RecentQuery = {
-  id: string;
+type BookingsBySubCategoryRow = {
   name: string;
-  email: string;
-  message: string;
-  status: string;
-  createdAt: string;
+  Bookings: number;
 };
 
 type StatsData = {
@@ -93,8 +74,7 @@ type StatsData = {
   bookingsByFormat: BookingFormatRow[];
   slotsByStatus: SlotStatusRow[];
   averageRating: number;
-  recentBookings: RecentBooking[];
-  recentQueries: RecentQuery[];
+  bookingsBySubCategory: BookingsBySubCategoryRow[];
 };
 
 export default function AdminDashboard() {
@@ -117,8 +97,7 @@ export default function AdminDashboard() {
     bookingsByFormat: [],
     slotsByStatus: [],
     averageRating: 0,
-    recentBookings: [],
-    recentQueries: [],
+    bookingsBySubCategory: [],
   });
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -148,20 +127,7 @@ export default function AdminDashboard() {
   }, [fetchStats]);
 
   // Real-time synchronization
-  useRealtime(
-    [
-      "users",
-      "user_queries",
-      "gallery",
-      "about_slides",
-      "metrics",
-      "bookings",
-      "booking_drafts",
-      "offering_slots",
-      "feedbacks",
-    ],
-    fetchStats,
-  );
+  useRealtime(["users", "user_queries", "gallery", "about_slides", "metrics", "bookings", "booking_drafts", "offering_slots", "feedbacks"], fetchStats);
 
   if (!mounted) return null;
 
@@ -169,9 +135,7 @@ export default function AdminDashboard() {
     return (
       <div className="flex flex-col items-center justify-center py-20 min-h-[50vh]">
         <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
-        <p className="text-xs text-[#5a5e7a] font-medium">
-          Synchronizing overview tracker...
-        </p>
+        <p className="text-xs text-[#5a5e7a] font-medium">Synchronizing overview tracker...</p>
       </div>
     );
   }
@@ -179,14 +143,14 @@ export default function AdminDashboard() {
   // Color mapping
   const STATUS_COLORS: Record<string, string> = {
     confirmed: "#6b8f71", // Sage green
-    pending: "#b86a16", // Brand amber
+    pending: "#b86a16",   // Brand amber
     completed: "#1c1f4a", // Navy
     cancelled: "#c4796a", // Terracotta
     cancellation_pending: "#7a5e9a", // Purple
   };
 
   const FORMAT_COLORS: Record<string, string> = {
-    online: "#4a6fa5", // Slate blue
+    online: "#4a6fa5",  // Slate blue
     offline: "#b86a16", // Brand amber
   };
 
@@ -237,14 +201,14 @@ export default function AdminDashboard() {
   ];
 
   // Pie chart data
-  const pieData = stats.bookingsByStatus.map((item) => ({
+  const pieData = stats.bookingsByStatus.map(item => ({
     name: item.status.replace("_", " ").toUpperCase(),
     value: item.count,
     color: STATUS_COLORS[item.status] || "#9396ae",
   }));
 
   // Bar chart data
-  const barData = stats.bookingsByFormat.map((item) => ({
+  const barData = stats.bookingsByFormat.map(item => ({
     name: item.format.toUpperCase(),
     Bookings: item.count,
     color: FORMAT_COLORS[item.format] || "#b86a16",
@@ -252,12 +216,9 @@ export default function AdminDashboard() {
 
   // Slots utilization
   const totalSlotsCount = stats.totalSlots;
-  const bookedSlots =
-    stats.slotsByStatus.find((s) => s.status === "booked")?.count || 0;
-  const availableSlots =
-    stats.slotsByStatus.find((s) => s.status === "available")?.count || 0;
-  const utilizationRate =
-    totalSlotsCount > 0 ? Math.round((bookedSlots / totalSlotsCount) * 100) : 0;
+  const bookedSlots = stats.slotsByStatus.find(s => s.status === "booked")?.count || 0;
+  const availableSlots = stats.slotsByStatus.find(s => s.status === "available")?.count || 0;
+  const utilizationRate = totalSlotsCount > 0 ? Math.round((bookedSlots / totalSlotsCount) * 100) : 0;
 
   // Static Assets mapping
   const staticAssets = [
@@ -302,9 +263,9 @@ export default function AdminDashboard() {
       textColor: "text-[#7a5e9a]",
     },
     {
-      label: "Offline LOCATIONS",
+      label: "CLINIC LOCATIONS",
       value: stats.totalLocations,
-      subLabel: "Offline & virtual sites",
+      subLabel: "Clinic & virtual sites",
       icon: MapPin,
       bgColor: "bg-[#4a6fa5]/10",
       textColor: "text-[#4a6fa5]",
@@ -331,13 +292,8 @@ export default function AdminDashboard() {
     <div className="space-y-8 max-w-6xl">
       {/* Header */}
       <div className="border-b border-[#e8dcc4] pb-5">
-        <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
-          ADMINISTRATOR DASHBOARD
-        </h1>
-        <p className="text-xs text-[#5a5e7a] mt-1 font-medium">
-          Real-time business performance analytics, booking flows, and website
-          engagement indicators.
-        </p>
+        <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">ADMINISTRATOR DASHBOARD</h1>
+        <p className="text-xs text-[#5a5e7a] mt-1 font-medium">Real-time business performance analytics, booking flows, and website engagement indicators.</p>
       </div>
 
       {/* KPI Cards Grid */}
@@ -359,9 +315,7 @@ export default function AdminDashboard() {
                       {kpi.value}
                     </h3>
                   </div>
-                  <div
-                    className={`p-2 rounded-xl border shrink-0 ${kpi.color}`}
-                  >
+                  <div className={`p-2 rounded-xl border shrink-0 ${kpi.color}`}>
                     <Icon className="w-4 h-4" />
                   </div>
                 </div>
@@ -379,12 +333,8 @@ export default function AdminDashboard() {
         {/* Booking Status Distribution Donut Chart */}
         <Card className="border-[#e8dcc4] bg-white rounded-2xl shadow-xs">
           <CardHeader className="pb-2 border-b border-gray-100">
-            <CardTitle className="text-xs font-bold text-[#1c1f4a] uppercase">
-              Booking Status Distribution
-            </CardTitle>
-            <CardDescription className="text-[10px] text-[#5a5e7a] font-medium">
-              Proportion of registrations by status code
-            </CardDescription>
+            <CardTitle className="text-xs font-bold text-[#1c1f4a] uppercase">Booking Status Distribution</CardTitle>
+            <CardDescription className="text-[10px] text-[#5a5e7a] font-medium">Proportion of registrations by status code</CardDescription>
           </CardHeader>
           <CardContent className="pt-6 h-72">
             {pieData.length === 0 ? (
@@ -435,12 +385,8 @@ export default function AdminDashboard() {
         {/* Format Delivery Preference */}
         <Card className="border-[#e8dcc4] bg-white rounded-2xl shadow-xs">
           <CardHeader className="pb-2 border-b border-gray-100">
-            <CardTitle className="text-xs font-bold text-[#1c1f4a] uppercase">
-              Service Format Preference
-            </CardTitle>
-            <CardDescription className="text-[10px] text-[#5a5e7a] font-medium">
-              Online video consults vs Offline walk-in bookings
-            </CardDescription>
+            <CardTitle className="text-xs font-bold text-[#1c1f4a] uppercase">Service Format Preference</CardTitle>
+            <CardDescription className="text-[10px] text-[#5a5e7a] font-medium">Online video consults vs Clinic walk-in bookings</CardDescription>
           </CardHeader>
           <CardContent className="pt-6 h-72">
             {barData.length === 0 ? (
@@ -449,10 +395,7 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={barData}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                >
+                <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <XAxis
                     dataKey="name"
                     tick={{ fontSize: 10, fill: "#1c1f4a", fontWeight: "bold" }}
@@ -485,17 +428,13 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Row 3: Slot Booking Utilization + Recent Inquiries (Queries) */}
+      {/* Row 3: Slot Booking Utilization + Program Sub-category analytics (Horizontal Bar Chart) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left: Slot Booking Utilization */}
         <Card className="border-[#e8dcc4] bg-white rounded-2xl shadow-xs p-6 flex flex-col justify-between">
           <div>
-            <h3 className="text-xs font-bold text-[#1c1f4a] uppercase">
-              Time Slot Utilization
-            </h3>
-            <p className="text-[10px] text-[#5a5e7a] mt-0.5 font-medium">
-              Ratio of booked vs total active slots
-            </p>
+            <h3 className="text-xs font-bold text-[#1c1f4a] uppercase">Time Slot Utilization</h3>
+            <p className="text-[10px] text-[#5a5e7a] mt-0.5 font-medium">Ratio of booked vs total active slots</p>
           </div>
 
           <div className="relative flex items-center justify-center py-6">
@@ -523,12 +462,8 @@ export default function AdminDashboard() {
               />
             </svg>
             <div className="absolute text-center">
-              <span className="text-2xl font-black text-[#1c1f4a]">
-                {utilizationRate}%
-              </span>
-              <p className="text-[8px] text-[#5a5e7a] font-bold uppercase tracking-wider mt-0.5">
-                Booked Rate
-              </p>
+              <span className="text-2xl font-black text-[#1c1f4a]">{utilizationRate}%</span>
+              <p className="text-[8px] text-[#5a5e7a] font-bold uppercase tracking-wider mt-0.5">Booked Rate</p>
             </div>
           </div>
 
@@ -543,88 +478,59 @@ export default function AdminDashboard() {
             </div>
             <div className="flex justify-between text-xs font-bold text-[#5a5e7a]">
               <span>TOTAL CONFIGURED</span>
-              <span className="font-mono text-[#1c1f4a]">
-                {totalSlotsCount}
-              </span>
+              <span className="font-mono text-[#1c1f4a]">{totalSlotsCount}</span>
             </div>
           </div>
         </Card>
 
-        {/* Right: Recent Inquiries (For Admin action) */}
-        <Card className="border-[#e8dcc4] bg-white rounded-2xl shadow-xs md:col-span-2 flex flex-col justify-between overflow-hidden">
-          <CardHeader className="pb-2 border-b border-gray-100 flex flex-row items-center justify-between px-6 py-4">
-            <div>
-              <CardTitle className="text-xs font-bold text-[#1c1f4a] uppercase">
-                Recent Contact Inquiries
-              </CardTitle>
-              <CardDescription className="text-[10px] text-[#5a5e7a] font-medium">
-                Actionable visitor queries submitted from the website
-              </CardDescription>
-            </div>
-            <a
-              href="/dashboard/queries"
-              className="text-[10px] font-extrabold text-[#b86a16] hover:underline flex items-center gap-0.5 shrink-0"
-            >
-              REPLY QUEUE <ArrowRight className="w-3 h-3" />
-            </a>
+        {/* Right: Program Subcategory Wise Stats (Horizontal Bar Chart) */}
+        <Card className="border-[#e8dcc4] bg-white rounded-2xl shadow-xs md:col-span-2 p-6 flex flex-col justify-between overflow-hidden">
+          <CardHeader className="pb-2 border-b border-gray-100 p-0 mb-4">
+            <CardTitle className="text-xs font-bold text-[#1c1f4a] uppercase">Sub-category Booking Breakdown</CardTitle>
+            <CardDescription className="text-[10px] text-[#5a5e7a] font-medium">Distribution of seeker registrations across offering programs</CardDescription>
           </CardHeader>
-          <CardContent className="p-0 flex-1">
-            {stats.recentQueries.length === 0 ? (
-              <div className="flex items-center justify-center py-16 text-xs text-[#5a5e7a]">
-                No recent queries recorded.
+          <CardContent className="p-0 flex-1 h-64">
+            {stats.bookingsBySubCategory.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-xs text-[#5a5e7a]">
+                No offering registrations recorded yet.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-100 text-[#5a5e7a]">
-                      <th className="py-2.5 px-4 font-bold">Inquirer</th>
-                      <th className="py-2.5 px-4 font-bold">Query Message</th>
-                      <th className="py-2.5 px-4 font-bold">Status</th>
-                      <th className="py-2.5 px-4 font-bold text-right">
-                        Received
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {stats.recentQueries.map((q) => (
-                      <tr
-                        key={q.id}
-                        className="hover:bg-[#faf7f2]/10 transition-colors"
-                      >
-                        <td className="py-2.5 px-4">
-                          <div className="font-bold text-[#1c1f4a]">
-                            {q.name}
-                          </div>
-                          <div className="text-[9px] text-[#5a5e7a] truncate max-w-[120px]">
-                            {q.email}
-                          </div>
-                        </td>
-                        <td className="py-2.5 px-4 max-w-[200px] truncate">
-                          <span className="text-[#5a5e7a]">{q.message}</span>
-                        </td>
-                        <td className="py-2.5 px-4">
-                          <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                              q.status === "responded"
-                                ? "bg-[#6b8f71]/15 text-[#6b8f71]"
-                                : "bg-[#b86a16]/15 text-[#b86a16]"
-                            }`}
-                          >
-                            {q.status.toUpperCase()}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-4 text-right font-mono text-[9px] text-[#5a5e7a] whitespace-nowrap">
-                          {new Date(q.createdAt).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                          })}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={stats.bookingsBySubCategory}
+                  layout="vertical"
+                  margin={{ top: 10, right: 30, left: 10, bottom: 5 }}
+                >
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 9, fill: "#5a5e7a" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    tick={{ fontSize: 8, fill: "#1c1f4a", fontWeight: "bold" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={100}
+                  />
+                  <ChartTooltip
+                    cursor={{ fill: "rgba(184, 106, 22, 0.04)" }}
+                    contentStyle={{
+                      background: "white",
+                      border: "1px solid #e8dcc4",
+                      borderRadius: "12px",
+                      fontSize: "11px",
+                    }}
+                  />
+                  <Bar
+                    dataKey="Bookings"
+                    fill="#b86a16"
+                    radius={[0, 6, 6, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             )}
           </CardContent>
         </Card>
@@ -635,14 +541,9 @@ export default function AdminDashboard() {
         <div className="border-b border-[#e8dcc4]/40 pb-4">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-[#b86a16]" />
-            <h3 className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wider">
-              Website Static Assets Overview
-            </h3>
+            <h3 className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wider">Website Static Assets Overview</h3>
           </div>
-          <p className="text-[10px] text-[#5a5e7a] mt-0.5 font-medium">
-            Summary of active content, structures, payment gateways, and
-            screening forms configured on the website.
-          </p>
+          <p className="text-[10px] text-[#5a5e7a] mt-0.5 font-medium">Summary of active content, structures, payment gateways, and screening forms configured on the website.</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
@@ -657,16 +558,12 @@ export default function AdminDashboard() {
                   <span className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider line-clamp-1">
                     {asset.label}
                   </span>
-                  <div
-                    className={`p-2 rounded-xl shrink-0 ${asset.bgColor} ${asset.textColor}`}
-                  >
+                  <div className={`p-2 rounded-xl shrink-0 ${asset.bgColor} ${asset.textColor}`}>
                     <Icon className="w-3.5 h-3.5" />
                   </div>
                 </div>
                 <div className="mt-4">
-                  <div className="text-2xl font-black text-[#1c1f4a]">
-                    {asset.value}
-                  </div>
+                  <div className="text-2xl font-black text-[#1c1f4a]">{asset.value}</div>
                   <div className="text-[9px] text-[#5a5e7a] font-bold uppercase mt-1">
                     {asset.subLabel}
                   </div>

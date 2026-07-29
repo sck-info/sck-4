@@ -35,6 +35,13 @@ export function DatePicker({ value, onChange, disabled, placeholder = "Pick a da
   const [isMediumOrMobile, setIsMediumOrMobile] = useState(false)
 
   useEffect(() => {
+    if (value) {
+      setMonth(value.getMonth())
+      setYear(value.getFullYear())
+    }
+  }, [value])
+
+  useEffect(() => {
     const handleResize = () => {
       setIsMediumOrMobile(window.innerWidth < 1024)
     }

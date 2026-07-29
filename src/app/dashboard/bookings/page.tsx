@@ -6,6 +6,8 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
 import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
 import { useSession } from "next-auth/react";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { DateRange } from "react-day-picker";
 import {
   Calendar,
   Clock,
@@ -88,6 +90,13 @@ function BookingsDashboardContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+ 
+  const formatLocalDateYMD = (d: Date) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
 
   // URL query params
   const statusFilter = searchParams.get("status") || "all";
@@ -97,11 +106,23 @@ function BookingsDashboardContent() {
   const subCategoryFilter = searchParams.get("subCategory") || "all";
   const searchQuery = searchParams.get("search") || "";
 
+  const defaultFrom = new Date();
+  defaultFrom.setMonth(defaultFrom.getMonth() - 1);
+  const defaultFromStr = defaultFrom.toISOString().split("T")[0];
+  const defaultToStr = new Date().toISOString().split("T")[0];
+
+  const startDateParam = searchParams.get("startDate") || defaultFromStr;
+  const endDateParam = searchParams.get("endDate") || defaultToStr;
+
   // Local filter states
   const [localSearch, setLocalSearch] = useState(searchQuery);
   const [localStatus, setLocalStatus] = useState(statusFilter);
   const [localCategory, setLocalCategory] = useState(categoryFilter);
   const [localSubCategory, setLocalSubCategory] = useState(subCategoryFilter);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(startDateParam),
+    to: new Date(endDateParam),
+  });
 
   const pushParams = useCallback((params: URLSearchParams, replace = false) => {
     const url = `${pathname}?${params.toString()}`;
@@ -109,38 +130,21 @@ function BookingsDashboardContent() {
     else router.push(url);
   }, [pathname, router]);
 
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    let changed = false;
-    if (!params.has("status")) {
-      params.set("status", "all");
-      changed = true;
-    }
-    if (!params.has("page")) {
-      params.set("page", "1");
-      changed = true;
-    }
-    if (!params.has("limit")) {
-      params.set("limit", String(DEFAULT_PAGE_LIMIT));
-      changed = true;
-    }
-    if (changed) {
-      pushParams(params, true);
-    }
-  }, [searchParams, pushParams]);
-
   // Sync local states with URL params
   useEffect(() => {
     setLocalSearch(searchQuery);
     setLocalStatus(statusFilter);
     setLocalCategory(categoryFilter);
     setLocalSubCategory(subCategoryFilter);
-  }, [searchQuery, statusFilter, categoryFilter, subCategoryFilter]);
+    setDateRange({
+      from: new Date(startDateParam),
+      to: new Date(endDateParam),
+    });
+  }, [searchQuery, statusFilter, categoryFilter, subCategoryFilter, startDateParam, endDateParam]);
 
   // Data states
   const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [firstLoad, setFirstLoad] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [subCategories, setSubCategories] = useState<{ id: string; name: string; categoryId: string }[]>([]);
@@ -228,8 +232,9 @@ function BookingsDashboardContent() {
       const catQuery = categoryFilter !== "all" ? `&category=${encodeURIComponent(categoryFilter)}` : "";
       const subCatQuery = subCategoryFilter !== "all" ? `&subCategory=${encodeURIComponent(subCategoryFilter)}` : "";
       const searchPart = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
-
-      const res = await fetch(`/api/bookings?page=${page}&limit=${limit}${statusQuery}${catQuery}${subCatQuery}${searchPart}`);
+      const datePart = `&startDate=${startDateParam}&endDate=${endDateParam}`;
+ 
+      const res = await fetch(`/api/bookings?page=${page}&limit=${limit}${statusQuery}${catQuery}${subCatQuery}${searchPart}${datePart}`);
       if (!res.ok) throw new Error("Failed to load bookings");
       const json = await res.json();
       const mapped = (json.data || []).map((b: any) => ({
@@ -257,13 +262,12 @@ function BookingsDashboardContent() {
       toast.error("Error loading bookings queue");
     } finally {
       setLoading(false);
-      setFirstLoad(false);
     }
-  }, [statusFilter, categoryFilter, subCategoryFilter, searchQuery, page, limit]);
+  }, [statusFilter, categoryFilter, subCategoryFilter, searchQuery, page, limit, startDateParam, endDateParam]);
 
   useEffect(() => {
-    fetchBookings(firstLoad);
-  }, [fetchBookings, firstLoad]);
+    fetchBookings(true);
+  }, [fetchBookings]);
 
   // Real-time updates
   useRealtime(["bookings", "feedbacks"], () => fetchBookings(true));
@@ -274,6 +278,16 @@ function BookingsDashboardContent() {
     params.set("status", localStatus);
     params.set("category", localCategory);
     params.set("subCategory", localSubCategory);
+    if (dateRange?.from) {
+      params.set("startDate", formatLocalDateYMD(dateRange.from));
+    } else {
+      params.delete("startDate");
+    }
+    if (dateRange?.to) {
+      params.set("endDate", formatLocalDateYMD(dateRange.to));
+    } else {
+      params.delete("endDate");
+    }
     params.set("page", "1");
     pushParams(params);
   };
@@ -283,12 +297,20 @@ function BookingsDashboardContent() {
     setLocalStatus("all");
     setLocalCategory("all");
     setLocalSubCategory("all");
-
+    const dFrom = new Date();
+    dFrom.setMonth(dFrom.getMonth() - 1);
+    setDateRange({
+      from: dFrom,
+      to: new Date(),
+    });
+ 
     const params = new URLSearchParams(searchParams.toString());
     params.set("search", "");
     params.set("status", "all");
     params.set("category", "all");
     params.set("subCategory", "all");
+    params.set("startDate", formatLocalDateYMD(dFrom));
+    params.set("endDate", formatLocalDateYMD(new Date()));
     params.set("page", "1");
     pushParams(params);
   };
@@ -300,8 +322,9 @@ function BookingsDashboardContent() {
       const catQuery = categoryFilter !== "all" ? `&category=${encodeURIComponent(categoryFilter)}` : "";
       const subCatQuery = subCategoryFilter !== "all" ? `&subCategory=${encodeURIComponent(subCategoryFilter)}` : "";
       const searchPart = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
+      const datePart = `&startDate=${startDateParam}&endDate=${endDateParam}`;
       
-      const res = await fetch(`/api/bookings?export=true${statusQuery}${catQuery}${subCatQuery}${searchPart}`);
+      const res = await fetch(`/api/bookings?export=true${statusQuery}${catQuery}${subCatQuery}${searchPart}${datePart}`);
       if (!res.ok) throw new Error("Failed to export bookings");
       const json = await res.json();
       
@@ -524,7 +547,12 @@ function BookingsDashboardContent() {
             </SelectContent>
           </Select>
         </div>
-
+ 
+        <div className="w-full md:w-56 space-y-1">
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Date range</Label>
+          <DateRangePicker value={dateRange} onChange={setDateRange} />
+        </div>
+ 
         <div className="w-full md:w-40 space-y-1">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Status</Label>
           <Select value={localStatus} onValueChange={setLocalStatus}>
@@ -577,7 +605,7 @@ function BookingsDashboardContent() {
       ) : (
         <div className="space-y-4">
           <TablePaginationFooter pagination={pagination} variant="top" />
-          <div className="p-1 bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
+          <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
             <Table>
               <TableHeader className="bg-[#1c1f4a]/5">
                 <TableRow className="border-b border-[#e8dcc4]">

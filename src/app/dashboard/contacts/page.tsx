@@ -356,154 +356,156 @@ function ContactsCrudPageContent() {
           </button>
         </div>
       ) : (
-        <div className="p-1">
+        <div className="space-y-4">
           <TablePaginationFooter pagination={pagination} variant="top" />
-          <Table>
-            <TableHeader className="bg-[#1c1f4a]/5">
-              <TableRow className="border-b border-[#e8dcc4]">
-                <TableHead className="py-4 px-6 font-bold text-[#1c1f4a]">
-                  Status
-                </TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[#1c1f4a]">
-                  Email
-                </TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[#1c1f4a]">
-                  Phone
-                </TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[#1c1f4a]">
-                  Location
-                </TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[#1c1f4a]">
-                  Social Channels
-                </TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[#1c1f4a] text-right">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {contacts.map((contact) => (
-                <TableRow
-                  key={contact.id}
-                  className={`border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors ${
-                    contact.isActive ? "bg-[#eaf2eb]/30" : ""
-                  }`}
-                >
-                  <TableCell className="py-4 px-6">
-                    <button
-                      onClick={() => handleToggleActive(contact)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
-                        contact.isActive
-                          ? "bg-[#6b8f71]/15 text-[#6b8f71]"
-                          : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
-                      }`}
-                    >
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      {contact.isActive ? "Active" : "Set Active"}
-                    </button>
-                  </TableCell>
-                  <TableCell className="py-4 px-6 text-[#1c1f4a] font-medium">
-                    {contact.email ? (
-                      <span className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-[#9396ae] shrink-0" />
-                        {contact.email}
-                      </span>
-                    ) : (
-                      <span className="text-white/0 font-mono select-none">
-                        --
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-4 px-6 text-[#5a5e7a]">
-                    {contact.phone ? (
-                      <span className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-[#9396ae] shrink-0" />
-                        {contact.phone}
-                      </span>
-                    ) : (
-                      <span className="text-white/0 font-mono select-none">
-                        --
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-4 px-6 text-[#5a5e7a]">
-                    {contact.location ? (
-                      <span className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-[#9396ae] shrink-0" />
-                        {contact.location}
-                      </span>
-                    ) : (
-                      <span className="text-white/0 font-mono select-none">
-                        --
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-4 px-6">
-                    <div className="flex gap-2">
-                      {contact.instagramLink && (
-                        <a
-                          href={contact.instagramLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1.5 bg-[# rose-light] border border-[#rose-light]/40 hover:border-[#rose]/60 text-[#c4796a] hover:bg-[#c4796a]/10 rounded-lg transition-all"
-                          title="Instagram"
-                        >
-                          <FaInstagram className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                      {contact.linkedinLink && (
-                        <a
-                          href={contact.linkedinLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1.5 bg-[#slate-light] border border-[#slate-light]/40 hover:border-[#slate]/60 text-[#4a6fa5] hover:bg-[#4a6fa5]/10 rounded-lg transition-all"
-                          title="LinkedIn"
-                        >
-                          <FaLinkedin className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                      {contact.youtubeLink && (
-                        <a
-                          href={contact.youtubeLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1.5 bg-[#gold-light] border border-[#gold-light]/40 hover:border-[#gold]/60 text-[#b86a16] hover:bg-[#b86a16]/10 rounded-lg transition-all"
-                          title="YouTube"
-                        >
-                          <FaYoutube className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                      {!contact.instagramLink &&
-                        !contact.linkedinLink &&
-                        !contact.youtubeLink && (
-                          <span className="text-[#9396ae] text-xs font-mono">
-                            None
-                          </span>
-                        )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-4 px-6 text-right">
-                    <div className="inline-flex items-center gap-2">
-                      <button
-                        onClick={() => handleOpenEdit(contact)}
-                        className="p-2 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
-                        title="Edit"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleTriggerDelete(contact.id)}
-                        className="p-2 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </TableCell>
+          <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
+            <Table>
+              <TableHeader className="bg-[#1c1f4a]/5">
+                <TableRow className="border-b border-[#e8dcc4]">
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                    Status
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                    Email
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                    Phone
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                    Location
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                    Social Channels
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right">
+                    Actions
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {contacts.map((contact) => (
+                  <TableRow
+                    key={contact.id}
+                    className={`border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors ${
+                      contact.isActive ? "bg-[#eaf2eb]/30" : ""
+                    }`}
+                  >
+                    <TableCell className="py-3 px-4">
+                      <button
+                        onClick={() => handleToggleActive(contact)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
+                          contact.isActive
+                            ? "bg-[#6b8f71]/15 text-[#6b8f71]"
+                            : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
+                        }`}
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        {contact.isActive ? "Active" : "Set Active"}
+                      </button>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-[#1c1f4a] font-medium">
+                      {contact.email ? (
+                        <span className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-[#9396ae] shrink-0" />
+                          {contact.email}
+                        </span>
+                      ) : (
+                        <span className="text-white/0 font-mono select-none">
+                          --
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-[#5a5e7a]">
+                      {contact.phone ? (
+                        <span className="flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-[#9396ae] shrink-0" />
+                          {contact.phone}
+                        </span>
+                      ) : (
+                        <span className="text-white/0 font-mono select-none">
+                          --
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-[#5a5e7a]">
+                      {contact.location ? (
+                        <span className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-[#9396ae] shrink-0" />
+                          {contact.location}
+                        </span>
+                      ) : (
+                        <span className="text-white/0 font-mono select-none">
+                          --
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3 px-4">
+                      <div className="flex gap-2">
+                        {contact.instagramLink && (
+                          <a
+                            href={contact.instagramLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 bg-[# rose-light] border border-[#rose-light]/40 hover:border-[#rose]/60 text-[#c4796a] hover:bg-[#c4796a]/10 rounded-lg transition-all"
+                            title="Instagram"
+                          >
+                            <FaInstagram className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {contact.linkedinLink && (
+                          <a
+                            href={contact.linkedinLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 bg-[#slate-light] border border-[#slate-light]/40 hover:border-[#slate]/60 text-[#4a6fa5] hover:bg-[#4a6fa5]/10 rounded-lg transition-all"
+                            title="LinkedIn"
+                          >
+                            <FaLinkedin className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {contact.youtubeLink && (
+                          <a
+                            href={contact.youtubeLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 bg-[#gold-light] border border-[#gold-light]/40 hover:border-[#gold]/60 text-[#b86a16] hover:bg-[#b86a16]/10 rounded-lg transition-all"
+                            title="YouTube"
+                          >
+                            <FaYoutube className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {!contact.instagramLink &&
+                          !contact.linkedinLink &&
+                          !contact.youtubeLink && (
+                            <span className="text-[#9396ae] text-xs font-mono">
+                              None
+                            </span>
+                          )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-right">
+                      <div className="inline-flex items-center gap-2">
+                        <button
+                          onClick={() => handleOpenEdit(contact)}
+                          className="p-2 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleTriggerDelete(contact.id)}
+                          className="p-2 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           <TablePaginationFooter pagination={pagination} variant="bottom" />
         </div>
       )}
