@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { offeringSlots, slotLocationsMap, sessionLocations } from "@/db/schema";
+import { offeringSlots, slotLocationsMap, sessionLocations, offeringSubCategories } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, and, sql, desc } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
@@ -28,8 +28,17 @@ export async function GET(req: Request) {
     const total = Number(countResult[0]?.count || 0);
 
     const slots = await db
-      .select()
+      .select({
+        id: offeringSlots.id,
+        subCategoryId: offeringSlots.subCategoryId,
+        slotDate: offeringSlots.slotDate,
+        startTime: offeringSlots.startTime,
+        endTime: offeringSlots.endTime,
+        status: offeringSlots.status,
+        subCategoryName: offeringSubCategories.name,
+      })
       .from(offeringSlots)
+      .innerJoin(offeringSubCategories, eq(offeringSlots.subCategoryId, offeringSubCategories.id))
       .where(condition)
       .orderBy(desc(offeringSlots.slotDate), desc(offeringSlots.startTime))
       .limit(limit)

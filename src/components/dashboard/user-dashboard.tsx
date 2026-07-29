@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { formatDate, formatTimeRange } from "@/lib/format";
 
 type Booking = {
   id: string;
@@ -240,10 +241,10 @@ export default function UserDashboard() {
                   <div className="text-right text-xs">
                     <div className="font-bold text-[#1c1f4a] flex items-center justify-end gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-[#b86a16]" />{" "}
-                      {booking.slot.slotDate}
+                      {formatDate(booking.slot.slotDate)}
                     </div>
                     <div className="text-[#5a5e7a] text-[10px] mt-0.5">
-                      {booking.slot.startTime} - {booking.slot.endTime}
+                      {formatTimeRange(booking.slot.startTime, booking.slot.endTime)}
                     </div>
                   </div>
                 )}

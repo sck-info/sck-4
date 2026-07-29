@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { bookings, offeringSubCategories, offeringSlots, users } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, and } from "drizzle-orm";
+import { formatDate } from "@/lib/format";
 
 const WHATSAPP_GATEWAY_URL = process.env.WHATSAPP_GATEWAY_URL || "http://localhost:3001";
 const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
@@ -83,7 +84,7 @@ export async function POST(req: Request) {
 
     // Trigger Admin Notification
     if (ADMIN_NOTIFICATION_PHONE) {
-      const dateStr = bookingData.slot ? String(bookingData.slot.slotDate) : "TBD";
+      const dateStr = bookingData.slot ? formatDate(bookingData.slot.slotDate) : "TBD";
       const adminMsg = `User ${bookingData.user.name} requested cancellation for ${bookingData.subCategory.name} on date ${dateStr}.\n\nReason: ${reason}`;
       await sendWhatsApp(ADMIN_NOTIFICATION_PHONE, adminMsg);
     }

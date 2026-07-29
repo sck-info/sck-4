@@ -4,6 +4,7 @@ import { bookings, offeringSlots, offeringSubCategories, users } from "@/db/sche
 import { auth } from "@/lib/auth";
 import { eq, and, gt } from "drizzle-orm";
 import { uploadImages } from "@/lib/cloudinaryUpload";
+import { formatDate } from "@/lib/format";
 
 const WHATSAPP_GATEWAY_URL = process.env.WHATSAPP_GATEWAY_URL || "http://localhost:3001";
 const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
@@ -140,7 +141,7 @@ export async function POST(req: Request) {
     if (userList.length > 0) {
       const user = userList[0];
       const userPhone = `${user.phoneCode || "91"}${user.phone}`;
-      const dateStr = slotRecord ? String(slotRecord.slotDate) : "TBD";
+      const dateStr = slotRecord ? formatDate(slotRecord.slotDate) : "TBD";
 
       // 1. Send confirmation/receipt to User
       const userMsg = `Dear ${user.name},\n\nYour slot is pending for the booking ${subCategory.name} on date ${dateStr}.\n\nOur team will review and update you in 12-24 hours.\n\nThank you,\nSharath Kancherla Admin Team.`;

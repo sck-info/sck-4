@@ -59,6 +59,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { formatDate, formatTimeRange } from "@/lib/format";
 
 type BookingRow = {
   id: string;
@@ -421,9 +422,9 @@ function BookingsDashboardContent() {
                     <TableCell className="py-3 px-4">
                       {booking.slotDate ? (
                         <div className="space-y-0.5">
-                          <div className="font-semibold text-[#1c1f4a] font-mono">{booking.slotDate}</div>
-                          <div className="text-[10px] text-[#5a5e7a] font-mono flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-[#b86a16]" /> {booking.startTime} - {booking.endTime}
+                          <div className="font-semibold text-[#1c1f4a]">{formatDate(booking.slotDate)}</div>
+                          <div className="text-[10px] text-[#5a5e7a] flex items-center gap-1 font-semibold">
+                            <Clock className="w-3 h-3 text-[#b86a16]" /> {formatTimeRange(booking.startTime, booking.endTime)}
                           </div>
                         </div>
                       ) : (

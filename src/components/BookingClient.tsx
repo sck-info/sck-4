@@ -8,6 +8,7 @@ import { Calendar, Clock, MapPin, Check, ChevronLeft, ChevronRight, Loader2 } fr
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimeSelect } from "@/components/ui/time-select";
 import { format } from "date-fns";
+import { formatDate, formatTimeRange } from "@/lib/format";
 import {
   Select,
   SelectContent,
@@ -397,7 +398,7 @@ export default function BookingClient({
                 {selectedDate && (
                   <div style={{ marginTop: 24, borderTop: "1px solid rgba(28,31,74,0.06)", paddingTop: 16 }}>
                     <h4 style={{ fontSize: 14, color: "var(--indigo)", fontWeight: 600, marginBottom: 12 }}>
-                      Available Timings on {selectedDate}:
+                      Available Timings on {formatDate(selectedDate)}:
                     </h4>
 
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -423,7 +424,7 @@ export default function BookingClient({
                           >
                             <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 500, color: "var(--indigo)" }}>
                               <Clock size={16} style={{ color: "var(--gold)" }} />
-                              {slot.startTime} - {slot.endTime}
+                              {formatTimeRange(slot.startTime, slot.endTime)}
                             </span>
                             {isSlotSelected && <Check size={16} style={{ color: "var(--gold)" }} />}
                           </button>

@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { bookings, users, offeringSubCategories, offeringSlots, sessionLocations } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
+import { formatDate, formatTimeRange } from "@/lib/format";
 
 const WHATSAPP_GATEWAY_URL = process.env.WHATSAPP_GATEWAY_URL || "http://localhost:3001";
 const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
@@ -116,16 +117,16 @@ export async function PATCH(
         }
       }
 
-      const dateStr = bookingData.slot ? String(bookingData.slot.slotDate) : "TBD";
+      const dateStr = bookingData.slot ? formatDate(bookingData.slot.slotDate) : "TBD";
       const timingStr = bookingData.slot
-        ? `${bookingData.slot.startTime} - ${bookingData.slot.endTime}`
+        ? formatTimeRange(bookingData.slot.startTime, bookingData.slot.endTime)
         : "TBD";
 
       const message = `Dear ${bookingData.user.name},\n\nYour booking for ${bookingData.subCategory.name} has been CONFIRMED!\n\n📅 Date: ${dateStr}\n⏰ Time: ${timingStr}\n🌐 Format: ${formatLabel}\n🔗 Session Link/Map: ${locationLink}\n\nThank you,\nSharath Kancherla Admin Team.`;
       await sendWhatsApp(userPhone, message);
 
     } else if (status === "cancelled") {
-      const dateStr = bookingData.slot ? String(bookingData.slot.slotDate) : "TBD";
+      const dateStr = bookingData.slot ? formatDate(bookingData.slot.slotDate) : "TBD";
       const reason = adminCancellationReason || "Rescheduling conflict";
       const message = `Dear ${bookingData.user.name},\n\nYour booking for ${bookingData.subCategory.name} on date ${dateStr} has been cancelled.\n\nReason: ${reason}\n\nThank you,\nSharath Kancherla Admin Team.`;
       await sendWhatsApp(userPhone, message);

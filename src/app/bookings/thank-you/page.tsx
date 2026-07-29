@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Loader2, Calendar, Clock, Home, ListTodo } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import { formatDate, formatTimeRange } from "@/lib/format";
 
 function ThankYouContent() {
   const searchParams = useSearchParams();
@@ -168,7 +169,7 @@ function ThankYouContent() {
             >
               <Calendar size={18} style={{ color: "var(--gold)" }} />
               <span>
-                Date: <strong>{slotDate}</strong>
+                Date: <strong>{formatDate(slotDate)}</strong>
               </span>
             </div>
             <div
@@ -184,7 +185,7 @@ function ThankYouContent() {
               <span>
                 Time:{" "}
                 <strong>
-                  {startTime} - {endTime}
+                  {formatTimeRange(startTime, endTime)}
                 </strong>
               </span>
             </div>

@@ -50,6 +50,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { formatDate, formatTimeRange } from "@/lib/format";
 
 type SlotRow = {
   id: string;
@@ -342,9 +343,9 @@ function SlotsDashboardContent() {
                     }`}
                   >
                     <TableCell className="py-3 px-4 text-xs font-bold text-[#1c1f4a]">{slot.subCategoryName}</TableCell>
-                    <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] font-mono">{slot.slotDate}</TableCell>
+                    <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] font-semibold">{formatDate(slot.slotDate)}</TableCell>
                     <TableCell className="py-3 px-4 text-xs font-medium text-[#1c1f4a] flex items-center gap-1.5 pt-4">
-                      <Clock className="w-3.5 h-3.5 text-[#b86a16]" /> {slot.startTime} - {slot.endTime}
+                      <Clock className="w-3.5 h-3.5 text-[#b86a16]" /> {formatTimeRange(slot.startTime, slot.endTime)}
                     </TableCell>
                     <TableCell className="py-3 px-4 text-xs">
                       <div className="flex flex-wrap gap-1">

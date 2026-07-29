@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { formatDate, formatTimeRange } from "@/lib/format";
 
 function SeekerBookingsContent() {
   const router = useRouter();
@@ -237,11 +238,11 @@ function SeekerBookingsContent() {
                     <div className="text-xs text-[#5a5e7a] font-medium space-y-1">
                       <div className="flex items-center gap-1.5 font-bold">
                         <Calendar className="w-3.5 h-3.5 text-[#b86a16]" />
-                        {booking.slot.slotDate}
+                        {formatDate(booking.slot.slotDate)}
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5 text-[#b86a16]" />
-                        {booking.slot.startTime} - {booking.slot.endTime}
+                        {formatTimeRange(booking.slot.startTime, booking.slot.endTime)}
                       </div>
                     </div>
                   ) : (
