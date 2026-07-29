@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type Question = {
   id: string;
@@ -619,20 +620,26 @@ export default function BookingClient({
 
                   {q.fieldType === "single_select" && (
                     <div>
-                      <select
-                        required={q.isRequired}
+                      <Select
                         value={val}
-                        onChange={(e) => handleInputChange(q.id, e.target.value)}
-                        style={{ width: "100%", padding: "10px 12px", border: "1px solid rgba(28,31,74,0.15)", borderRadius: 8, background: "white", outline: "none", fontSize: 14 }}
+                        onValueChange={(newVal) => handleInputChange(q.id, newVal)}
                       >
-                        <option value="">Select option...</option>
-                        {opts.map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                        {q.allowOther && <option value="Other">Other</option>}
-                      </select>
+                        <SelectTrigger className="w-full h-11 bg-white border border-gray-300 rounded-xl text-xs w-full flex items-center justify-between text-left whitespace-normal [&>span]:line-clamp-none [&>span]:block [&>span]:w-full text-[#1c1f4a] font-semibold hover:bg-gray-100/50">
+                          <SelectValue placeholder="Select option..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {opts.map((opt) => (
+                            <SelectItem key={opt} value={opt} className="text-xs">
+                              {opt}
+                            </SelectItem>
+                          ))}
+                          {q.allowOther && (
+                            <SelectItem value="Other" className="text-xs">
+                              Other
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
 
                       {/* Conditional Short Answer field if 'Other' chosen */}
                       {q.allowOther && val === "Other" && (
@@ -649,49 +656,45 @@ export default function BookingClient({
                   )}
 
                   {q.fieldType === "multi_select" && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 6 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
                       {opts.map((opt) => {
                         const list: string[] = Array.isArray(val) ? val : [];
                         const checked = list.includes(opt);
                         return (
-                          <label key={opt} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-dark)", cursor: "pointer" }}>
-                            <input
-                              type="checkbox"
+                          <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#1c1f4a] cursor-pointer">
+                            <Checkbox
                               checked={checked}
-                              onChange={(e) => {
+                              onCheckedChange={(checkedState) => {
                                 let newList = [...list];
-                                if (e.target.checked) {
+                                if (checkedState) {
                                   newList.push(opt);
                                 } else {
                                   newList = newList.filter((item) => item !== opt);
                                 }
                                 handleInputChange(q.id, newList);
                               }}
-                              style={{ width: 16, height: 16, cursor: "pointer" }}
                             />
-                            {opt}
+                            <span>{opt}</span>
                           </label>
                         );
                       })}
                       {q.allowOther && (
-                        <div>
-                          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-dark)", cursor: "pointer" }}>
-                            <input
-                              type="checkbox"
+                        <div className="flex flex-col gap-2">
+                          <label className="flex items-center gap-2 text-xs font-semibold text-[#1c1f4a] cursor-pointer">
+                            <Checkbox
                               checked={(Array.isArray(val) ? val : []).includes("Other")}
-                              onChange={(e) => {
+                              onCheckedChange={(checkedState) => {
                                 const list = Array.isArray(val) ? val : [];
                                 let newList = [...list];
-                                if (e.target.checked) {
+                                if (checkedState) {
                                   newList.push("Other");
                                 } else {
                                   newList = newList.filter((item) => item !== "Other");
                                 }
                                 handleInputChange(q.id, newList);
                               }}
-                              style={{ width: 16, height: 16, cursor: "pointer" }}
                             />
-                            Other
+                            <span>Other</span>
                           </label>
 
                           {/* Conditional specify input */}
@@ -736,42 +739,54 @@ export default function BookingClient({
                 <label style={{ fontSize: 13, fontWeight: 600, color: "var(--indigo)", display: "block", marginBottom: 6 }}>
                   Upload Payment Screenshot Receipt <span style={{ color: "var(--gold)" }}>*</span>
                 </label>
-                <input
-                  type="file"
-                  accept="image/png, image/jpeg, image/webp"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setReceiptFile(file);
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setReceiptPreview(reader.result as string);
-                      };
-                      reader.readAsDataURL(file);
-                    } else {
-                      setReceiptPreview(null);
-                    }
-                  }}
-                  style={{
-                    width: "100%",
-                    fontSize: 13,
-                    color: "var(--text-mid)",
-                    background: "white",
-                    padding: "8px 12px",
-                    border: "1px solid rgba(28,31,74,0.15)",
-                    borderRadius: 8,
-                    outline: "none",
-                  }}
-                />
-                {receiptPreview && (
-                  <div style={{ marginTop: 12, textAlign: "center" }}>
-                    <p style={{ fontSize: 11, color: "var(--text-mid)", marginBottom: 6 }}>Screenshot Preview:</p>
+                {receiptPreview ? (
+                  <div className="relative border border-[#e8dcc4] bg-[#faf7f2]/30 rounded-xl p-4 flex flex-col items-center justify-center gap-3">
                     <img
                       src={receiptPreview}
                       alt="Receipt Preview"
-                      style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 8, border: "1px dashed rgba(28,31,74,0.2)" }}
+                      className="w-32 h-32 object-cover rounded-lg border border-dashed border-[#e8dcc4]"
                     />
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReceiptFile(null);
+                          setReceiptPreview(null);
+                        }}
+                        className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition"
+                      >
+                        Remove Image
+                      </button>
+                    </div>
                   </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#e8dcc4] hover:border-[#b86a16] bg-[#faf7f2]/10 hover:bg-[#faf7f2]/30 rounded-xl cursor-pointer transition p-4">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <svg className="w-8 h-8 text-[#b86a16] mb-2 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                      </svg>
+                      <p className="mb-1 text-xs text-[#1c1f4a] font-semibold">Click to upload payment receipt</p>
+                      <p className="text-[10px] text-gray-500">PNG, JPG, or WEBP (Max 5MB)</p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/png, image/jpeg, image/webp"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        setReceiptFile(file);
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setReceiptPreview(reader.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        } else {
+                          setReceiptPreview(null);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                  </label>
                 )}
               </div>
             </div>
