@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { bookings, users, offeringSubCategories, offeringSlots, feedbacks } from "@/db/schema";
+import { bookings, users, offeringSubCategories, offeringSlots, feedbacks, offeringCategories } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, and, sql, desc } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
@@ -17,6 +17,8 @@ export async function GET(req: Request) {
     const status = searchParams.get("status");
     const subCategoryId = searchParams.get("subCategoryId");
     const categoryId = searchParams.get("categoryId");
+    const categoryName = searchParams.get("category");
+    const subCategoryName = searchParams.get("subCategory");
 
     const conditions = [];
     if (status) {
@@ -27,6 +29,12 @@ export async function GET(req: Request) {
     }
     if (categoryId) {
       conditions.push(eq(offeringSubCategories.categoryId, categoryId));
+    }
+    if (subCategoryName) {
+      conditions.push(eq(offeringSubCategories.name, subCategoryName));
+    }
+    if (categoryName) {
+      conditions.push(eq(offeringCategories.name, categoryName));
     }
 
     // Security Filter: non-admin users can ONLY retrieve their own bookings
@@ -39,6 +47,8 @@ export async function GET(req: Request) {
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(bookings)
+      .leftJoin(offeringSubCategories, eq(bookings.subCategoryId, offeringSubCategories.id))
+      .leftJoin(offeringCategories, eq(offeringSubCategories.categoryId, offeringCategories.id))
       .where(condition);
 
     const total = Number(countResult[0]?.count || 0);
@@ -78,6 +88,7 @@ export async function GET(req: Request) {
       .from(bookings)
       .innerJoin(users, eq(bookings.userId, users.id))
       .innerJoin(offeringSubCategories, eq(bookings.subCategoryId, offeringSubCategories.id))
+      .innerJoin(offeringCategories, eq(offeringSubCategories.categoryId, offeringCategories.id))
       .leftJoin(offeringSlots, eq(bookings.slotId, offeringSlots.id))
       .leftJoin(feedbacks, eq(bookings.id, feedbacks.bookingId))
       .where(condition)
