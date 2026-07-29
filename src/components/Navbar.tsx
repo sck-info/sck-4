@@ -155,7 +155,7 @@ export default function Navbar() {
           {/* Dynamic Login / Dashboard Button */}
           {session ? (
             <a
-              href={session.user.role === "ADMIN" ? "/dashboard" : "/user"}
+              href="/dashboard"
               style={{
                 background: "var(--indigo)",
                 color: "var(--ivory)",
@@ -292,7 +292,7 @@ export default function Navbar() {
           {/* Dynamic Login / Dashboard Link */}
           {session ? (
             <a
-              href={session.user.role === "ADMIN" ? "/dashboard" : "/user"}
+              href="/dashboard"
               onClick={() => setMenuOpen(false)}
               style={{
                 color: "var(--text-dark)",

@@ -50,12 +50,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
 import { toast } from "sonner";
 
 type QuestionRow = {
   id: string;
   fieldLabel: string;
-  fieldType: "short_answer" | "long_answer" | "number" | "single_select" | "multi_select" | "date" | "time" | "url" | "star_rating";
+  fieldType:
+    | "short_answer"
+    | "long_answer"
+    | "number"
+    | "single_select"
+    | "multi_select"
+    | "date"
+    | "time"
+    | "url"
+    | "star_rating";
   options: string[] | null;
   allowOther: boolean;
   createdAt: string | null;
@@ -84,11 +94,14 @@ function FormBuilderDashboardContent() {
   const page = searchParams.get("page") || "1";
   const limit = searchParams.get("limit") || "25";
 
-  const pushParams = useCallback((params: URLSearchParams, replace = false) => {
-    const url = `${pathname}?${params.toString()}`;
-    if (replace) router.replace(url);
-    else router.push(url);
-  }, [pathname, router]);
+  const pushParams = useCallback(
+    (params: URLSearchParams, replace = false) => {
+      const url = `${pathname}?${params.toString()}`;
+      if (replace) router.replace(url);
+      else router.push(url);
+    },
+    [pathname, router],
+  );
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -110,11 +123,21 @@ function FormBuilderDashboardContent() {
     }
   }, [searchParams, pushParams]);
 
+  const isInitialLoadRef = React.useRef(true);
+
   // Data states
   const [questions, setQuestions] = useState<QuestionRow[]>([]);
+  const [allQuestions, setAllQuestions] = useState<QuestionRow[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategoryRow[]>([]);
-  const [selectedSubId, setSelectedSubId] = useState<string>("");
-  const [linkedQuestions, setLinkedQuestions] = useState<LinkedQuestionRow[]>([]);
+  const [linkedQuestions, setLinkedQuestions] = useState<LinkedQuestionRow[]>(
+    [],
+  );
+
+  // Selected subcategory from URL
+  const subCategoryParam = searchParams.get("subCategory") || "";
+  const activeSubCategory =
+    subCategories.find((s) => s.name === subCategoryParam) || subCategories[0];
+  const selectedSubId = activeSubCategory?.id || "";
 
   const [loadingLibrary, setLoadingLibrary] = useState(true);
   const [loadingLinked, setLoadingLinked] = useState(false);
@@ -125,6 +148,55 @@ function FormBuilderDashboardContent() {
     total: 0,
     totalPages: 1,
   });
+
+  const [linkedPagination, setLinkedPagination] = useState<PaginationMeta>({
+    page: 1,
+    limit: 25,
+    total: 0,
+    totalPages: 1,
+  });
+
+  // URL based filter values
+  const searchQuery = searchParams.get("search") || "";
+  const fieldTypesQuery = searchParams.get("fieldTypes") || "";
+
+  // Local state buffers for filters (non-auto-applying)
+  const [tempSearch, setTempSearch] = useState(searchQuery);
+  const [tempFieldTypes, setTempFieldTypes] = useState<string[]>(
+    fieldTypesQuery ? fieldTypesQuery.split(",") : [],
+  );
+
+  // Sync temp states if URL params change externally (e.g. on tab change)
+  useEffect(() => {
+    setTempSearch(searchQuery);
+    setTempFieldTypes(fieldTypesQuery ? fieldTypesQuery.split(",") : []);
+  }, [searchQuery, fieldTypesQuery]);
+
+  const handleApplyFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tempSearch) {
+      params.set("search", tempSearch);
+    } else {
+      params.delete("search");
+    }
+    if (tempFieldTypes.length > 0) {
+      params.set("fieldTypes", tempFieldTypes.join(","));
+    } else {
+      params.delete("fieldTypes");
+    }
+    params.set("page", "1"); // Reset pagination
+    pushParams(params);
+  };
+
+  const handleClearFilters = () => {
+    setTempSearch("");
+    setTempFieldTypes([]);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("search");
+    params.delete("fieldTypes");
+    params.set("page", "1");
+    pushParams(params);
+  };
 
   // Modal control states (Library Questions)
   const [libModalOpen, setLibModalOpen] = useState(false);
@@ -148,15 +220,34 @@ function FormBuilderDashboardContent() {
   const [linkLoading, setLinkLoading] = useState(false);
   const [unlinkConfirmId, setUnlinkConfirmId] = useState<string | null>(null);
 
-  // Fetch Reusable Questions Library
+  // Edit Link Question state
+  const [editLinkModalOpen, setEditLinkModalOpen] = useState(false);
+  const [editingLink, setEditingLink] = useState<LinkedQuestionRow | null>(
+    null,
+  );
+  const [editLinkFormData, setEditLinkFormData] = useState({
+    isRequired: true,
+    sortOrder: 10,
+  });
+  const [editLinkLoading, setEditLinkLoading] = useState(false);
+
+  // Initial load refs to prevent flickering
+  const isInitialLoadLinkedRef = React.useRef(true);
+
+  // Fetch Reusable Questions Library (Paginated for Library Tab)
   const fetchLibrary = useCallback(async () => {
     if (activeTab !== "library") {
       setLoadingLibrary(false);
       return;
     }
-    setLoadingLibrary(true);
+    if (isInitialLoadRef.current) {
+      setLoadingLibrary(true);
+      isInitialLoadRef.current = false;
+    }
     try {
-      const res = await fetch(`/api/questions?page=${page}&limit=${limit}`);
+      const res = await fetch(
+        `/api/questions?page=${page}&limit=${limit}&search=${encodeURIComponent(searchQuery)}&fieldTypes=${encodeURIComponent(fieldTypesQuery)}`,
+      );
       if (!res.ok) throw new Error("Failed to load questions");
       const json = await res.json();
       setQuestions(json.data);
@@ -167,7 +258,19 @@ function FormBuilderDashboardContent() {
     } finally {
       setLoadingLibrary(false);
     }
-  }, [activeTab, page, limit]);
+  }, [activeTab, page, limit, searchQuery, fieldTypesQuery]);
+
+  // Fetch all Reusable Questions (Unpaginated for Mapping selector list)
+  const fetchAllQuestions = useCallback(async () => {
+    try {
+      const res = await fetch("/api/questions?page=1&limit=1000");
+      if (!res.ok) throw new Error();
+      const json = await res.json();
+      setAllQuestions(json.data);
+    } catch (err) {
+      console.error("Error loading all questions", err);
+    }
+  }, []);
 
   // Fetch Sub-categories (offerings) for mapping dropdown
   const fetchSubCategories = async () => {
@@ -176,52 +279,92 @@ function FormBuilderDashboardContent() {
       if (res.ok) {
         const json = await res.json();
         setSubCategories(json.data);
-        if (json.data.length > 0 && !selectedSubId) {
-          setSelectedSubId(json.data[0].id);
-        }
       }
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Fetch linked questions for selected Sub-category
+  // Fetch linked questions for selected Sub-category (Paginated)
   const fetchLinkedQuestions = useCallback(async () => {
     if (!selectedSubId) return;
-    setLoadingLinked(true);
+    if (isInitialLoadLinkedRef.current) {
+      setLoadingLinked(true);
+      isInitialLoadLinkedRef.current = false;
+    }
     try {
-      const res = await fetch(`/api/sub-categories/${selectedSubId}/questions`);
+      const res = await fetch(
+        `/api/sub-categories/${selectedSubId}/questions?page=${page}&limit=${limit}&search=${encodeURIComponent(searchQuery)}&fieldTypes=${encodeURIComponent(fieldTypesQuery)}`,
+      );
       if (!res.ok) throw new Error("Failed to load linked questionnaire");
       const json = await res.json();
       setLinkedQuestions(json.data);
+      setLinkedPagination(json.pagination);
     } catch (err) {
       console.error(err);
       toast.error("Error loading sub-category questionnaire");
     } finally {
       setLoadingLinked(false);
     }
-  }, [selectedSubId]);
+  }, [selectedSubId, page, limit, searchQuery, fieldTypesQuery]);
 
   useEffect(() => {
     fetchLibrary();
   }, [fetchLibrary]);
 
   useEffect(() => {
+    if (activeTab === "mapping") {
+      fetchAllQuestions();
+    }
+  }, [activeTab, fetchAllQuestions]);
+
+  useEffect(() => {
     fetchSubCategories();
   }, []);
 
   useEffect(() => {
+    if (activeTab === "mapping" && subCategories.length > 0) {
+      const params = new URLSearchParams(searchParams.toString());
+      if (!params.has("subCategory")) {
+        params.set("subCategory", subCategories[0].name);
+        pushParams(params, true);
+      }
+    }
+  }, [activeTab, subCategories, searchParams, pushParams]);
+
+  useEffect(() => {
+    isInitialLoadLinkedRef.current = true;
     fetchLinkedQuestions();
-  }, [fetchLinkedQuestions]);
+  }, [selectedSubId, fetchLinkedQuestions]);
 
   // Real-time updates
-  useRealtime(["form_questions"], fetchLibrary);
+  useRealtime(["form_questions"], () => {
+    fetchLibrary();
+    if (activeTab === "mapping") {
+      fetchAllQuestions();
+    }
+  });
   useRealtime(["sub_category_questions"], fetchLinkedQuestions);
 
   // Tab switch
   const handleTabChange = (tab: "library" | "mapping") => {
+    isInitialLoadRef.current = true;
+    isInitialLoadLinkedRef.current = true;
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", tab);
+    params.set("page", "1");
+    params.delete("search");
+    params.delete("fieldTypes");
+    pushParams(params);
+  };
+
+  // Sub-category switch
+  const handleSubCategoryChange = (subId: string) => {
+    const subObj = subCategories.find((s) => s.id === subId);
+    if (!subObj) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("subCategory", subObj.name);
+    // Reset page parameters since it is a new subcategory layout
     params.set("page", "1");
     pushParams(params);
   };
@@ -231,8 +374,13 @@ function FormBuilderDashboardContent() {
     e.preventDefault();
     setLibFormLoading(true);
 
-    const options = ["single_select", "multi_select"].includes(libFormData.fieldType)
-      ? libFormData.optionsRaw.split(",").map((o) => o.trim()).filter(Boolean)
+    const options = ["single_select", "multi_select"].includes(
+      libFormData.fieldType,
+    )
+      ? libFormData.optionsRaw
+          .split(",")
+          .map((o) => o.trim())
+          .filter(Boolean)
       : null;
 
     const payload = {
@@ -243,7 +391,9 @@ function FormBuilderDashboardContent() {
     };
 
     try {
-      const url = editingLib ? `/api/questions/${editingLib.id}` : "/api/questions";
+      const url = editingLib
+        ? `/api/questions/${editingLib.id}`
+        : "/api/questions";
       const method = editingLib ? "PATCH" : "POST";
       const res = await fetch(url, {
         method,
@@ -252,7 +402,11 @@ function FormBuilderDashboardContent() {
       });
 
       if (!res.ok) throw new Error("Failed to save question to library");
-      toast.success(editingLib ? "Question updated in library" : "Question created successfully");
+      toast.success(
+        editingLib
+          ? "Question updated in library"
+          : "Question created successfully",
+      );
       setLibModalOpen(false);
       fetchLibrary();
     } catch (err: any) {
@@ -266,7 +420,9 @@ function FormBuilderDashboardContent() {
   const handleConfirmDeleteLib = async () => {
     if (!deleteLibId) return;
     try {
-      const res = await fetch(`/api/questions/${deleteLibId}`, { method: "DELETE" });
+      const res = await fetch(`/api/questions/${deleteLibId}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error("Failed to delete question");
       toast.success("Question deleted successfully");
       fetchLibrary();
@@ -284,17 +440,21 @@ function FormBuilderDashboardContent() {
     setLinkLoading(true);
 
     try {
-      const res = await fetch(`/api/sub-categories/${selectedSubId}/questions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          questionId: linkFormData.questionId,
-          isRequired: linkFormData.isRequired,
-          sortOrder: linkFormData.sortOrder,
-        }),
-      });
+      const res = await fetch(
+        `/api/sub-categories/${selectedSubId}/questions`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            questionId: linkFormData.questionId,
+            isRequired: linkFormData.isRequired,
+            sortOrder: linkFormData.sortOrder,
+          }),
+        },
+      );
 
-      if (!res.ok) throw new Error("Failed to link question to this offering form");
+      if (!res.ok)
+        throw new Error("Failed to link question to this offering form");
       toast.success("Question linked successfully");
       setLinkModalOpen(false);
       fetchLinkedQuestions();
@@ -309,9 +469,12 @@ function FormBuilderDashboardContent() {
   const handleConfirmUnlink = async () => {
     if (!selectedSubId || !unlinkConfirmId) return;
     try {
-      const res = await fetch(`/api/sub-categories/${selectedSubId}/questions/${unlinkConfirmId}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `/api/sub-categories/${selectedSubId}/questions/${unlinkConfirmId}`,
+        {
+          method: "DELETE",
+        },
+      );
       if (!res.ok) throw new Error("Failed to unlink question");
       toast.success("Question unlinked successfully");
       fetchLinkedQuestions();
@@ -322,31 +485,59 @@ function FormBuilderDashboardContent() {
     }
   };
 
-  // Inline edit order / required status change
-  const handleInlineUpdate = async (questionId: string, isRequired: boolean, sortOrder: number) => {
+  // Open Link Question Editor
+  const handleOpenEditLink = (lq: LinkedQuestionRow) => {
+    setEditingLink(lq);
+    setEditLinkFormData({
+      isRequired: lq.isRequired,
+      sortOrder: lq.sortOrder,
+    });
+    setEditLinkModalOpen(true);
+  };
+
+  // Submit Link Question edits
+  const handleEditLinkSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSubId || !editingLink) return;
+    setEditLinkLoading(true);
+
     try {
-      const res = await fetch(`/api/sub-categories/${selectedSubId}/questions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionId, isRequired, sortOrder }),
-      });
-      if (!res.ok) throw new Error();
-      toast.success("Questionnaire layout order updated");
+      const res = await fetch(
+        `/api/sub-categories/${selectedSubId}/questions/${editingLink.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editLinkFormData),
+        },
+      );
+
+      if (!res.ok) throw new Error("Failed to update link settings");
+      toast.success("Question mapping updated successfully");
+      setEditLinkModalOpen(false);
       fetchLinkedQuestions();
-    } catch {
-      toast.error("Failed to update layout settings");
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred");
+    } finally {
+      setEditLinkLoading(false);
     }
   };
 
-  const showOptionsField = ["single_select", "multi_select"].includes(libFormData.fieldType);
+  const showOptionsField = ["single_select", "multi_select"].includes(
+    libFormData.fieldType,
+  );
 
   return (
     <div className="space-y-8 max-w-6xl">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>
-          <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">Form Questionnaires Builder</h1>
-          <p className="text-xs text-[#5a5e7a] mt-1">Configure reusable questions pool and link questionnaires to sub-category offerings.</p>
+          <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
+            Form Questionnaires Builder
+          </h1>
+          <p className="text-xs text-[#5a5e7a] mt-1">
+            Configure reusable questions pool and link questionnaires to
+            sub-category offerings.
+          </p>
         </div>
       </div>
 
@@ -376,21 +567,88 @@ function FormBuilderDashboardContent() {
 
       {/* TAB PANEL 1: Questions Pool Library */}
       {activeTab === "library" && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between border-b border-[#e8dcc4]/60 pb-3">
+        <div className="space-y-5">
+          {/* Header Row */}
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between border-b border-[#e8dcc4]/60 pb-3">
             <h2 className="text-sm font-bold text-[#1c1f4a] font-display flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-[#b86a16]" /> Questions Library
             </h2>
             <Button
               onClick={() => {
                 setEditingLib(null);
-                setLibFormData({ fieldLabel: "", fieldType: "short_answer", optionsRaw: "", allowOther: false });
+                setLibFormData({
+                  fieldLabel: "",
+                  fieldType: "short_answer",
+                  optionsRaw: "",
+                  allowOther: false,
+                });
                 setLibModalOpen(true);
               }}
-              className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full h-8 px-4 text-xs font-semibold"
+              className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full h-9.5 px-5 text-xs font-semibold shrink-0 w-full sm:w-auto"
             >
               <Plus className="w-3.5 h-3.5 mr-1" /> Create Question
             </Button>
+          </div>
+
+          {/* Dedicated Filters Card */}
+          <div className="bg-[#faf7f2]/25 border border-[#e8dcc4]/50 rounded-2xl p-4 shadow-2xs">
+            <div className="flex flex-col md:flex-row md:items-end gap-3.5 w-full">
+              <div className="flex-1 w-full">
+                <Label className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider block mb-1">
+                  Search Label
+                </Label>
+                <Input
+                  search
+                  placeholder="Search questions..."
+                  value={tempSearch}
+                  onChange={(e) => setTempSearch(e.target.value)}
+                  className="w-full border-[#e8dcc4]"
+                />
+              </div>
+              <div className="w-full md:w-64">
+                <Label className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider block mb-1">
+                  Filter Format Type
+                </Label>
+                <MultiSelectCombobox
+                  options={[
+                    "short_answer",
+                    "long_answer",
+                    "number",
+                    "single_select",
+                    "multi_select",
+                    "star_rating",
+                    "date",
+                    "time",
+                    "url",
+                  ]}
+                  selectedValues={tempFieldTypes}
+                  onSelectionChange={setTempFieldTypes}
+                  placeholder="Select formats..."
+                  formatOptionLabel={(opt) =>
+                    opt
+                      .split("_")
+                      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                      .join(" ")
+                  }
+                  width="w-full"
+                />
+              </div>
+              <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+                <Button
+                  variant="outline"
+                  onClick={handleClearFilters}
+                  className="h-9.5 text-[11px] font-bold border border-[#e8dcc4] text-[#5a5e7a] hover:bg-gray-100/50 rounded-lg cursor-pointer px-4 flex-1 md:flex-initial"
+                >
+                  Clear
+                </Button>
+                <Button
+                  onClick={handleApplyFilters}
+                  className="h-9.5 text-[11px] font-extrabold text-white bg-[#b86a16] hover:bg-[#b86a16]/90 rounded-lg cursor-pointer px-5 shadow-xs flex-1 md:flex-initial"
+                >
+                  Apply
+                </Button>
+              </div>
+            </div>
           </div>
 
           {loadingLibrary ? (
@@ -400,7 +658,10 @@ function FormBuilderDashboardContent() {
             </div>
           ) : questions.length === 0 ? (
             <div className="border border-dashed border-[#e8dcc4] bg-white/40 p-12 rounded-[2rem] text-center">
-              <p className="text-xs text-[#5a5e7a]">Questions pool is empty. Click Create Question above to populate reusable fields.</p>
+              <p className="text-xs text-[#5a5e7a]">
+                Questions pool is empty. Click Create Question above to populate
+                reusable fields.
+              </p>
             </div>
           ) : (
             <div className="p-1">
@@ -408,16 +669,29 @@ function FormBuilderDashboardContent() {
               <Table>
                 <TableHeader className="bg-[#1c1f4a]/5">
                   <TableRow className="border-b border-[#e8dcc4]">
-                    <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">Field Label</TableHead>
-                    <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">Input Format Type</TableHead>
-                    <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">Select options list</TableHead>
-                    <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs text-right">Actions</TableHead>
+                    <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">
+                      Field Label
+                    </TableHead>
+                    <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">
+                      Input Format Type
+                    </TableHead>
+                    <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">
+                      Select options list
+                    </TableHead>
+                    <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs text-right">
+                      Actions
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {questions.map((q) => (
-                    <TableRow key={q.id} className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors">
-                      <TableCell className="py-2.5 px-3 text-xs font-semibold text-[#1c1f4a]">{q.fieldLabel}</TableCell>
+                    <TableRow
+                      key={q.id}
+                      className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors"
+                    >
+                      <TableCell className="py-2.5 px-3 text-xs font-semibold text-[#1c1f4a]">
+                        {q.fieldLabel}
+                      </TableCell>
                       <TableCell className="py-2.5 px-3 text-xs">
                         <span className="inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-[#faf7f2]/80 border border-[#e8dcc4] text-[#b86a16] uppercase">
                           {q.fieldType.replace("_", " ")}
@@ -425,7 +699,10 @@ function FormBuilderDashboardContent() {
                       </TableCell>
                       <TableCell className="py-2.5 px-3 text-xs text-[#5a5e7a] max-w-[250px] truncate">
                         {Array.isArray(q.options) && q.options.length > 0 ? (
-                          <span>{q.options.join(", ")} {q.allowOther && "(allow other)"}</span>
+                          <span>
+                            {q.options.join(", ")}{" "}
+                            {q.allowOther && "(allow other)"}
+                          </span>
                         ) : (
                           <span className="text-[#9396ae] italic">N/A</span>
                         )}
@@ -438,7 +715,9 @@ function FormBuilderDashboardContent() {
                               setLibFormData({
                                 fieldLabel: q.fieldLabel,
                                 fieldType: q.fieldType,
-                                optionsRaw: Array.isArray(q.options) ? q.options.join(", ") : "",
+                                optionsRaw: Array.isArray(q.options)
+                                  ? q.options.join(", ")
+                                  : "",
                                 allowOther: q.allowOther,
                               });
                               setLibModalOpen(true);
@@ -459,7 +738,10 @@ function FormBuilderDashboardContent() {
                   ))}
                 </TableBody>
               </Table>
-              <TablePaginationFooter pagination={libPagination} variant="bottom" />
+              <TablePaginationFooter
+                pagination={libPagination}
+                variant="bottom"
+              />
             </div>
           )}
         </div>
@@ -467,17 +749,27 @@ function FormBuilderDashboardContent() {
 
       {/* TAB PANEL 2: Offering Questionnaire Linker */}
       {activeTab === "mapping" && (
-        <div className="space-y-6">
+        <div className="space-y-5">
+          {/* Sub-Category Selector Card */}
           <div className="bg-white border border-[#e8dcc4]/60 p-5 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Select Offering Sub-Category</Label>
-              <Select value={selectedSubId} onValueChange={setSelectedSubId}>
-                <SelectTrigger className="w-[300px] h-10 border-[#e8dcc4] bg-[#faf7f2]/30 text-xs font-semibold text-[#1c1f4a]">
+            <div className="space-y-1 w-full sm:w-auto flex-1">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                Select Offering Sub-Category
+              </Label>
+              <Select
+                value={selectedSubId}
+                onValueChange={handleSubCategoryChange}
+              >
+                <SelectTrigger className="w-full sm:w-[320px] h-10 border-[#e8dcc4] bg-[#faf7f2]/30 text-xs font-semibold text-[#1c1f4a] flex items-center justify-between text-left whitespace-normal [&>span]:line-clamp-none [&>span]:block [&>span]:w-full">
                   <SelectValue placeholder="Select offering..." />
                 </SelectTrigger>
                 <SelectContent>
                   {subCategories.map((sub) => (
-                    <SelectItem key={sub.id} value={sub.id}>
+                    <SelectItem
+                      key={sub.id}
+                      value={sub.id}
+                      className="whitespace-normal break-words py-2 text-xs"
+                    >
                       {sub.name}
                     </SelectItem>
                   ))}
@@ -488,80 +780,188 @@ function FormBuilderDashboardContent() {
             {selectedSubId && (
               <Button
                 onClick={() => {
-                  setLinkFormData({ questionId: "", isRequired: true, sortOrder: 10 });
+                  setLinkFormData({
+                    questionId: "",
+                    isRequired: true,
+                    sortOrder: 10,
+                  });
                   setLinkModalOpen(true);
                 }}
-                className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full h-9 px-5 text-xs font-semibold sm:mt-5"
+                className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full h-10 px-5 text-xs font-semibold sm:mt-5 shrink-0 w-full sm:w-auto"
               >
                 <Plus className="w-3.5 h-3.5 mr-1" /> Add Question to Form
               </Button>
             )}
           </div>
 
+          {/* Dedicated Filters Card for Mapping Tab */}
+          {selectedSubId && (
+            <div className="bg-[#faf7f2]/25 border border-[#e8dcc4]/50 rounded-2xl p-4 shadow-2xs">
+              <div className="flex flex-col md:flex-row md:items-end gap-3.5 w-full">
+                <div className="flex-1 w-full">
+                  <Label className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider block mb-1">
+                    Search Label
+                  </Label>
+                  <Input
+                    search
+                    placeholder="Search linked questions..."
+                    value={tempSearch}
+                    onChange={(e) => setTempSearch(e.target.value)}
+                    className="w-full border-[#e8dcc4]"
+                  />
+                </div>
+                <div className="w-full md:w-64">
+                  <Label className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider block mb-1">
+                    Filter Format Type
+                  </Label>
+                  <MultiSelectCombobox
+                    options={[
+                      "short_answer",
+                      "long_answer",
+                      "number",
+                      "single_select",
+                      "multi_select",
+                      "star_rating",
+                      "date",
+                      "time",
+                      "url",
+                    ]}
+                    selectedValues={tempFieldTypes}
+                    onSelectionChange={setTempFieldTypes}
+                    placeholder="Select formats..."
+                    formatOptionLabel={(opt) =>
+                      opt
+                        .split("_")
+                        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                        .join(" ")
+                    }
+                    width="w-full"
+                  />
+                </div>
+                <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+                  <Button
+                    variant="outline"
+                    onClick={handleClearFilters}
+                    className="h-9.5 text-[11px] font-bold border border-[#e8dcc4] text-[#5a5e7a] hover:bg-gray-100/50 rounded-lg cursor-pointer px-4 flex-1 md:flex-initial"
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    onClick={handleApplyFilters}
+                    className="h-9.5 text-[11px] font-extrabold text-white bg-[#b86a16] hover:bg-[#b86a16]/90 rounded-lg cursor-pointer px-5 shadow-xs flex-1 md:flex-initial"
+                  >
+                    Apply
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {selectedSubId && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Settings className="w-4 h-4 text-[#b86a16]" />
-                <h4 className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wider">Form Questions Sequence &amp; Requirements</h4>
+                <h4 className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wider">
+                  Form Questions Sequence &amp; Requirements
+                </h4>
               </div>
 
               {loadingLinked ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Loader2 className="w-6 h-6 text-[#b86a16] animate-spin mb-2" />
-                  <p className="text-[11px] text-[#5a5e7a]">Retrieving linked questions...</p>
+                  <p className="text-[11px] text-[#5a5e7a]">
+                    Retrieving linked questions...
+                  </p>
                 </div>
               ) : linkedQuestions.length === 0 ? (
                 <div className="border border-dashed border-[#e8dcc4] bg-white/40 p-8 rounded-2xl text-center">
-                  <p className="text-xs text-[#5a5e7a]">This form has no linked questions. It will only collect standard credentials (Name, Email, Phone).</p>
+                  <p className="text-xs text-[#5a5e7a]">
+                    This form has no linked questions. It will only collect
+                    standard credentials (Name, Email, Phone).
+                  </p>
                 </div>
               ) : (
-                <div className="bg-white border border-[#e8dcc4]/60 rounded-2xl overflow-hidden shadow-sm p-1">
-                  <Table>
-                    <TableHeader className="bg-[#1c1f4a]/5">
-                      <TableRow className="border-b border-[#e8dcc4]">
-                        <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">Field Label</TableHead>
-                        <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">Type</TableHead>
-                        <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">Is Required?</TableHead>
-                        <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">Layout Order Weight</TableHead>
-                        <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {linkedQuestions.map((lq) => (
-                        <TableRow key={lq.id} className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors">
-                          <TableCell className="py-2.5 px-3 text-xs font-semibold text-[#1c1f4a]">{lq.fieldLabel}</TableCell>
-                          <TableCell className="py-2.5 px-3 text-xs">
-                            <span className="text-[10px] text-[#5a5e7a] uppercase font-mono">{lq.fieldType.replace("_", " ")}</span>
-                          </TableCell>
-                          <TableCell className="py-2.5 px-3 text-xs">
-                            <input
-                              type="checkbox"
-                              checked={lq.isRequired}
-                              onChange={(e) => handleInlineUpdate(lq.id, e.target.checked, lq.sortOrder)}
-                              className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16] cursor-pointer"
-                            />
-                          </TableCell>
-                          <TableCell className="py-2.5 px-3 text-xs">
-                            <Input
-                              type="number"
-                              value={lq.sortOrder}
-                              onChange={(e) => handleInlineUpdate(lq.id, lq.isRequired, parseInt(e.target.value) || 0)}
-                              className="w-16 h-8 bg-[#faf7f2]/40 border-[#e8dcc4] text-xs px-2"
-                            />
-                          </TableCell>
-                          <TableCell className="py-2.5 px-3 text-right">
-                            <button
-                              onClick={() => setUnlinkConfirmId(lq.id)}
-                              className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] rounded-lg border border-transparent hover:border-[#c4796a]/30 transition-all cursor-pointer"
-                              title="Unlink Question"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </TableCell>
+                <div className="space-y-4">
+                  <TablePaginationFooter
+                    pagination={linkedPagination}
+                    variant="top"
+                  />
+                  <div className="bg-white border border-[#e8dcc4]/60 rounded-2xl overflow-hidden shadow-sm p-1">
+                    <Table>
+                      <TableHeader className="bg-[#1c1f4a]/5">
+                        <TableRow className="border-b border-[#e8dcc4]">
+                          <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">
+                            Field Label
+                          </TableHead>
+                          <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">
+                            Type
+                          </TableHead>
+                          <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">
+                            Is Required?
+                          </TableHead>
+                          <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs">
+                            Layout Order Weight
+                          </TableHead>
+                          <TableHead className="py-2.5 px-3 font-bold text-[#1c1f4a] text-xs text-right">
+                            Actions
+                          </TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {linkedQuestions.map((lq) => (
+                          <TableRow
+                            key={lq.id}
+                            className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors"
+                          >
+                            <TableCell className="py-2.5 px-3 text-xs font-semibold text-[#1c1f4a] whitespace-normal break-words max-w-[400px]">
+                              {lq.fieldLabel}
+                            </TableCell>
+                            <TableCell className="py-2.5 px-3 text-xs">
+                              <span className="text-[10px] text-[#5a5e7a] uppercase font-mono">
+                                {lq.fieldType.replace("_", " ")}
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-2.5 px-3 text-xs">
+                              <span
+                                className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide border ${
+                                  lq.isRequired
+                                    ? "bg-[#c4796a]/10 border-[#c4796a]/25 text-[#c4796a]"
+                                    : "bg-gray-100 border-gray-200 text-gray-400"
+                                }`}
+                              >
+                                {lq.isRequired ? "Required" : "Optional"}
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-2.5 px-3 text-xs font-bold text-[#1c1f4a] font-mono">
+                              {lq.sortOrder}
+                            </TableCell>
+                            <TableCell className="py-2.5 px-3 text-right">
+                              <div className="inline-flex gap-1.5">
+                                <button
+                                  onClick={() => handleOpenEditLink(lq)}
+                                  className="p-1.5 hover:bg-[#b86a16]/10 text-[#b86a16] rounded-lg border border-transparent hover:border-[#b86a16]/30 transition-all cursor-pointer"
+                                  title="Edit Mapping Settings"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => setUnlinkConfirmId(lq.id)}
+                                  className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] rounded-lg border border-transparent hover:border-[#c4796a]/30 transition-all cursor-pointer"
+                                  title="Unlink Question"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <TablePaginationFooter
+                    pagination={linkedPagination}
+                    variant="bottom"
+                  />
                 </div>
               )}
             </div>
@@ -574,16 +974,22 @@ function FormBuilderDashboardContent() {
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
             <DialogTitle className="text-white text-md font-bold">
-              {editingLib ? "Edit Question Pool details" : "Add Library Question"}
+              {editingLib
+                ? "Edit Question Pool details"
+                : "Add Library Question"}
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleLibSubmit} className="space-y-4 mt-2">
             <div className="space-y-2">
-              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Question Field Label / Text</Label>
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                Question Field Label / Text
+              </Label>
               <Input
                 value={libFormData.fieldLabel}
-                onChange={(e) => setLibFormData({ ...libFormData, fieldLabel: e.target.value })}
+                onChange={(e) =>
+                  setLibFormData({ ...libFormData, fieldLabel: e.target.value })
+                }
                 placeholder="e.g. Do you have any chronic spinal injuries?"
                 required
                 disabled={libFormLoading}
@@ -592,22 +998,36 @@ function FormBuilderDashboardContent() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Answer Format Type</Label>
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                Answer Format Type
+              </Label>
               <Select
                 value={libFormData.fieldType}
-                onValueChange={(val) => setLibFormData({ ...libFormData, fieldType: val as any })}
+                onValueChange={(val) =>
+                  setLibFormData({ ...libFormData, fieldType: val as any })
+                }
                 disabled={libFormLoading}
               >
                 <SelectTrigger className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="short_answer">Short Text Answer</SelectItem>
-                  <SelectItem value="long_answer">Paragraph/Long Answer</SelectItem>
+                  <SelectItem value="short_answer">
+                    Short Text Answer
+                  </SelectItem>
+                  <SelectItem value="long_answer">
+                    Paragraph/Long Answer
+                  </SelectItem>
                   <SelectItem value="number">Number input</SelectItem>
-                  <SelectItem value="single_select">Single Select (Dropdown)</SelectItem>
-                  <SelectItem value="multi_select">Multi Select (Checkboxes)</SelectItem>
-                  <SelectItem value="star_rating">1 to 5 Star Rating</SelectItem>
+                  <SelectItem value="single_select">
+                    Single Select (Dropdown)
+                  </SelectItem>
+                  <SelectItem value="multi_select">
+                    Multi Select (Checkboxes)
+                  </SelectItem>
+                  <SelectItem value="star_rating">
+                    1 to 5 Star Rating
+                  </SelectItem>
                   <SelectItem value="date">Date Picker</SelectItem>
                   <SelectItem value="time">Time Picker</SelectItem>
                   <SelectItem value="url">URL Link input</SelectItem>
@@ -617,10 +1037,17 @@ function FormBuilderDashboardContent() {
 
             {showOptionsField && (
               <div className="space-y-2">
-                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Options List (Comma-separated)</Label>
+                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                  Options List (Comma-separated)
+                </Label>
                 <textarea
                   value={libFormData.optionsRaw}
-                  onChange={(e: any) => setLibFormData({ ...libFormData, optionsRaw: e.target.value })}
+                  onChange={(e: any) =>
+                    setLibFormData({
+                      ...libFormData,
+                      optionsRaw: e.target.value,
+                    })
+                  }
                   placeholder="e.g. Yes, No, Not sure"
                   required
                   disabled={libFormLoading}
@@ -635,20 +1062,43 @@ function FormBuilderDashboardContent() {
                   type="checkbox"
                   id="allowOther"
                   checked={libFormData.allowOther}
-                  onChange={(e) => setLibFormData({ ...libFormData, allowOther: e.target.checked })}
+                  onChange={(e) =>
+                    setLibFormData({
+                      ...libFormData,
+                      allowOther: e.target.checked,
+                    })
+                  }
                   disabled={libFormLoading}
                   className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16]"
                 />
-                <Label htmlFor="allowOther" className="text-xs font-semibold text-[#1c1f4a] cursor-pointer">Include &quot;Other&quot; option to write-in details</Label>
+                <Label
+                  htmlFor="allowOther"
+                  className="text-xs font-semibold text-[#1c1f4a] cursor-pointer"
+                >
+                  Include &quot;Other&quot; option to write-in details
+                </Label>
               </div>
             )}
 
             <div className="flex justify-end gap-3 border-t border-[#e8dcc4]/60 pt-4">
-              <Button type="button" variant="outline" onClick={() => setLibModalOpen(false)} disabled={libFormLoading} className="h-10 px-5 rounded-full border border-[#e8dcc4] text-[#5a5e7a]">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setLibModalOpen(false)}
+                disabled={libFormLoading}
+                className="h-10 px-5 rounded-full border border-[#e8dcc4] text-[#5a5e7a]"
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={libFormLoading} className="h-10 px-5 rounded-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white font-semibold text-xs">
-                {libFormLoading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null} Save Details
+              <Button
+                type="submit"
+                disabled={libFormLoading}
+                className="h-10 px-5 rounded-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white font-semibold text-xs"
+              >
+                {libFormLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                ) : null}{" "}
+                Save Details
               </Button>
             </div>
           </form>
@@ -659,25 +1109,35 @@ function FormBuilderDashboardContent() {
       <Dialog open={linkModalOpen} onOpenChange={setLinkModalOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
-            <DialogTitle className="text-white text-md font-bold">Link Library Question</DialogTitle>
+            <DialogTitle className="text-white text-md font-bold">
+              Link Library Question
+            </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleLinkSubmit} className="space-y-4 mt-2">
             <div className="space-y-2">
-              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Select Question</Label>
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                Select Question
+              </Label>
               <Select
                 value={linkFormData.questionId}
-                onValueChange={(val) => setLinkFormData({ ...linkFormData, questionId: val })}
+                onValueChange={(val) =>
+                  setLinkFormData({ ...linkFormData, questionId: val })
+                }
                 disabled={linkLoading}
               >
-                <SelectTrigger className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs w-full">
+                <SelectTrigger className="bg-[#faf7f2]/40 border-[#e8dcc4] h-auto min-h-10 py-2.5 rounded-xl text-xs w-full flex items-center justify-between text-left whitespace-normal [&>span]:line-clamp-none [&>span]:block [&>span]:w-full">
                   <SelectValue placeholder="Choose a library question..." />
                 </SelectTrigger>
-                <SelectContent>
-                  {questions
+                <SelectContent showSearch={true}>
+                  {allQuestions
                     .filter((q) => !linkedQuestions.some((l) => l.id === q.id))
                     .map((q) => (
-                      <SelectItem key={q.id} value={q.id}>
+                      <SelectItem
+                        key={q.id}
+                        value={q.id}
+                        className="whitespace-normal break-words py-2 text-xs"
+                      >
                         {q.fieldLabel} ({q.fieldType.replace("_", " ")})
                       </SelectItem>
                     ))}
@@ -687,11 +1147,18 @@ function FormBuilderDashboardContent() {
 
             <div className="grid grid-cols-2 gap-4 items-center">
               <div className="space-y-2">
-                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Layout Order Weight</Label>
+                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                  Layout Order Weight
+                </Label>
                 <Input
                   type="number"
                   value={linkFormData.sortOrder}
-                  onChange={(e) => setLinkFormData({ ...linkFormData, sortOrder: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setLinkFormData({
+                      ...linkFormData,
+                      sortOrder: parseInt(e.target.value) || 0,
+                    })
+                  }
                   required
                   disabled={linkLoading}
                   className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
@@ -702,20 +1169,132 @@ function FormBuilderDashboardContent() {
                   type="checkbox"
                   id="linkRequired"
                   checked={linkFormData.isRequired}
-                  onChange={(e) => setLinkFormData({ ...linkFormData, isRequired: e.target.checked })}
+                  onChange={(e) =>
+                    setLinkFormData({
+                      ...linkFormData,
+                      isRequired: e.target.checked,
+                    })
+                  }
                   disabled={linkLoading}
                   className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16]"
                 />
-                <Label htmlFor="linkRequired" className="text-xs font-semibold text-[#1c1f4a] cursor-pointer">Is Required field?</Label>
+                <Label
+                  htmlFor="linkRequired"
+                  className="text-xs font-semibold text-[#1c1f4a] cursor-pointer"
+                >
+                  Is Required field?
+                </Label>
               </div>
             </div>
 
             <div className="flex justify-end gap-3 border-t border-[#e8dcc4]/60 pt-4">
-              <Button type="button" variant="outline" onClick={() => setLinkModalOpen(false)} disabled={linkLoading} className="h-10 px-5 rounded-full border border-[#e8dcc4] text-[#5a5e7a]">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setLinkModalOpen(false)}
+                disabled={linkLoading}
+                className="h-10 px-5 rounded-full border border-[#e8dcc4] text-[#5a5e7a]"
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={linkLoading} className="h-10 px-5 rounded-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white font-semibold text-xs">
-                {linkLoading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null} Link Question
+              <Button
+                type="submit"
+                disabled={linkLoading}
+                className="h-10 px-5 rounded-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white font-semibold text-xs"
+              >
+                {linkLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                ) : null}{" "}
+                Link Question
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG: Edit Question Mapping Settings */}
+      <Dialog open={editLinkModalOpen} onOpenChange={setEditLinkModalOpen}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
+            <DialogTitle className="text-white text-md font-bold">
+              Edit Mapping Settings
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handleEditLinkSubmit} className="space-y-4 mt-2">
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                Question (Read-Only)
+              </Label>
+              <Input
+                value={editingLink?.fieldLabel || ""}
+                readOnly
+                disabled
+                className="bg-gray-100 border-[#e8dcc4] h-10 rounded-xl text-xs text-gray-500 font-semibold cursor-not-allowed"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 items-center">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                  Layout Order Weight
+                </Label>
+                <Input
+                  type="number"
+                  value={editLinkFormData.sortOrder}
+                  onChange={(e) =>
+                    setEditLinkFormData({
+                      ...editLinkFormData,
+                      sortOrder: parseInt(e.target.value) || 0,
+                    })
+                  }
+                  required
+                  disabled={editLinkLoading}
+                  className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
+                />
+              </div>
+              <div className="flex items-center gap-2.5 pt-6">
+                <input
+                  type="checkbox"
+                  id="editLinkRequired"
+                  checked={editLinkFormData.isRequired}
+                  onChange={(e) =>
+                    setEditLinkFormData({
+                      ...editLinkFormData,
+                      isRequired: e.target.checked,
+                    })
+                  }
+                  disabled={editLinkLoading}
+                  className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16] cursor-pointer"
+                />
+                <Label
+                  htmlFor="editLinkRequired"
+                  className="text-xs font-semibold text-[#1c1f4a] cursor-pointer"
+                >
+                  Is Required field?
+                </Label>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 border-t border-[#e8dcc4]/60 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditLinkModalOpen(false)}
+                disabled={editLinkLoading}
+                className="h-10 px-5 rounded-full border border-[#e8dcc4] text-[#5a5e7a]"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={editLinkLoading}
+                className="h-10 px-5 rounded-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white font-semibold text-xs"
+              >
+                {editLinkLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                ) : null}{" "}
+                Save Settings
               </Button>
             </div>
           </form>
@@ -723,19 +1302,28 @@ function FormBuilderDashboardContent() {
       </Dialog>
 
       {/* ALERT: Confirm Delete Library Question */}
-      <AlertDialog open={deleteLibId !== null} onOpenChange={(open) => !open && setDeleteLibId(null)}>
+      <AlertDialog
+        open={deleteLibId !== null}
+        onOpenChange={(open) => !open && setDeleteLibId(null)}
+      >
         <AlertDialogContent className="w-[300px] max-w-[90vw] bg-white rounded-3xl border-0 shadow-xl p-6">
           <AlertDialogHeader className="text-center flex flex-col items-center">
-            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">Delete Question</AlertDialogTitle>
+            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">
+              Delete Question
+            </AlertDialogTitle>
             <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              Are you sure? This will delete the question from the pool and UNLINK it from ALL sub-category forms!
+              Are you sure? This will delete the question from the pool and
+              UNLINK it from ALL sub-category forms!
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
             <AlertDialogCancel className="flex-1 border border-[#c4796a] text-[#c4796a] hover:bg-[#c4796a]/5 rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
               No
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDeleteLib} className="flex-1 bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
+            <AlertDialogAction
+              onClick={handleConfirmDeleteLib}
+              className="flex-1 bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer"
+            >
               Yes
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -743,19 +1331,28 @@ function FormBuilderDashboardContent() {
       </AlertDialog>
 
       {/* ALERT: Confirm Unlink Question */}
-      <AlertDialog open={unlinkConfirmId !== null} onOpenChange={(open) => !open && setUnlinkConfirmId(null)}>
+      <AlertDialog
+        open={unlinkConfirmId !== null}
+        onOpenChange={(open) => !open && setUnlinkConfirmId(null)}
+      >
         <AlertDialogContent className="w-[300px] max-w-[90vw] bg-white rounded-3xl border-0 shadow-xl p-6">
           <AlertDialogHeader className="text-center flex flex-col items-center">
-            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">Unlink Question</AlertDialogTitle>
+            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">
+              Unlink Question
+            </AlertDialogTitle>
             <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              Are you sure you want to remove this question from this offering form? Responses already submitted by users will remain archived.
+              Are you sure you want to remove this question from this offering
+              form? Responses already submitted by users will remain archived.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
             <AlertDialogCancel className="flex-1 border border-[#c4796a] text-[#c4796a] hover:bg-[#c4796a]/5 rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
               No
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmUnlink} className="flex-1 bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
+            <AlertDialogAction
+              onClick={handleConfirmUnlink}
+              className="flex-1 bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer"
+            >
               Yes
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -771,7 +1368,9 @@ export default function FormBuilderDashboardPage() {
       fallback={
         <div className="flex flex-col items-center justify-center py-20">
           <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium">Loading form builder console...</p>
+          <p className="text-xs text-[#5a5e7a] font-medium">
+            Loading form builder console...
+          </p>
         </div>
       }
     >

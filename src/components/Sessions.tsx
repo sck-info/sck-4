@@ -149,7 +149,7 @@ export default function Sessions() {
                     fontWeight: 600,
                   }}
                 >
-                  48–72 hours
+                  12-24 hours
                 </span>{" "}
                 to confirm and schedule your session.
               </p>

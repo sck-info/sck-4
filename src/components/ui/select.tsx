@@ -72,6 +72,7 @@ function SelectContent({
   searchPlaceholder?: string;
 }) {
   const [searchTerm, setSearchTerm] = React.useState("");
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   const itemsCount = React.useMemo(() => {
     let count = 0;
@@ -102,12 +103,32 @@ function SelectContent({
 
   const shouldDisplaySearch = showSearch && itemsCount > 5;
 
+  React.useEffect(() => {
+    if (shouldDisplaySearch && inputRef.current) {
+      // Focus and select input text when component mounts/displays search
+      inputRef.current.focus();
+      try {
+        inputRef.current.select();
+      } catch {}
+    }
+  }, [shouldDisplaySearch]);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (inputRef.current && document.activeElement === inputRef.current) {
+        inputRef.current.blur();
+      }
+    };
+    window.addEventListener("scroll", handleScroll, true);
+    return () => window.removeEventListener("scroll", handleScroll, true);
+  }, []);
+
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
-          "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:-translate-y-1 relative z-50 max-h-[260px] min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border shadow-md",
+          "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:-translate-y-1 relative z-[10000] max-h-[260px] min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border shadow-md",
           position === "popper" &&
             "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1 w-[var(--radix-select-trigger-width)]",
           className,
@@ -121,6 +142,7 @@ function SelectContent({
             <div className="relative flex items-center">
               <Search className="absolute left-2.5 size-3.5 text-muted-foreground pointer-events-none" />
               <input
+                ref={inputRef}
                 type="text"
                 placeholder={searchPlaceholder}
                 value={searchTerm}

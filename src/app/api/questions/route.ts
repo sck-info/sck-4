@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { formQuestions } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { desc, sql } from "drizzle-orm";
+import { desc, sql, and, ilike, inArray } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
 export async function GET(req: Request) {
@@ -15,15 +15,33 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const { page, limit, offset } = parsePaginationParams(searchParams);
 
+    const searchQuery = searchParams.get("search") || searchParams.get("q") || "";
+    const fieldTypesParam = searchParams.get("fieldTypes") || "";
+
+    const conditions = [];
+    if (searchQuery) {
+      conditions.push(ilike(formQuestions.fieldLabel, `%${searchQuery}%`));
+    }
+    if (fieldTypesParam) {
+      const types = fieldTypesParam.split(",").map((t) => t.trim()).filter(Boolean) as any[];
+      if (types.length > 0) {
+        conditions.push(inArray(formQuestions.fieldType, types));
+      }
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
-      .from(formQuestions);
+      .from(formQuestions)
+      .where(whereClause);
 
     const total = Number(countResult[0]?.count || 0);
 
     const data = await db
       .select()
       .from(formQuestions)
+      .where(whereClause)
       .orderBy(desc(formQuestions.createdAt))
       .limit(limit)
       .offset(offset);

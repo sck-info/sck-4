@@ -4,8 +4,20 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Loader2, ShieldCheck, ArrowRight, Phone, ArrowLeft } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Loader2,
+  ShieldCheck,
+  ArrowRight,
+  Phone,
+  ArrowLeft,
+} from "lucide-react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,7 +39,7 @@ export default function VerifyPhonePage() {
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.isPhoneVerified) {
-      router.push("/user");
+      router.push("/dashboard");
     }
   }, [status, session, router]);
 
@@ -51,7 +63,10 @@ export default function VerifyPhonePage() {
       const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: session.user.phone, phoneCode: session.user.phoneCode }),
+        body: JSON.stringify({
+          phone: session.user.phone,
+          phoneCode: session.user.phoneCode,
+        }),
       });
 
       const data = await res.json();

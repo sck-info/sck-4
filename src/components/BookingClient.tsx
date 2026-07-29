@@ -5,6 +5,16 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useRealtime } from "@/hooks/useRealtime";
 import { Calendar, Clock, MapPin, Check, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimeSelect } from "@/components/ui/time-select";
+import { format } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Question = {
   id: string;
@@ -563,23 +573,22 @@ export default function BookingClient({
                     />
                   )}
 
-                  {q.fieldType === "date" && (
-                    <input
-                      type="date"
-                      required={q.isRequired}
-                      value={val}
-                      onChange={(e) => handleInputChange(q.id, e.target.value)}
-                      style={{ width: "100%", padding: "10px 12px", border: "1px solid rgba(28,31,74,0.15)", borderRadius: 8, outline: "none", fontSize: 14 }}
-                    />
-                  )}
+                  {q.fieldType === "date" && (() => {
+                    const parsedDate = val && !isNaN(Date.parse(val)) ? new Date(val) : undefined;
+                    return (
+                      <DatePicker
+                        value={parsedDate}
+                        onChange={(d) => handleInputChange(q.id, d ? format(d, "yyyy-MM-dd") : "")}
+                        placeholder="Select date..."
+                      />
+                    );
+                  })()}
 
                   {q.fieldType === "time" && (
-                    <input
-                      type="time"
-                      required={q.isRequired}
+                    <TimeSelect
                       value={val}
-                      onChange={(e) => handleInputChange(q.id, e.target.value)}
-                      style={{ width: "100%", padding: "10px 12px", border: "1px solid rgba(28,31,74,0.15)", borderRadius: 8, outline: "none", fontSize: 14 }}
+                      onChange={(newVal) => handleInputChange(q.id, newVal)}
+                      placeholder="Select time..."
                     />
                   )}
 
@@ -775,42 +784,48 @@ export default function BookingClient({
           )}
 
           {/* Submit Action */}
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
-              marginTop: 28,
-              width: "100%",
-              background: "var(--indigo)",
-              color: "white",
-              padding: "12px 24px",
-              borderRadius: 100,
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: submitting ? "default" : "pointer",
-              transition: "background 0.2s",
-              border: "none",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              boxShadow: "0 4px 14px rgba(28,31,74,0.1)",
-            }}
-            onMouseEnter={(e) => {
-              if (!submitting) (e.currentTarget as HTMLElement).style.background = "var(--gold)";
-            }}
-            onMouseLeave={(e) => {
-              if (!submitting) (e.currentTarget as HTMLElement).style.background = "var(--indigo)";
-            }}
-          >
-            {submitting ? (
-              <>
-                <Loader2 className="animate-spin" size={16} /> Submitting Reservation...
-              </>
-            ) : (
-              "Submit Registration"
-            )}
-          </button>
+          {(() => {
+            const isSubmitDisabled = submitting || (subCategory.requiresBooking && !selectedSlot);
+            return (
+              <button
+                type="submit"
+                disabled={isSubmitDisabled}
+                style={{
+                  marginTop: 28,
+                  width: "100%",
+                  background: isSubmitDisabled ? "#8c90ad" : "var(--indigo)",
+                  color: "white",
+                  padding: "12px 24px",
+                  borderRadius: 100,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: isSubmitDisabled ? "not-allowed" : "pointer",
+                  transition: "background 0.2s",
+                  border: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  boxShadow: isSubmitDisabled ? "none" : "0 4px 14px rgba(28,31,74,0.1)",
+                  opacity: isSubmitDisabled ? 0.7 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSubmitDisabled) (e.currentTarget as HTMLElement).style.background = "var(--gold)";
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSubmitDisabled) (e.currentTarget as HTMLElement).style.background = "var(--indigo)";
+                }}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="animate-spin" size={16} /> Submitting Reservation...
+                  </>
+                ) : (
+                  "Submit Registration"
+                )}
+              </button>
+            );
+          })()}
         </form>
       </div>
     </div>

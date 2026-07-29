@@ -21,7 +21,9 @@ function ThankYouContent() {
 
     const fetchBooking = async () => {
       try {
-        const detailRes = await fetch(`/api/bookings/detail?bookingId=${bookingId}`);
+        const detailRes = await fetch(
+          `/api/bookings/detail?bookingId=${bookingId}`,
+        );
         const json = await detailRes.json();
         if (json.success) {
           setBooking(json.data);
@@ -38,9 +40,23 @@ function ThankYouContent() {
 
   if (loading) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
-        <Loader2 className="animate-spin" size={36} style={{ color: "var(--indigo)" }} />
-        <p style={{ marginTop: 12, color: "var(--text-mid)", fontSize: 14 }}>Retrieving your booking receipt...</p>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "60vh",
+        }}
+      >
+        <Loader2
+          className="animate-spin"
+          size={36}
+          style={{ color: "var(--indigo)" }}
+        />
+        <p style={{ marginTop: 12, color: "var(--text-mid)", fontSize: 14 }}>
+          Retrieving your booking receipt...
+        </p>
       </div>
     );
   }
@@ -52,12 +68,34 @@ function ThankYouContent() {
   const endTime = booking?.slot?.endTime;
 
   return (
-    <div style={{ maxWidth: 600, margin: "0 auto", padding: "3rem 1.5rem", textAlign: "center", fontFamily: "'DM Sans', sans-serif" }}>
+    <div
+      style={{
+        maxWidth: 600,
+        margin: "0 auto",
+        padding: "3rem 1.5rem",
+        textAlign: "center",
+        fontFamily: "'DM Sans', sans-serif",
+      }}
+    >
       {/* Animated Success Checkmark */}
       <div className="checkmark-wrapper">
-        <svg className="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-          <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
-          <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+        <svg
+          className="checkmark"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 52 52"
+        >
+          <circle
+            className="checkmark__circle"
+            cx="26"
+            cy="26"
+            r="25"
+            fill="none"
+          />
+          <path
+            className="checkmark__check"
+            fill="none"
+            d="M14.1 27.2l7.1 7.2 16.7-16.8"
+          />
         </svg>
       </div>
 
@@ -75,43 +113,141 @@ function ThankYouContent() {
         Registration Received!
       </h2>
 
-      <p style={{ color: "var(--text-mid)", fontSize: 16, lineHeight: 1.6, fontWeight: 300, marginBottom: 28, maxWidth: 500, margin: "0 auto 28px" }}>
-        Thank you for submitting your questionnaire. Your booking request for <strong style={{ color: "var(--indigo)", fontWeight: 600 }}>{subCategoryName}</strong> has been successfully received.
+      <p
+        style={{
+          color: "var(--text-mid)",
+          fontSize: 16,
+          lineHeight: 1.6,
+          fontWeight: 300,
+          marginBottom: 28,
+          maxWidth: 500,
+          margin: "0 auto 28px",
+        }}
+      >
+        Thank you for submitting your questionnaire. Your booking request for{" "}
+        <strong style={{ color: "var(--indigo)", fontWeight: 600 }}>
+          {subCategoryName}
+        </strong>{" "}
+        has been successfully received.
       </p>
 
       {/* Conditional message block */}
       {hasSlot ? (
-        <div style={{ background: "white", padding: 24, borderRadius: 16, border: "1px solid rgba(28,31,74,0.06)", boxShadow: "0 4px 20px rgba(28,31,74,0.02)", textAlign: "left", marginBottom: 32 }}>
-          <h4 style={{ fontSize: 14, fontWeight: 600, color: "var(--indigo)", margin: "0 0 16px 0", borderBottom: "1px solid rgba(28,31,74,0.06)", paddingBottom: 10 }}>
+        <div
+          style={{
+            background: "white",
+            padding: 24,
+            borderRadius: 16,
+            border: "1px solid rgba(28,31,74,0.06)",
+            boxShadow: "0 4px 20px rgba(28,31,74,0.02)",
+            textAlign: "left",
+            marginBottom: 32,
+          }}
+        >
+          <h4
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: "var(--indigo)",
+              margin: "0 0 16px 0",
+              borderBottom: "1px solid rgba(28,31,74,0.06)",
+              paddingBottom: 10,
+            }}
+          >
             Scheduled Slot Details
           </h4>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "var(--text-mid)" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                fontSize: 14,
+                color: "var(--text-mid)",
+              }}
+            >
               <Calendar size={18} style={{ color: "var(--gold)" }} />
-              <span>Date: <strong>{slotDate}</strong></span>
+              <span>
+                Date: <strong>{slotDate}</strong>
+              </span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "var(--text-mid)" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                fontSize: 14,
+                color: "var(--text-mid)",
+              }}
+            >
               <Clock size={18} style={{ color: "var(--gold)" }} />
-              <span>Time: <strong>{startTime} - {endTime}</strong></span>
+              <span>
+                Time:{" "}
+                <strong>
+                  {startTime} - {endTime}
+                </strong>
+              </span>
             </div>
           </div>
-          <p style={{ fontSize: 13, color: "var(--gold)", lineHeight: 1.5, margin: "16px 0 0 0", fontWeight: 500 }}>
-            ⚠️ Status: Pending Confirmation. We will review and update you via WhatsApp/Email within 12-24 hours.
+          <p
+            style={{
+              fontSize: 13,
+              color: "var(--gold)",
+              lineHeight: 1.5,
+              margin: "16px 0 0 0",
+              fontWeight: 500,
+            }}
+          >
+            ⚠️ Status: Pending Confirmation. We will review and update you via
+            WhatsApp/Email within 12-24 hours.
           </p>
         </div>
       ) : (
-        <div style={{ background: "white", padding: 24, borderRadius: 16, border: "1px solid rgba(28,31,74,0.06)", boxShadow: "0 4px 20px rgba(28,31,74,0.02)", textAlign: "left", marginBottom: 32 }}>
-          <h4 style={{ fontSize: 14, fontWeight: 600, color: "var(--indigo)", margin: "0 0 10px 0" }}>
+        <div
+          style={{
+            background: "white",
+            padding: 24,
+            borderRadius: 16,
+            border: "1px solid rgba(28,31,74,0.06)",
+            boxShadow: "0 4px 20px rgba(28,31,74,0.02)",
+            textAlign: "left",
+            marginBottom: 32,
+          }}
+        >
+          <h4
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: "var(--indigo)",
+              margin: "0 0 10px 0",
+            }}
+          >
             General Form Submission Received
           </h4>
-          <p style={{ fontSize: 14, color: "var(--text-mid)", lineHeight: 1.6, margin: 0 }}>
-            No specific slot timing was selected for this session. Our coordination team will review your form inputs and reach out to you within 12-24 hours to schedule a session date.
+          <p
+            style={{
+              fontSize: 14,
+              color: "var(--text-mid)",
+              lineHeight: 1.6,
+              margin: 0,
+            }}
+          >
+            No specific slot timing was selected for this session. Our
+            coordination team will review your form inputs and reach out to you
+            within 12-24 hours to schedule a session date.
           </p>
         </div>
       )}
 
       {/* Buttons */}
-      <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 16,
+          justifyContent: "center",
+          flexWrap: "wrap",
+        }}
+      >
         <a
           href="/"
           style={{
@@ -128,7 +264,8 @@ function ThankYouContent() {
             transition: "all 0.2s",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "rgba(28,31,74,0.03)";
+            (e.currentTarget as HTMLElement).style.background =
+              "rgba(28,31,74,0.03)";
           }}
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLElement).style.background = "transparent";
@@ -139,7 +276,7 @@ function ThankYouContent() {
         </a>
 
         <a
-          href="/user"
+          href="/dashboard"
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -217,12 +354,34 @@ export default function ThankYouPage() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: "100vh", background: "var(--ivory)", paddingTop: 72, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Suspense fallback={
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <Loader2 className="animate-spin" size={36} style={{ color: "var(--indigo)" }} />
-          </div>
-        }>
+      <main
+        style={{
+          minHeight: "100vh",
+          background: "var(--ivory)",
+          paddingTop: 72,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Suspense
+          fallback={
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Loader2
+                className="animate-spin"
+                size={36}
+                style={{ color: "var(--indigo)" }}
+              />
+            </div>
+          }
+        >
           <ThankYouContent />
         </Suspense>
       </main>
