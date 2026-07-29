@@ -48,7 +48,7 @@ export function DatePicker({ value, onChange, disabled, placeholder = "Pick a da
     "July", "August", "September", "October", "November", "December",
   ]
 
-  const years = Array.from({ length: 100 }, (_, i) => currentYear - i)
+  const years = Array.from({ length: 115 }, (_, i) => (currentYear + 10) - i)
 
   const handleMonthChange = (m: string) => {
     const monthIndex = months.indexOf(m)
@@ -114,7 +114,7 @@ export function DatePicker({ value, onChange, disabled, placeholder = "Pick a da
             setMonth(d.getMonth())
             setYear(d.getFullYear())
           }}
-          disabled={disabledDates || ((d: Date) => d > new Date() || d < new Date("1900-01-01"))}
+          disabled={disabledDates || ((d: Date) => d < new Date("1900-01-01"))}
         />
       </PopoverContent>
     </Popover>

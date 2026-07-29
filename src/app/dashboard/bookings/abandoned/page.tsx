@@ -442,16 +442,6 @@ function AbandonedBookingsContent() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            onClick={() => fetchLeads(false)}
-            variant="outline"
-            className="h-9 px-3 border-[#e8dcc4] bg-white hover:bg-[#faf7f2] text-xs font-bold text-[#b86a16] flex items-center gap-1.5 cursor-pointer rounded-xl"
-          >
-            <RefreshCw
-              className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
-            />
-            Refresh Leads
-          </Button>
-          <Button
             onClick={handleExportCSV}
             disabled={exporting || leads.length === 0}
             className="h-9 px-4 bg-[#b86a16] hover:bg-[#b86a16]/90 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer rounded-xl shadow-sm transition-all"
@@ -496,10 +486,10 @@ function AbandonedBookingsContent() {
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">✦ All Categories</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               {categories.map((c) => (
                 <SelectItem key={c.id} value={c.name}>
-                  ✦ {c.name}
+                  {c.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -518,10 +508,10 @@ function AbandonedBookingsContent() {
               <SelectValue placeholder="All Offerings" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">✦ All Offerings</SelectItem>
+              <SelectItem value="all">All Offerings</SelectItem>
               {filteredSubCategoriesOptions.map((s) => (
                 <SelectItem key={s.id} value={s.name}>
-                  ✦ {s.name}
+                  {s.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -532,18 +522,18 @@ function AbandonedBookingsContent() {
         <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
           <Button
             type="button"
-            onClick={handleApplyFilters}
-            className="h-9 px-4 bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white text-xs font-bold rounded-xl flex items-center justify-center cursor-pointer shadow-sm transition-all flex-1 md:flex-none"
-          >
-            Apply
-          </Button>
-          <Button
-            type="button"
             onClick={handleClearFilters}
             variant="outline"
             className="h-9 px-4 border-[#e8dcc4] bg-white hover:bg-[#faf7f2] text-xs font-bold text-[#5a5e7a] rounded-xl flex items-center justify-center cursor-pointer flex-1 md:flex-none"
           >
             Clear
+          </Button>
+          <Button
+            type="button"
+            onClick={handleApplyFilters}
+            className="h-9 px-4 bg-[#b86a16] hover:bg-[#b86a16]/90 text-white text-xs font-bold rounded-xl flex items-center justify-center cursor-pointer shadow-sm transition-all flex-1 md:flex-none"
+          >
+            Apply
           </Button>
         </div>
       </div>

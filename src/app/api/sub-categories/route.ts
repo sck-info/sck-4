@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { offeringSubCategories } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { asc, sql, eq } from "drizzle-orm";
+import { asc, sql, eq, and, or, ilike } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
 export async function GET(req: Request) {
@@ -15,10 +15,29 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const { page, limit, offset } = parsePaginationParams(searchParams);
     const categoryId = searchParams.get("categoryId");
+    const searchQuery = searchParams.get("search");
+    const statusQuery = searchParams.get("status");
 
-    const condition = categoryId
-      ? eq(offeringSubCategories.categoryId, categoryId)
-      : undefined;
+    const conditions = [];
+    if (categoryId) {
+      conditions.push(eq(offeringSubCategories.categoryId, categoryId));
+    }
+    if (searchQuery) {
+      const pattern = `%${searchQuery}%`;
+      conditions.push(
+        or(
+          ilike(offeringSubCategories.name, pattern),
+          ilike(offeringSubCategories.description, pattern)
+        ) as any
+      );
+    }
+    if (statusQuery === "active") {
+      conditions.push(eq(offeringSubCategories.isActive, true));
+    } else if (statusQuery === "inactive") {
+      conditions.push(eq(offeringSubCategories.isActive, false));
+    }
+
+    const condition = conditions.length > 0 ? and(...conditions) : undefined;
 
     const countResult = await db
       .select({ count: sql<number>`count(*)` })

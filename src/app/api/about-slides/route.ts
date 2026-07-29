@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { aboutSlides } from "@/db/schema/about_slides";
 import { auth } from "@/lib/auth";
-import { eq, asc, sql } from "drizzle-orm";
+import { eq, asc, sql, and, or, ilike } from "drizzle-orm";
 import { uploadImages } from "@/lib/cloudinaryUpload";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
@@ -21,14 +21,38 @@ export async function GET(request: Request) {
 
       const { page, limit, offset } = parsePaginationParams(searchParams);
 
+      const searchQuery = searchParams.get("search");
+      const statusQuery = searchParams.get("status");
+      const conditions = [];
+
+      if (searchQuery) {
+        const pattern = `%${searchQuery}%`;
+        conditions.push(
+          or(
+            ilike(aboutSlides.tag, pattern),
+            ilike(aboutSlides.alt, pattern)
+          ) as any
+        );
+      }
+
+      if (statusQuery === "active") {
+        conditions.push(eq(aboutSlides.isActive, true));
+      } else if (statusQuery === "inactive") {
+        conditions.push(eq(aboutSlides.isActive, false));
+      }
+
+      const condition = conditions.length > 0 ? and(...conditions) : undefined;
+
       const countResult = await db
         .select({ count: sql<number>`count(*)` })
-        .from(aboutSlides);
+        .from(aboutSlides)
+        .where(condition);
       const total = Number(countResult[0]?.count || 0);
 
       const list = await db
         .select()
         .from(aboutSlides)
+        .where(condition)
         .orderBy(asc(aboutSlides.sortOrder))
         .limit(limit)
         .offset(offset);

@@ -14,6 +14,7 @@ import {
   Loader2,
   AlertCircle,
   Upload,
+  Search,
 } from "lucide-react";
 import {
   Table,
@@ -42,6 +43,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -60,8 +68,16 @@ function AboutSlidesPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // URL parameters
   const page = searchParams.get("page") || "1";
   const limit = searchParams.get("limit") || "25";
+  const statusFilter = searchParams.get("status") || "all";
+  const searchQuery = searchParams.get("search") || "";
+
+  // Local filter states
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [localStatus, setLocalStatus] = useState(statusFilter);
 
   const pushParams = useCallback((params: URLSearchParams, replace = false) => {
     const url = `${pathname}?${params.toString()}`;
@@ -83,7 +99,13 @@ function AboutSlidesPageContent() {
     if (changed) {
       pushParams(params, true);
     }
-  }, [pathname, router, searchParams, pushParams]);
+  }, [searchParams, pushParams]);
+
+  // Sync local inputs when URL filter parameters change
+  useEffect(() => {
+    setLocalSearch(searchQuery);
+    setLocalStatus(statusFilter);
+  }, [searchQuery, statusFilter]);
 
   const [slides, setSlides] = useState<SlideRow[]>([]);
   const isInitialLoadRef = useRef(true);
@@ -120,8 +142,11 @@ function AboutSlidesPageContent() {
         setLoading(true);
         isInitialLoadRef.current = false;
       }
+      const searchPart = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
+      const statusPart = statusFilter !== "all" ? `&status=${statusFilter}` : "";
+
       const res = await fetch(
-        `/api/about-slides?all=true&page=${page}&limit=${limit}`,
+        `/api/about-slides?all=true&page=${page}&limit=${limit}${searchPart}${statusPart}`,
       );
       if (!res.ok) {
         throw new Error("Failed to load slides.");
@@ -135,48 +160,64 @@ function AboutSlidesPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit]);
+  }, [page, limit, searchQuery, statusFilter]);
 
   useEffect(() => {
     fetchSlides();
   }, [fetchSlides]);
 
-  // Realtime hook to automatically update on db mutations
   useRealtime(["about_slides"], () => {
-    console.log(
-      "[Realtime Trigger] About slides updated in DB, refetching list...",
-    );
     fetchSlides();
   });
 
+  const handleApplyFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("search", localSearch.trim());
+    params.set("status", localStatus);
+    params.set("page", "1");
+    pushParams(params);
+  };
+
+  const handleClearFilters = () => {
+    setLocalSearch("");
+    setLocalStatus("all");
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("search", "");
+    params.set("status", "all");
+    params.set("page", "1");
+    pushParams(params);
+  };
+
   const handleOpenCreate = () => {
-    const maxOrder = slides.length > 0 ? Math.max(...slides.map(s => s.sortOrder)) : 0;
     setEditingId(null);
+    setFormError("");
+    setSelectedFile(null);
+    // Autofill max display order + 10 logic
+    const maxVal = slides.reduce((max, s) => (s.sortOrder > max ? s.sortOrder : max), 0);
     setFormData({
       tag: "",
       alt: "",
-      sortOrder: maxOrder + 10,
+      sortOrder: maxVal + 10,
       isActive: true,
     });
-    setSelectedFile(null);
-    setFormError("");
     setModalOpen(true);
   };
 
   const handleOpenEdit = (slide: SlideRow) => {
     setEditingId(slide.id);
+    setFormError("");
+    setSelectedFile(null);
     setFormData({
       tag: slide.tag,
       alt: slide.alt,
       sortOrder: slide.sortOrder,
       isActive: slide.isActive,
     });
-    setSelectedFile(null);
-    setFormError("");
     setModalOpen(true);
   };
 
-  const handleTriggerDelete = (id: string) => {
+  const handleOpenDelete = (id: string) => {
     setDeletingId(id);
     setDeleteDialogOpen(true);
   };
@@ -188,15 +229,15 @@ function AboutSlidesPageContent() {
         method: "DELETE",
       });
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Failed to delete slide");
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete slide.");
       }
-      setSlides((prev) => prev.filter((s) => s.id !== deletingId));
       toast.success("Slide deleted successfully!");
+      setDeleteDialogOpen(false);
+      fetchSlides();
     } catch (err: any) {
       toast.error(err.message || "Failed to delete slide.");
     } finally {
-      setDeleteDialogOpen(false);
       setDeletingId(null);
     }
   };
@@ -215,8 +256,10 @@ function AboutSlidesPageContent() {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to toggle status");
+        const data = await res.json();
+        throw new Error(data.error || "Failed to toggle slide status.");
       }
+
       toast.success(
         slide.isActive
           ? "Slide deactivated successfully!"
@@ -224,7 +267,13 @@ function AboutSlidesPageContent() {
       );
       fetchSlides();
     } catch (err: any) {
-      toast.error(err.message || "Failed to toggle status.");
+      toast.error(err.message || "Failed to toggle slide status.");
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
     }
   };
 
@@ -294,8 +343,7 @@ function AboutSlidesPageContent() {
             Manage About Slideshow
           </h1>
           <p className="text-xs text-[#5a5e7a] mt-1">
-            Configure images, tags, and display ordering in the About section
-            slideshow.
+            Configure images, tags, and display ordering in the About section slideshow.
           </p>
         </div>
         <button
@@ -305,6 +353,55 @@ function AboutSlidesPageContent() {
           <Plus className="w-4 h-4" />
           Create Slide
         </button>
+      </div>
+
+      {/* Filter Toolbar (Clear first, then Apply) */}
+      <div className="flex flex-col sm:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
+        <div className="flex-1 min-w-[200px] space-y-1 w-full">
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Search Slides</Label>
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-[#9396ae]" />
+            <Input
+              type="text"
+              placeholder="Search tag or image alt description..."
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              className="pl-9 h-9 text-xs border-[#e8dcc4] bg-white rounded-xl placeholder:text-gray-400 text-[#1c1f4a]"
+            />
+          </div>
+        </div>
+
+        <div className="w-full sm:w-48 space-y-1">
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Display status</Label>
+          <Select value={localStatus} onValueChange={setLocalStatus}>
+            <SelectTrigger className="w-full h-9 text-xs border-[#e8dcc4] bg-white rounded-xl text-[#1c1f4a]">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Slides</SelectItem>
+              <SelectItem value="active">Active Only</SelectItem>
+              <SelectItem value="inactive">Inactive Only</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+          <Button
+            type="button"
+            onClick={handleClearFilters}
+            variant="outline"
+            className="h-9 px-4 border-[#e8dcc4] bg-white hover:bg-[#faf7f2] text-xs font-bold text-[#5a5e7a] rounded-xl flex items-center justify-center cursor-pointer flex-1 sm:flex-none"
+          >
+            Clear
+          </Button>
+          <Button
+            type="button"
+            onClick={handleApplyFilters}
+            className="h-9 px-4 bg-[#b86a16] hover:bg-[#b86a16]/90 text-white text-xs font-bold rounded-xl flex items-center justify-center cursor-pointer shadow-sm transition-all flex-1 sm:flex-none"
+          >
+            Apply
+          </Button>
+        </div>
       </div>
 
       {/* Table grid */}
@@ -324,288 +421,249 @@ function AboutSlidesPageContent() {
         <div className="border border-dashed border-[#e8dcc4] bg-white/40 p-12 rounded-[2rem] text-center">
           <Images className="w-12 h-12 text-[#9396ae] mx-auto mb-4" />
           <h3 className="text-md font-bold text-[#1c1f4a] font-display">
-            No slides created
+            No slides found
           </h3>
           <p className="text-xs text-[#5a5e7a] mt-1 max-w-sm mx-auto">
-            You don't have any slideshow images configured. The landing page
-            will fall back to displaying the default main photo.
+            Try adjusting your search criteria or status filter to locate slideshow slides.
           </p>
-          <button
-            onClick={handleOpenCreate}
-            className="mt-6 inline-flex items-center justify-center gap-2 h-9 px-4 rounded-full bg-[#b86a16] hover:bg-[#b86a16]/90 text-white font-semibold text-xs shadow-sm transition-all cursor-pointer"
-          >
-            Upload First Slide
-          </button>
         </div>
       ) : (
         <div className="p-1">
           <TablePaginationFooter pagination={pagination} variant="top" />
-          <Table>
-            <TableHeader className="bg-[#1c1f4a]/5">
-              <TableRow className="border-b border-[#e8dcc4]">
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-24">
-                  Image
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-32">
-                  Status
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-32">
-                  Sort Order
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
-                  Slide Tag
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right w-32">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {slides.map((slide) => (
-                <TableRow
-                  key={slide.id}
-                  className={`border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors ${
-                    slide.isActive ? "bg-[#eaf2eb]/30" : ""
-                  }`}
-                >
-                  <TableCell className="py-3 px-4">
-                    <div className="w-10 h-12 relative rounded-lg border border-[#e8dcc4] overflow-hidden bg-gray-100 shrink-0">
-                      <Image
-                        src={slide.imageUrl}
-                        alt={slide.alt || slide.tag}
-                        fill
-                        className="object-cover"
-                        sizes="40px"
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-3 px-4">
-                    <button
-                      onClick={() => handleToggleActive(slide)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
-                        slide.isActive
-                          ? "bg-[#6b8f71]/15 text-[#6b8f71]"
-                          : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
-                      }`}
-                    >
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      {slide.isActive ? "Active" : "Set Active"}
-                    </button>
-                  </TableCell>
-                  <TableCell className="py-3 px-4 font-mono text-[#5a5e7a] text-xs">
-                    {slide.sortOrder}
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-[#1c1f4a] font-bold text-xs uppercase tracking-wider">
-                    {slide.tag}
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-right">
-                    <div className="inline-flex items-center gap-2">
-                      <button
-                        onClick={() => handleOpenEdit(slide)}
-                        className="p-2 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
-                        title="Edit"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleTriggerDelete(slide.id)}
-                        className="p-2 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </TableCell>
+          <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
+            <Table>
+              <TableHeader className="bg-[#1c1f4a]/5">
+                <TableRow className="border-b border-[#e8dcc4]">
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                    Preview
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                    Tag / Heading
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                    Alt description
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                    Order Weight
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                    Status
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs text-right">
+                    Actions
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {slides.map((slide) => (
+                  <TableRow
+                    key={slide.id}
+                    className={`border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors ${
+                      !slide.isActive ? "opacity-60" : ""
+                    }`}
+                  >
+                    <TableCell className="py-3 px-4">
+                      <div className="relative w-16 h-10 rounded-lg overflow-hidden border border-[#e8dcc4]">
+                        <Image
+                          src={slide.imageUrl}
+                          alt={slide.alt || "Slide preview"}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs font-bold text-[#1c1f4a]">
+                      {slide.tag}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs text-[#5a5e7a]">
+                      {slide.alt || <span className="text-gray-400 italic">No alt text</span>}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs font-semibold text-[#1c1f4a] font-mono">
+                      {slide.sortOrder}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs">
+                      <button
+                        onClick={() => handleToggleActive(slide)}
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
+                          slide.isActive
+                            ? "bg-[#6b8f71]/15 text-[#6b8f71]"
+                            : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
+                        }`}
+                      >
+                        {slide.isActive ? "Active" : "Activate"}
+                      </button>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-right">
+                      <div className="inline-flex gap-2">
+                        <button
+                          onClick={() => handleOpenEdit(slide)}
+                          className="p-1.5 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleOpenDelete(slide.id)}
+                          className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           <TablePaginationFooter pagination={pagination} variant="bottom" />
         </div>
       )}
 
-      {/* Create/Edit dialog */}
+      {/* Add / Edit Slide dialog modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-5 rounded-t-3xl flex flex-row items-center gap-2">
-            <DialogTitle className="text-white text-md font-bold">
-              {editingId ? "Edit Slide Details" : "Create Slide Details"}
+        <DialogContent className="sm:max-w-[480px] border border-[#e8dcc4] bg-white rounded-2xl overflow-hidden p-0 shadow-lg font-sans">
+          <DialogHeader className="bg-[#1c1f4a] text-white p-5">
+            <DialogTitle className="text-white text-sm font-bold">
+              {editingId ? "Edit slideshow slide" : "Add slideshow slide"}
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
             {formError && (
-              <div className="p-3 bg-[#faf0ee] border border-[#c4796a]/20 text-[#c4796a] text-xs font-semibold rounded-xl">
-                {formError}
+              <div className="p-3 bg-[#faf0ee] border border-[#c4796a]/20 text-[#c4796a] text-xs font-semibold rounded-xl flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{formError}</span>
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="tag"
-                  className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide"
-                >
-                  Slide Tag / Caption
-                </Label>
-                <Input
-                  id="tag"
-                  type="text"
-                  placeholder="e.g. MUSIC THERAPIST"
-                  value={formData.tag}
-                  onChange={(e) =>
-                    setFormData({ ...formData, tag: e.target.value })
-                  }
-                  disabled={formLoading}
-                  className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs uppercase"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label
-                  htmlFor="sortOrder"
-                  className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide"
-                >
-                  Display Order Weight
-                </Label>
-                <Input
-                  id="sortOrder"
-                  type="text"
-                  placeholder="e.g. 10"
-                  value={formData.sortOrder === 0 ? "" : formData.sortOrder}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setFormData({
-                      ...formData,
-                      sortOrder: val === "" ? 0 : parseInt(val) || 0,
-                    });
-                  }}
-                  disabled={formLoading}
-                  className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="alt"
-                className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide"
-              >
-                Image Alt Description (Optional)
+            <div className="space-y-1">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                Tag Label (Heading)
               </Label>
               <Input
-                id="alt"
-                type="text"
-                placeholder="e.g. Sharath Kancherla playing sitar"
-                value={formData.alt}
-                onChange={(e) =>
-                  setFormData({ ...formData, alt: e.target.value })
-                }
+                value={formData.tag}
+                onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+                placeholder="e.g. LIFE SKILLS FACILITATOR"
+                className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs"
                 disabled={formLoading}
-                className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
+                required
               />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                Image Alt Text
+              </Label>
+              <Input
+                value={formData.alt}
+                onChange={(e) => setFormData({ ...formData, alt: e.target.value })}
+                placeholder="Description for accessibility (alt attribute)..."
+                className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs"
+                disabled={formLoading}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                  Order Weight
+                </Label>
+                <Input
+                  type="text"
+                  value={formData.sortOrder}
+                  onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+                  placeholder="Sort order number..."
+                  className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs font-mono"
+                  disabled={formLoading}
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                  Display status
+                </Label>
+                <Select
+                  value={formData.isActive ? "true" : "false"}
+                  onValueChange={(val) => setFormData({ ...formData, isActive: val === "true" })}
+                  disabled={formLoading}
+                >
+                  <SelectTrigger className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Active / Showcased</SelectItem>
+                    <SelectItem value="false">Inactive / Hidden</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
               <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
-                Slide Image Asset
+                Slide Image File
               </Label>
-              <div className="relative border border-dashed border-[#e8dcc4] hover:border-[#b86a16]/60 bg-[#faf7f2]/40 rounded-2xl p-4 flex flex-col items-center justify-center transition-all min-h-[90px] cursor-pointer">
+              <div className="relative border-2 border-dashed border-[#e8dcc4] bg-[#faf7f2]/20 hover:bg-[#faf7f2]/50 transition-all rounded-xl p-4 text-center cursor-pointer">
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                   disabled={formLoading}
-                  onChange={(e) => {
-                    const files = e.target.files;
-                    if (files && files.length > 0) {
-                      setSelectedFile(files[0]);
-                    }
-                  }}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 />
-                <Upload className="w-5 h-5 text-[#9396ae] mb-1.5" />
-                <span className="text-[11px] font-bold text-[#1c1f4a] text-center max-w-[280px] truncate block">
-                  {selectedFile
-                    ? selectedFile.name
-                    : editingId
-                      ? "Click to replace existing image (optional)"
-                      : "Click to select local JPEG, PNG, or WEBP"}
+                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                <span className="text-xs font-semibold text-[#1c1f4a] block">
+                  {selectedFile ? selectedFile.name : "Click to choose slide image file"}
                 </span>
-                <span className="text-[9px] text-[#5a5e7a] mt-0.5">
-                  Max Size: 5MB. Target size will compress to &lt; 150KB
-                  automatically.
+                <span className="text-[10px] text-gray-400 mt-1 block">
+                  PNG, JPG, or WEBP up to 5MB.
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 border-t border-[#e8dcc4]/60 pt-3">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={formData.isActive}
-                onChange={(e) =>
-                  setFormData({ ...formData, isActive: e.target.checked })
-                }
-                disabled={formLoading}
-                className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16] focus:ring-[#b86a16] cursor-pointer"
-              />
-              <Label
-                htmlFor="isActive"
-                className="text-xs font-semibold text-[#1c1f4a] cursor-pointer selection:bg-transparent"
-              >
-                Activate this slide in the rotation slideshow
-              </Label>
-            </div>
-
-            <div className="flex justify-end gap-3 border-t border-[#e8dcc4]/60 pt-4">
+            <div className="flex justify-end gap-2 pt-4 border-t border-[#e8dcc4]/50">
               <Button
                 type="button"
                 variant="outline"
-                disabled={formLoading}
                 onClick={() => setModalOpen(false)}
-                className="h-10 px-5 rounded-full border border-[#e8dcc4] text-[#5a5e7a]"
+                disabled={formLoading}
+                className="border-[#e8dcc4] text-[#1c1f4a] rounded-xl hover:bg-[#faf7f2]/40 text-xs font-semibold"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={formLoading}
-                className="h-10 px-5 rounded-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white font-semibold text-xs"
+                className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-xl text-xs font-semibold"
               >
-                {formLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Uploading...
-                  </>
-                ) : (
-                  "Save Details"
-                )}
+                {formLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Slide"}
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
 
+      {/* Delete slide Alert dialogue */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="w-[280px] max-w-[90vw] bg-white rounded-3xl border-0 shadow-xl p-6">
-          <AlertDialogHeader className="text-center flex flex-col items-center">
-            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">
-              Delete Slide
+        <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#1c1f4a] font-bold">
+              Delete slideshow slide
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              Are you sure you want to delete this slideshow slide? This will
-              delete the image from Cloudinary.
+            <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+              Are you sure you want to permanently delete this slideshow slide representation from the database? This action is irreversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
-            <AlertDialogCancel className="flex-1 border border-[#c4796a] text-[#c4796a] hover:bg-[#c4796a]/5 rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
-              No
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel className="border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50">
+              Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              className="flex-1 bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer"
+              className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white text-xs font-semibold rounded-xl"
             >
-              Yes
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -616,16 +674,11 @@ function AboutSlidesPageContent() {
 
 export default function AboutSlidesPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium">
-            Loading about slides dashboard...
-          </p>
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin" />
+      </div>
+    }>
       <AboutSlidesPageContent />
     </Suspense>
   );

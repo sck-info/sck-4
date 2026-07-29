@@ -50,16 +50,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { formatDate, formatTimeRange } from "@/lib/format";
 
 type SlotRow = {
   id: string;
+  subCategoryId: string;
   slotDate: string;
   startTime: string;
   endTime: string;
-  status: "available" | "booked";
+  status: "available" | "booked" | "suspended";
   subCategoryName: string;
-  locations: { id: string; name: string; type: string }[];
 };
 
 type SubCategoryRow = {
@@ -74,9 +73,27 @@ type LocationRow = {
   type: string;
 };
 
-const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
-  const hour = Math.floor(i / 2);
-  const min = i % 2 === 0 ? "00" : "30";
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+const formatTime12h = (time24: string) => {
+  const [h, m] = time24.split(":");
+  const hrs = parseInt(h);
+  const ampm = hrs >= 12 ? "PM" : "AM";
+  const hour12 = hrs % 12 === 0 ? 12 : hrs % 12;
+  return `${hour12}:${m} ${ampm}`;
+};
+
+// Generate options for time selects
+const TIME_OPTIONS = Array.from({ length: 96 }, (_, i) => {
+  const hour = Math.floor(i / 4);
+  const min = (i % 4) * 15 === 0 ? "00" : (i % 4) * 15;
   const hourStr = hour.toString().padStart(2, "0");
   const value = `${hourStr}:${min}`;
 
@@ -95,6 +112,16 @@ function SlotsDashboardContent() {
   // URL pagination params
   const page = searchParams.get("page") || "1";
   const limit = searchParams.get("limit") || "25";
+  const statusFilter = searchParams.get("status") || "all";
+  const subCategoryFilter = searchParams.get("subCategory") || "all";
+  const dateFilter = searchParams.get("date") || "";
+
+  // Local filter states
+  const [localStatus, setLocalStatus] = useState(statusFilter);
+  const [localSubCategory, setLocalSubCategory] = useState(subCategoryFilter);
+  const [localDate, setLocalDate] = useState<Date | undefined>(
+    dateFilter ? new Date(dateFilter) : undefined
+  );
 
   const pushParams = useCallback((params: URLSearchParams, replace = false) => {
     const url = `${pathname}?${params.toString()}`;
@@ -117,6 +144,13 @@ function SlotsDashboardContent() {
       pushParams(params, true);
     }
   }, [searchParams, pushParams]);
+
+  // Sync local states with URL params
+  useEffect(() => {
+    setLocalStatus(statusFilter);
+    setLocalSubCategory(subCategoryFilter);
+    setLocalDate(dateFilter ? new Date(dateFilter) : undefined);
+  }, [statusFilter, subCategoryFilter, dateFilter]);
 
   // Data lists
   const [slots, setSlots] = useState<SlotRow[]>([]);
@@ -149,7 +183,11 @@ function SlotsDashboardContent() {
   // Fetch Slots
   const fetchSlots = useCallback(async () => {
     try {
-      const res = await fetch(`/api/slots?page=${page}&limit=${limit}`);
+      const statusPart = statusFilter !== "all" ? `&status=${statusFilter}` : "";
+      const subPart = subCategoryFilter !== "all" ? `&subCategoryId=${subCategoryFilter}` : "";
+      const datePart = dateFilter ? `&date=${dateFilter}` : "";
+
+      const res = await fetch(`/api/slots?page=${page}&limit=${limit}${statusPart}${subPart}${datePart}`);
       if (!res.ok) throw new Error("Failed to load slots");
       const json = await res.json();
       setSlots(json.data);
@@ -160,7 +198,7 @@ function SlotsDashboardContent() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit]);
+  }, [page, limit, statusFilter, subCategoryFilter, dateFilter]);
 
   // Fetch helper lists (locations, offerings)
   const fetchHelpers = async () => {
@@ -195,12 +233,13 @@ function SlotsDashboardContent() {
     fetchHelpers();
   }, []);
 
-  // Real-time subscriptions
-  useRealtime(["offering_slots"], fetchSlots);
+  // Real-time updates
+  useRealtime(["slots"], () => {
+    fetchSlots();
+  });
 
-  // Modal open reset
+  // Trigger forms
   const handleOpenAnnounce = () => {
-    setFormError("");
     setFormData({
       subCategoryId: subCategories[0]?.id || "",
       slotDate: undefined,
@@ -208,11 +247,12 @@ function SlotsDashboardContent() {
       endTime: "10:00",
       selectedLocIds: [],
     });
+    setFormError("");
     setModalOpen(true);
   };
 
-  // Submit slot announcement
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Submit Slot
+  const handleAnnounceSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
 
@@ -297,6 +337,35 @@ function SlotsDashboardContent() {
     });
   };
 
+  const handleApplyFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("status", localStatus);
+    params.set("subCategory", localSubCategory);
+    if (localDate) {
+      const yyyy = localDate.getFullYear();
+      const mm = String(localDate.getMonth() + 1).padStart(2, "0");
+      const dd = String(localDate.getDate()).padStart(2, "0");
+      params.set("date", `${yyyy}-${mm}-${dd}`);
+    } else {
+      params.delete("date");
+    }
+    params.set("page", "1");
+    pushParams(params);
+  };
+
+  const handleClearFilters = () => {
+    setLocalStatus("all");
+    setLocalSubCategory("all");
+    setLocalDate(undefined);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("status", "all");
+    params.set("subCategory", "all");
+    params.delete("date");
+    params.set("page", "1");
+    pushParams(params);
+  };
+
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Header */}
@@ -310,6 +379,68 @@ function SlotsDashboardContent() {
         </Button>
       </div>
 
+      {/* Neat Filter Toolbar (Clear first, then Apply) */}
+      <div className="flex flex-col md:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
+        <div className="flex-1 min-w-[180px] space-y-1 w-full">
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Offering sub-category</Label>
+          <Select value={localSubCategory} onValueChange={setLocalSubCategory}>
+            <SelectTrigger className="w-full h-9 text-xs border-[#e8dcc4] bg-white rounded-xl text-[#1c1f4a]">
+              <SelectValue placeholder="All Offerings" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Offerings</SelectItem>
+              {subCategories.map((sub) => (
+                <SelectItem key={sub.id} value={sub.id}>
+                  {sub.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="w-full md:w-44 space-y-1">
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Booking Status</Label>
+          <Select value={localStatus} onValueChange={setLocalStatus}>
+            <SelectTrigger className="w-full h-9 text-xs border-[#e8dcc4] bg-white rounded-xl text-[#1c1f4a]">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="available">Available Only</SelectItem>
+              <SelectItem value="booked">Booked Only</SelectItem>
+              <SelectItem value="suspended">Suspended Only</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="w-full md:w-48 space-y-1">
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Filter Date</Label>
+          <DatePicker
+            value={localDate}
+            onChange={setLocalDate}
+            placeholder="Pick date filter"
+          />
+        </div>
+
+        <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
+          <Button
+            type="button"
+            onClick={handleClearFilters}
+            variant="outline"
+            className="h-9 px-4 border-[#e8dcc4] bg-white hover:bg-[#faf7f2] text-xs font-bold text-[#5a5e7a] rounded-xl flex items-center justify-center cursor-pointer flex-1 md:flex-none"
+          >
+            Clear
+          </Button>
+          <Button
+            type="button"
+            onClick={handleApplyFilters}
+            className="h-9 px-4 bg-[#b86a16] hover:bg-[#b86a16]/90 text-white text-xs font-bold rounded-xl flex items-center justify-center cursor-pointer shadow-sm transition-all flex-1 md:flex-none"
+          >
+            Apply
+          </Button>
+        </div>
+      </div>
+
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20">
           <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
@@ -318,9 +449,9 @@ function SlotsDashboardContent() {
       ) : slots.length === 0 ? (
         <div className="border border-dashed border-[#e8dcc4] bg-white/40 p-12 rounded-[2rem] text-center">
           <Calendar className="w-12 h-12 text-[#9396ae] mx-auto mb-4" />
-          <h3 className="text-md font-bold text-[#1c1f4a] font-display">No slots announced</h3>
+          <h3 className="text-md font-bold text-[#1c1f4a] font-display">No slots found</h3>
           <p className="text-xs text-[#5a5e7a] mt-1 max-w-sm mx-auto">
-            Timing slots will appear here once announced. Click Announce Timings above to initialize date ranges.
+            Try adjusting your filters or date picker search to locate timings slots.
           </p>
         </div>
       ) : (
@@ -348,74 +479,72 @@ function SlotsDashboardContent() {
                   >
                     <TableCell className="py-3 px-4 text-xs font-bold text-[#1c1f4a]">{slot.subCategoryName}</TableCell>
                     <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] font-semibold">{formatDate(slot.slotDate)}</TableCell>
-                    <TableCell className="py-3 px-4 text-xs font-medium text-[#1c1f4a] flex items-center gap-1.5 pt-4">
-                      <Clock className="w-3.5 h-3.5 text-[#b86a16]" /> {formatTimeRange(slot.startTime, slot.endTime)}
+                    <TableCell className="py-3 px-4 text-xs text-[#1c1f4a] font-medium">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-[#b86a16]" />
+                        {formatTime12h(slot.startTime)} - {formatTime12h(slot.endTime)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] font-medium max-w-[200px] truncate">
+                      Offline Clinics / Video Rooms
                     </TableCell>
                     <TableCell className="py-3 px-4 text-xs">
-                      <div className="flex flex-wrap gap-1">
-                        {slot.locations.map((loc) => (
-                          <span
-                            key={loc.id}
-                            className={`text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase ${
-                              loc.type === "online" ? "bg-[#b86a16]/5 border-[#b86a16]/25 text-[#b86a16]" : "bg-[#6b8f71]/5 border-[#6b8f71]/25 text-[#6b8f71]"
-                            }`}
-                          >
-                            {loc.name}
-                          </span>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-3 px-4 text-xs">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide uppercase ${
-                          slot.status === "booked" ? "bg-[#6b8f71]/15 text-[#6b8f71]" : "bg-gray-100 text-gray-500"
-                        }`}
-                      >
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide uppercase ${
+                        slot.status === "booked"
+                          ? "bg-[#6b8f71]/15 text-[#6b8f71]"
+                          : slot.status === "suspended"
+                          ? "bg-[#c4796a]/15 text-[#c4796a]"
+                          : "bg-[#b86a16]/10 text-[#b86a16]"
+                      }`}>
                         {slot.status}
                       </span>
                     </TableCell>
                     <TableCell className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => setDeleteSlot(slot)}
-                        className="p-2 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
-                        title="Remove Slot"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {slot.status !== "booked" ? (
+                        <button
+                          onClick={() => setDeleteSlot(slot)}
+                          className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
+                          title="Delete timings slot"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      ) : (
+                        <span className="text-xs text-[#5a5e7a] font-semibold italic select-none pr-2">Booked</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-            <TablePaginationFooter pagination={pagination} variant="bottom" />
           </div>
+          <TablePaginationFooter pagination={pagination} variant="bottom" />
         </div>
       )}
 
-      {/* DIALOG: Announce Timings Form */}
+      {/* Announce Modal Dialog */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-[480px]">
-          <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
-            <DialogTitle className="text-white text-md font-bold">Announce Slot Timings</DialogTitle>
+        <DialogContent className="max-w-lg border border-[#e8dcc4] bg-white rounded-2xl overflow-hidden p-0 shadow-lg font-sans">
+          <DialogHeader className="bg-[#1c1f4a] text-white p-5">
+            <DialogTitle className="text-white text-sm font-bold">Announce Timings Slot</DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          <form onSubmit={handleAnnounceSubmit} className="p-6 space-y-4">
             {formError && (
-              <div className="p-3 bg-[#faf0ee] border border-[#c4796a]/20 text-[#c4796a] text-xs font-semibold rounded-xl flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <div className="p-3 bg-[#faf0ee] border border-[#c4796a]/20 text-[#c4796a] text-xs font-semibold rounded-xl flex items-center gap-1">
+                <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{formError}</span>
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Select Offering Sub-Category</Label>
+            <div className="space-y-1">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Offering Session</Label>
               <Select
                 value={formData.subCategoryId}
                 onValueChange={(val) => setFormData({ ...formData, subCategoryId: val })}
                 disabled={formLoading}
               >
-                <SelectTrigger className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs w-full">
-                  <SelectValue placeholder="Select offering..." />
+                <SelectTrigger className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
+                  <SelectValue placeholder="Select offering" />
                 </SelectTrigger>
                 <SelectContent>
                   {subCategories.map((sub) => (
@@ -427,55 +556,50 @@ function SlotsDashboardContent() {
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">Slot Date</Label>
               <DatePicker
                 value={formData.slotDate}
                 onChange={(d) => setFormData({ ...formData, slotDate: d })}
                 disabled={formLoading}
-                disabledDates={(d: Date) => {
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  return d < today;
-                }}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Start Time</Label>
                 <Select
                   value={formData.startTime}
                   onValueChange={(val) => setFormData({ ...formData, startTime: val })}
                   disabled={formLoading}
                 >
-                  <SelectTrigger className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs w-full">
-                    <SelectValue placeholder="Select start..." />
+                  <SelectTrigger className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="max-h-48">
-                    {TIME_OPTIONS.map((time) => (
-                      <SelectItem key={`start-${time.value}`} value={time.value}>
-                        {time.label}
+                    {TIME_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                        {opt.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">End Time</Label>
                 <Select
                   value={formData.endTime}
                   onValueChange={(val) => setFormData({ ...formData, endTime: val })}
                   disabled={formLoading}
                 >
-                  <SelectTrigger className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs w-full">
-                    <SelectValue placeholder="Select end..." />
+                  <SelectTrigger className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="max-h-48">
-                    {TIME_OPTIONS.map((time) => (
-                      <SelectItem key={`end-${time.value}`} value={time.value}>
-                        {time.label}
+                    {TIME_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                        {opt.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -483,63 +607,67 @@ function SlotsDashboardContent() {
               </div>
             </div>
 
-            {/* Location Mappings Checklist */}
-            <div className="space-y-2 border-t border-[#e8dcc4]/60 pt-3">
-              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">Select Location Formats</Label>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {locationsList.map((loc) => {
-                  const isChecked = formData.selectedLocIds.includes(loc.id);
-                  return (
-                    <label
-                      key={loc.id}
-                      className="flex items-center gap-2 px-3 py-2 border border-[#e8dcc4]/60 hover:bg-[#faf7f2]/30 rounded-xl cursor-pointer text-xs font-semibold text-[#1c1f4a]"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={(e) => handleCheckboxChange(loc.id, e.target.checked)}
-                        disabled={formLoading}
-                        className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16] cursor-pointer"
-                      />
-                      <span className="truncate">{loc.name}</span>
-                    </label>
-                  );
-                })}
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">Select Formats &amp; Locations</Label>
+              <div className="p-3 bg-[#faf7f2]/30 border border-[#e8dcc4] rounded-xl space-y-2.5 max-h-32 overflow-y-auto">
+                {locationsList.map((loc) => (
+                  <label key={loc.id} className="flex items-center gap-2 text-xs font-medium text-[#1c1f4a] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.selectedLocIds.includes(loc.id)}
+                      onChange={(e) => handleCheckboxChange(loc.id, e.target.checked)}
+                      disabled={formLoading}
+                      className="rounded border-[#e8dcc4] text-[#b86a16] focus:ring-[#b86a16] cursor-pointer"
+                    />
+                    <span>{loc.name} <span className="text-[10px] text-gray-400 font-bold uppercase">({loc.type})</span></span>
+                  </label>
+                ))}
+                {locationsList.length === 0 && (
+                  <span className="text-xs text-[#5a5e7a] italic">No active clinics or online meetings configured in directory.</span>
+                )}
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 border-t border-[#e8dcc4]/60 pt-4">
-              <Button type="button" variant="outline" onClick={() => setModalOpen(false)} disabled={formLoading} className="h-10 px-5 rounded-full border border-[#e8dcc4] text-[#5a5e7a]">
+            <div className="flex justify-end gap-2 pt-4 border-t border-[#e8dcc4]/50">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setModalOpen(false)}
+                disabled={formLoading}
+                className="border-[#e8dcc4] text-[#1c1f4a] rounded-xl hover:bg-[#faf7f2]/40 text-xs font-semibold"
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={formLoading} className="h-10 px-5 rounded-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white font-semibold text-xs">
-                {formLoading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null} Announce Slot
+              <Button
+                type="submit"
+                disabled={formLoading}
+                className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-xl text-xs font-semibold"
+              >
+                {formLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Publish Slot"}
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* ALERT DIALOG: Remove Slot */}
-      <AlertDialog open={deleteSlot !== null} onOpenChange={(open) => !open && setDeleteSlot(null)}>
-        <AlertDialogContent className="w-[320px] max-w-[90vw] bg-white rounded-3xl border-0 shadow-xl p-6">
-          <AlertDialogHeader className="text-center flex flex-col items-center">
-            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">Remove Annouced Slot</AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              {deleteSlot?.status === "booked"
-                ? `WARNING: This slot is already BOOKED by a user. Removing it will trigger an validation error or orphan the booking. Are you sure?`
-                : `Are you sure you want to remove this timing slot?`}
+      {/* Delete Slot AlertDialog */}
+      <AlertDialog open={!!deleteSlot} onOpenChange={(open) => !open && setDeleteSlot(null)}>
+        <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#1c1f4a] font-bold">Cancel Timings Slot</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+              Are you sure you want to permanently delete this announced session timing slot? Users will no longer be able to select or book this session.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
-            <AlertDialogCancel className="flex-1 border border-[#c4796a] text-[#c4796a] hover:bg-[#c4796a]/5 rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel className="border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              className="flex-1 bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer"
+              className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white text-xs font-semibold rounded-xl"
             >
-              Confirm
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -548,16 +676,13 @@ function SlotsDashboardContent() {
   );
 }
 
-export default function SlotsDashboardPage() {
+export default function SlotsDashboard() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium">Loading slots announcer...</p>
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin" />
+      </div>
+    }>
       <SlotsDashboardContent />
     </Suspense>
   );

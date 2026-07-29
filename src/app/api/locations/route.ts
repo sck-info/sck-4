@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sessionLocations } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { desc, sql } from "drizzle-orm";
+import { desc, sql, and, eq, ilike } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
 export async function GET(req: Request) {
@@ -15,15 +15,31 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const { page, limit, offset } = parsePaginationParams(searchParams);
 
+    const conditions = [];
+
+    const searchQuery = searchParams.get("search");
+    if (searchQuery) {
+      conditions.push(ilike(sessionLocations.name, `%${searchQuery}%`));
+    }
+
+    const typeQuery = searchParams.get("type");
+    if (typeQuery && typeQuery !== "all") {
+      conditions.push(eq(sessionLocations.type, typeQuery as any));
+    }
+
+    const condition = conditions.length > 0 ? and(...conditions) : undefined;
+
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
-      .from(sessionLocations);
+      .from(sessionLocations)
+      .where(condition);
 
     const total = Number(countResult[0]?.count || 0);
 
     const data = await db
       .select()
       .from(sessionLocations)
+      .where(condition)
       .orderBy(desc(sessionLocations.createdAt))
       .limit(limit)
       .offset(offset);

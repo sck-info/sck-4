@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { gallery } from "@/db/schema/gallery";
 import { auth } from "@/lib/auth";
-import { eq, asc, and, sql } from "drizzle-orm";
+import { eq, asc, and, sql, ilike } from "drizzle-orm";
 import { uploadImages } from "@/lib/cloudinaryUpload";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
@@ -20,14 +20,31 @@ export async function GET(request: Request) {
 
       const { page, limit, offset } = parsePaginationParams(searchParams);
 
+      const searchQuery = searchParams.get("search");
+      const statusQuery = searchParams.get("status");
+      const conditions = [];
+
+      if (searchQuery) {
+        conditions.push(ilike(gallery.caption, `%${searchQuery}%`));
+      }
+      if (statusQuery === "active") {
+        conditions.push(eq(gallery.isActive, true));
+      } else if (statusQuery === "inactive") {
+        conditions.push(eq(gallery.isActive, false));
+      }
+
+      const condition = conditions.length > 0 ? and(...conditions) : undefined;
+
       const countResult = await db
         .select({ count: sql<number>`count(*)` })
-        .from(gallery);
+        .from(gallery)
+        .where(condition);
       const total = Number(countResult[0]?.count || 0);
 
       const list = await db
         .select()
         .from(gallery)
+        .where(condition)
         .orderBy(asc(gallery.sortOrder))
         .limit(limit)
         .offset(offset);

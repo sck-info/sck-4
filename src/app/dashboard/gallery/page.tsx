@@ -14,6 +14,7 @@ import {
   Loader2,
   AlertCircle,
   Upload,
+  Search,
 } from "lucide-react";
 import {
   Table,
@@ -42,6 +43,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -60,8 +68,16 @@ function GalleryCrudPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // URL parameters
   const page = searchParams.get("page") || "1";
   const limit = searchParams.get("limit") || "25";
+  const statusFilter = searchParams.get("status") || "all";
+  const searchQuery = searchParams.get("search") || "";
+
+  // Local filter states
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [localStatus, setLocalStatus] = useState(statusFilter);
 
   const pushParams = useCallback((params: URLSearchParams, replace = false) => {
     const url = `${pathname}?${params.toString()}`;
@@ -83,7 +99,13 @@ function GalleryCrudPageContent() {
     if (changed) {
       pushParams(params, true);
     }
-  }, [pathname, router, searchParams, pushParams]);
+  }, [searchParams, pushParams]);
+
+  // Sync local inputs when URL filter parameters change
+  useEffect(() => {
+    setLocalSearch(searchQuery);
+    setLocalStatus(statusFilter);
+  }, [searchQuery, statusFilter]);
 
   const [items, setItems] = useState<GalleryItemRow[]>([]);
   const isInitialLoadRef = useRef(true);
@@ -120,8 +142,11 @@ function GalleryCrudPageContent() {
         setLoading(true);
         isInitialLoadRef.current = false;
       }
+      const searchPart = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
+      const statusPart = statusFilter !== "all" ? `&status=${statusFilter}` : "";
+
       const res = await fetch(
-        `/api/gallery?all=true&page=${page}&limit=${limit}`,
+        `/api/gallery?all=true&page=${page}&limit=${limit}${searchPart}${statusPart}`,
       );
       if (!res.ok) {
         throw new Error("Failed to load gallery items.");
@@ -135,46 +160,64 @@ function GalleryCrudPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit]);
+  }, [page, limit, searchQuery, statusFilter]);
 
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
 
-  // Realtime hook to automatically update on db mutations
   useRealtime(["gallery"], () => {
-    console.log("[Realtime Trigger] Gallery updated in DB, refetching list...");
     fetchItems();
   });
 
+  const handleApplyFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("search", localSearch.trim());
+    params.set("status", localStatus);
+    params.set("page", "1");
+    pushParams(params);
+  };
+
+  const handleClearFilters = () => {
+    setLocalSearch("");
+    setLocalStatus("all");
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("search", "");
+    params.set("status", "all");
+    params.set("page", "1");
+    pushParams(params);
+  };
+
   const handleOpenCreate = () => {
-    const maxOrder = items.length > 0 ? Math.max(...items.map(i => i.sortOrder)) : 0;
     setEditingId(null);
+    setFormError("");
+    setSelectedFile(null);
+    // Autofill max display order + 10 logic
+    const maxVal = items.reduce((max, i) => (i.sortOrder > max ? i.sortOrder : max), 0);
     setFormData({
       caption: "",
       showInScroll: true,
-      sortOrder: maxOrder + 10,
+      sortOrder: maxVal + 10,
       isActive: true,
     });
-    setSelectedFile(null);
-    setFormError("");
     setModalOpen(true);
   };
 
   const handleOpenEdit = (item: GalleryItemRow) => {
     setEditingId(item.id);
+    setFormError("");
+    setSelectedFile(null);
     setFormData({
       caption: item.caption,
       showInScroll: item.showInScroll,
       sortOrder: item.sortOrder,
       isActive: item.isActive,
     });
-    setSelectedFile(null);
-    setFormError("");
     setModalOpen(true);
   };
 
-  const handleTriggerDelete = (id: string) => {
+  const handleOpenDelete = (id: string) => {
     setDeletingId(id);
     setDeleteDialogOpen(true);
   };
@@ -186,15 +229,15 @@ function GalleryCrudPageContent() {
         method: "DELETE",
       });
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Failed to delete gallery item");
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete item.");
       }
-      setItems((prev) => prev.filter((i) => i.id !== deletingId));
       toast.success("Gallery item deleted successfully!");
+      setDeleteDialogOpen(false);
+      fetchItems();
     } catch (err: any) {
       toast.error(err.message || "Failed to delete item.");
     } finally {
-      setDeleteDialogOpen(false);
       setDeletingId(null);
     }
   };
@@ -213,16 +256,18 @@ function GalleryCrudPageContent() {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to toggle status");
+        const data = await res.json();
+        throw new Error(data.error || "Failed to update item display settings.");
       }
+
       toast.success(
         item.isActive
-          ? "Gallery item deactivated successfully!"
-          : "Gallery item activated successfully!",
+          ? "Gallery item hidden successfully!"
+          : "Gallery item showcased successfully!",
       );
       fetchItems();
     } catch (err: any) {
-      toast.error(err.message || "Failed to toggle status.");
+      toast.error(err.message || "Failed to update display settings.");
     }
   };
 
@@ -240,16 +285,24 @@ function GalleryCrudPageContent() {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to update display settings");
+        const data = await res.json();
+        throw new Error(data.error || "Failed to update marquee track settings.");
       }
+
       toast.success(
         item.showInScroll
-          ? "Removed item from marquee scroller!"
-          : "Added item to marquee scroller!",
+          ? "Item removed from marquee track."
+          : "Item streaming in marquee track!",
       );
       fetchItems();
     } catch (err: any) {
       toast.error(err.message || "Failed to update display settings.");
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
     }
   };
 
@@ -311,8 +364,7 @@ function GalleryCrudPageContent() {
             Manage Gallery Items
           </h1>
           <p className="text-xs text-[#5a5e7a] mt-1">
-            Publish pictures to the masonry gallery page, or select specific
-            highlights to stream in the marquee track.
+            Publish pictures to the masonry gallery page, or select specific highlights to stream in the marquee track.
           </p>
         </div>
         <button
@@ -322,6 +374,55 @@ function GalleryCrudPageContent() {
           <Plus className="w-4 h-4" />
           Create Gallery Item
         </button>
+      </div>
+
+      {/* Filter Toolbar (Clear first, then Apply) */}
+      <div className="flex flex-col sm:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
+        <div className="flex-1 min-w-[200px] space-y-1 w-full">
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Search Gallery</Label>
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-[#9396ae]" />
+            <Input
+              type="text"
+              placeholder="Search by caption text description..."
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              className="pl-9 h-9 text-xs border-[#e8dcc4] bg-white rounded-xl placeholder:text-gray-400 text-[#1c1f4a]"
+            />
+          </div>
+        </div>
+
+        <div className="w-full sm:w-48 space-y-1">
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Display status</Label>
+          <Select value={localStatus} onValueChange={setLocalStatus}>
+            <SelectTrigger className="w-full h-9 text-xs border-[#e8dcc4] bg-white rounded-xl text-[#1c1f4a]">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Items</SelectItem>
+              <SelectItem value="active">Active Only</SelectItem>
+              <SelectItem value="inactive">Inactive Only</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+          <Button
+            type="button"
+            onClick={handleClearFilters}
+            variant="outline"
+            className="h-9 px-4 border-[#e8dcc4] bg-white hover:bg-[#faf7f2] text-xs font-bold text-[#5a5e7a] rounded-xl flex items-center justify-center cursor-pointer flex-1 sm:flex-none"
+          >
+            Clear
+          </Button>
+          <Button
+            type="button"
+            onClick={handleApplyFilters}
+            className="h-9 px-4 bg-[#b86a16] hover:bg-[#b86a16]/90 text-white text-xs font-bold rounded-xl flex items-center justify-center cursor-pointer shadow-sm transition-all flex-1 sm:flex-none"
+          >
+            Apply
+          </Button>
+        </div>
       </div>
 
       {/* Main Grid */}
@@ -341,308 +442,263 @@ function GalleryCrudPageContent() {
         <div className="border border-dashed border-[#e8dcc4] bg-white/40 p-12 rounded-[2rem] text-center">
           <Camera className="w-12 h-12 text-[#9396ae] mx-auto mb-4" />
           <h3 className="text-md font-bold text-[#1c1f4a] font-display">
-            No gallery items
+            No gallery items found
           </h3>
           <p className="text-xs text-[#5a5e7a] mt-1 max-w-sm mx-auto">
-            You don't have any images in your gallery list. Upload items to
-            share transformation moments.
+            Try adjusting your search criteria or status filter to locate gallery items.
           </p>
-          <button
-            onClick={handleOpenCreate}
-            className="mt-6 inline-flex items-center justify-center gap-2 h-9 px-4 rounded-full bg-[#b86a16] hover:bg-[#b86a16]/90 text-white font-semibold text-xs shadow-sm transition-all cursor-pointer"
-          >
-            Add First Item
-          </button>
         </div>
       ) : (
         <div className="p-1">
           <TablePaginationFooter pagination={pagination} variant="top" />
-          <Table>
-            <TableHeader className="bg-[#1c1f4a]/5">
-              <TableRow className="border-b border-[#e8dcc4]">
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-24">
-                  Thumbnail
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-28">
-                  Status
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-36">
-                  Show In Scroll
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-24">
-                  Sort Order
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
-                  Caption / Description
-                </TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right w-32">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item) => (
-                <TableRow
-                  key={item.id}
-                  className={`border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors ${
-                    item.isActive ? "bg-[#eaf2eb]/30" : ""
-                  }`}
-                >
-                  <TableCell className="py-3 px-4">
-                    <div className="w-10 h-10 relative rounded-lg border border-[#e8dcc4] overflow-hidden bg-gray-100 shrink-0">
-                      <Image
-                        src={item.imageUrl}
-                        alt={item.caption || "Gallery item"}
-                        fill
-                        className="object-cover"
-                        sizes="40px"
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-3 px-4">
-                    <button
-                      onClick={() => handleToggleActive(item)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
-                        item.isActive
-                          ? "bg-[#6b8f71]/15 text-[#6b8f71]"
-                          : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
-                      }`}
-                    >
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      {item.isActive ? "Active" : "Set Active"}
-                    </button>
-                  </TableCell>
-                  <TableCell className="py-3 px-4">
-                    <button
-                      onClick={() => handleToggleScroll(item)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
-                        item.showInScroll
-                          ? "bg-[#b86a16]/15 text-[#b86a16]"
-                          : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
-                      }`}
-                    >
-                      {item.showInScroll ? "Yes" : "No"}
-                    </button>
-                  </TableCell>
-                  <TableCell className="py-3 px-4 font-mono text-[#5a5e7a] text-xs">
-                    {item.sortOrder}
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-[#5a5e7a] text-xs font-semibold">
-                    {item.caption || (
-                      <span className="text-[#9396ae] italic">
-                        No description
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-right">
-                    <div className="inline-flex items-center gap-2">
-                      <button
-                        onClick={() => handleOpenEdit(item)}
-                        className="p-2 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
-                        title="Edit"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleTriggerDelete(item.id)}
-                        className="p-2 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </TableCell>
+          <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
+            <Table>
+              <TableHeader className="bg-[#1c1f4a]/5">
+                <TableRow className="border-b border-[#e8dcc4]">
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                    Preview
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                    Caption
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                    Show in Marquee track
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                    Order Weight
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">
+                    Status
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs text-right">
+                    Actions
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {items.map((item) => (
+                  <TableRow
+                    key={item.id}
+                    className={`border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors ${
+                      !item.isActive ? "opacity-60" : ""
+                    }`}
+                  >
+                    <TableCell className="py-3 px-4">
+                      <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-[#e8dcc4]/60">
+                        <Image
+                          src={item.imageUrl}
+                          alt={item.caption || "Gallery item"}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs font-semibold text-[#1c1f4a] max-w-[200px] truncate">
+                      {item.caption || <span className="text-gray-400 italic">No caption provided</span>}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs font-semibold text-[#1c1f4a]">
+                      <button
+                        onClick={() => handleToggleScroll(item)}
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
+                          item.showInScroll
+                            ? "bg-[#b86a16]/10 text-[#b86a16]"
+                            : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
+                        }`}
+                      >
+                        {item.showInScroll ? "Streaming" : "Toggle track"}
+                      </button>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs font-semibold text-[#1c1f4a] font-mono">
+                      {item.sortOrder}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs">
+                      <button
+                        onClick={() => handleToggleActive(item)}
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
+                          item.isActive
+                            ? "bg-[#6b8f71]/15 text-[#6b8f71]"
+                            : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
+                        }`}
+                      >
+                        {item.isActive ? "Active" : "Activate"}
+                      </button>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-right">
+                      <div className="inline-flex gap-2">
+                        <button
+                          onClick={() => handleOpenEdit(item)}
+                          className="p-1.5 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleOpenDelete(item.id)}
+                          className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           <TablePaginationFooter pagination={pagination} variant="bottom" />
         </div>
       )}
 
-      {/* Create/Edit form dialog */}
+      {/* Add / Edit Slide dialog modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-5 rounded-t-3xl flex flex-row items-center gap-2">
-            <DialogTitle className="text-white text-md font-bold">
-              {editingId ? "Edit Gallery details" : "Add Gallery Item"}
+        <DialogContent className="sm:max-w-[480px] border border-[#e8dcc4] bg-white rounded-2xl overflow-hidden p-0 shadow-lg font-sans">
+          <DialogHeader className="bg-[#1c1f4a] text-white p-5">
+            <DialogTitle className="text-white text-sm font-bold">
+              {editingId ? "Edit Gallery Item" : "Add Gallery Item"}
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
             {formError && (
-              <div className="p-3 bg-[#faf0ee] border border-[#c4796a]/20 text-[#c4796a] text-xs font-semibold rounded-xl">
-                {formError}
+              <div className="p-3 bg-[#faf0ee] border border-[#c4796a]/20 text-[#c4796a] text-xs font-semibold rounded-xl flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{formError}</span>
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="caption"
-                  className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide"
-                >
-                  Caption / Alt description
+            <div className="space-y-1">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                Caption Label
+              </Label>
+              <Input
+                value={formData.caption}
+                onChange={(e) => setFormData({ ...formData, caption: e.target.value })}
+                placeholder="Brief caption details..."
+                className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs"
+                disabled={formLoading}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                  Order Weight
                 </Label>
                 <Input
-                  id="caption"
                   type="text"
-                  placeholder="e.g. Satsang Meditation Hyderabad"
-                  value={formData.caption}
-                  onChange={(e) =>
-                    setFormData({ ...formData, caption: e.target.value })
-                  }
+                  value={formData.sortOrder}
+                  onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+                  placeholder="Sort order number..."
+                  className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs font-mono"
                   disabled={formLoading}
-                  className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
+                  required
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label
-                  htmlFor="sortOrder"
-                  className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide"
-                >
-                  Display Order Weight
+              <div className="space-y-1">
+                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                  Display status
                 </Label>
-                <Input
-                  id="sortOrder"
-                  type="text"
-                  placeholder="e.g. 10"
-                  value={formData.sortOrder === 0 ? "" : formData.sortOrder}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setFormData({
-                      ...formData,
-                      sortOrder: val === "" ? 0 : parseInt(val) || 0,
-                    });
-                  }}
+                <Select
+                  value={formData.isActive ? "true" : "false"}
+                  onValueChange={(val) => setFormData({ ...formData, isActive: val === "true" })}
                   disabled={formLoading}
-                  className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
+                >
+                  <SelectTrigger className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Active / Showcased</SelectItem>
+                    <SelectItem value="false">Inactive / Hidden</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
+                Marquee scrolling list options
+              </Label>
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="showInScroll"
+                  checked={formData.showInScroll}
+                  onChange={(e) => setFormData({ ...formData, showInScroll: e.target.checked })}
+                  disabled={formLoading}
+                  className="rounded border-[#e8dcc4] text-[#b86a16] focus:ring-[#b86a16] cursor-pointer"
                 />
+                <label htmlFor="showInScroll" className="text-xs font-medium text-[#1c1f4a] cursor-pointer">
+                  Stream this image inside marquee marquee track
+                </label>
               </div>
             </div>
 
             <div className="space-y-2">
               <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
-                Gallery Image
+                Gallery Image File
               </Label>
-              <div className="relative border border-dashed border-[#e8dcc4] hover:border-[#b86a16]/60 bg-[#faf7f2]/40 rounded-2xl p-4 flex flex-col items-center justify-center transition-all min-h-[90px] cursor-pointer">
+              <div className="relative border-2 border-dashed border-[#e8dcc4] bg-[#faf7f2]/20 hover:bg-[#faf7f2]/50 transition-all rounded-xl p-4 text-center cursor-pointer">
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                   disabled={formLoading}
-                  onChange={(e) => {
-                    const files = e.target.files;
-                    if (files && files.length > 0) {
-                      setSelectedFile(files[0]);
-                    }
-                  }}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 />
-                <Upload className="w-5 h-5 text-[#9396ae] mb-1.5" />
-                <span className="text-[11px] font-bold text-[#1c1f4a] text-center max-w-[280px] truncate block">
-                  {selectedFile
-                    ? selectedFile.name
-                    : editingId
-                      ? "Click to replace existing image (optional)"
-                      : "Click to select local JPEG, PNG, or WEBP"}
+                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                <span className="text-xs font-semibold text-[#1c1f4a] block">
+                  {selectedFile ? selectedFile.name : "Click to choose gallery image file"}
                 </span>
-                <span className="text-[9px] text-[#5a5e7a] mt-0.5">
-                  Max Size: 5MB. Target size will compress to &lt; 150KB
-                  automatically.
+                <span className="text-[10px] text-gray-400 mt-1 block">
+                  PNG, JPG, or WEBP up to 5MB.
                 </span>
               </div>
             </div>
 
-            <div className="flex flex-col gap-2 pt-2 border-t border-[#e8dcc4]/60">
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="showInScroll"
-                  checked={formData.showInScroll}
-                  onChange={(e) =>
-                    setFormData({ ...formData, showInScroll: e.target.checked })
-                  }
-                  disabled={formLoading}
-                  className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16] focus:ring-[#b86a16] cursor-pointer"
-                />
-                <Label
-                  htmlFor="showInScroll"
-                  className="text-xs font-semibold text-[#1c1f4a] cursor-pointer selection:bg-transparent"
-                >
-                  Show this image in the homepage scroller track
-                </Label>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) =>
-                    setFormData({ ...formData, isActive: e.target.checked })
-                  }
-                  disabled={formLoading}
-                  className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16] focus:ring-[#b86a16] cursor-pointer"
-                />
-                <Label
-                  htmlFor="isActive"
-                  className="text-xs font-semibold text-[#1c1f4a] cursor-pointer selection:bg-transparent"
-                >
-                  Make this gallery image active on the website
-                </Label>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 border-t border-[#e8dcc4]/60 pt-4">
+            <div className="flex justify-end gap-2 pt-4 border-t border-[#e8dcc4]/50">
               <Button
                 type="button"
                 variant="outline"
-                disabled={formLoading}
                 onClick={() => setModalOpen(false)}
-                className="h-10 px-5 rounded-full border border-[#e8dcc4] text-[#5a5e7a]"
+                disabled={formLoading}
+                className="border-[#e8dcc4] text-[#1c1f4a] rounded-xl hover:bg-[#faf7f2]/40 text-xs font-semibold"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={formLoading}
-                className="h-10 px-5 rounded-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white font-semibold text-xs"
+                className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-xl text-xs font-semibold"
               >
-                {formLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Uploading...
-                  </>
-                ) : (
-                  "Save Details"
-                )}
+                {formLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Item"}
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
 
+      {/* Delete slide Alert dialogue */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="w-[280px] max-w-[90vw] bg-white rounded-3xl border-0 shadow-xl p-6">
-          <AlertDialogHeader className="text-center flex flex-col items-center">
-            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">
+        <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#1c1f4a] font-bold">
               Delete Gallery Item
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              Are you sure you want to delete this gallery item? This will
-              delete the image from Cloudinary permanently.
+            <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+              Are you sure you want to permanently delete this gallery image from the database? This action is irreversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
-            <AlertDialogCancel className="flex-1 border border-[#c4796a] text-[#c4796a] hover:bg-[#c4796a]/5 rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
-              No
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel className="border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50">
+              Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              className="flex-1 bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer"
+              className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white text-xs font-semibold rounded-xl"
             >
-              Yes
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -653,16 +709,11 @@ function GalleryCrudPageContent() {
 
 export default function GalleryCrudPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium">
-            Loading gallery crud dashboard...
-          </p>
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin" />
+      </div>
+    }>
       <GalleryCrudPageContent />
     </Suspense>
   );

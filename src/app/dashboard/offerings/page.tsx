@@ -14,6 +14,7 @@ import {
   FolderOpen,
   ArrowUpDown,
   BookOpen,
+  Search,
 } from "lucide-react";
 import {
   Table,
@@ -84,10 +85,16 @@ function OfferingsDashboardContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // URL pagination + tab param (Category Name)
+  // URL pagination + tab + filter params
   const activeTabName = searchParams.get("tab") || "";
   const page = searchParams.get("page") || "1";
   const limit = searchParams.get("limit") || "25";
+  const statusFilter = searchParams.get("status") || "all";
+  const searchQuery = searchParams.get("search") || "";
+
+  // Local filter states
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [localStatus, setLocalStatus] = useState(statusFilter);
 
   const pushParams = useCallback((params: URLSearchParams, replace = false) => {
     const url = `${pathname}?${params.toString()}`;
@@ -146,7 +153,7 @@ function OfferingsDashboardContent() {
   // Fetch Categories
   const fetchCategories = useCallback(async () => {
     try {
-      const res = await fetch("/api/categories?page=1&limit=100"); // fetch all for tabs
+      const res = await fetch("/api/categories?page=1&limit=100");
       if (!res.ok) throw new Error("Failed to load categories");
       const json = await res.json();
       setCategories(json.data);
@@ -172,7 +179,10 @@ function OfferingsDashboardContent() {
     if (!activeCategory) return;
     setLoadingSubs(true);
     try {
-      const res = await fetch(`/api/sub-categories?categoryId=${activeCategory.id}&page=${page}&limit=${limit}`);
+      const searchPart = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
+      const statusPart = statusFilter !== "all" ? `&status=${statusFilter}` : "";
+
+      const res = await fetch(`/api/sub-categories?categoryId=${activeCategory.id}&page=${page}&limit=${limit}${searchPart}${statusPart}`);
       if (!res.ok) throw new Error("Failed to load sub-categories");
       const json = await res.json();
       setSubCategories(json.data);
@@ -183,7 +193,7 @@ function OfferingsDashboardContent() {
     } finally {
       setLoadingSubs(false);
     }
-  }, [activeCategory, page, limit]);
+  }, [activeCategory, page, limit, searchQuery, statusFilter]);
 
   // Fetch QRs list for mapping
   const fetchQRs = async () => {
@@ -207,6 +217,12 @@ function OfferingsDashboardContent() {
     fetchSubCategories();
   }, [fetchSubCategories]);
 
+  // Sync local inputs when URL filter parameters change
+  useEffect(() => {
+    setLocalSearch(searchQuery);
+    setLocalStatus(statusFilter);
+  }, [searchQuery, statusFilter]);
+
   // Real-time Sync
   useRealtime(["offering_categories"], fetchCategories);
   useRealtime(["offering_sub_categories"], fetchSubCategories);
@@ -216,14 +232,42 @@ function OfferingsDashboardContent() {
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", catName);
     params.set("page", "1");
+    // Preserve filters on tab switch if desired, or reset page
     pushParams(params);
   };
 
-  // Category CRUD Handlers
+  const handleApplyFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("search", localSearch.trim());
+    params.set("status", localStatus);
+    params.set("page", "1");
+    pushParams(params);
+  };
+
+  const handleClearFilters = () => {
+    setLocalSearch("");
+    setLocalStatus("all");
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("search", "");
+    params.set("status", "all");
+    params.set("page", "1");
+    pushParams(params);
+  };
+
+  // Category Actions
   const handleOpenAddCat = () => {
-    const maxOrder = categories.length > 0 ? Math.max(...categories.map(c => c.sortOrder)) : 0;
     setEditingCat(null);
-    setCatFormData({ name: "", description: "", sanskritText: "", sanskritMeaning: "", sortOrder: maxOrder + 10, isActive: true });
+    // Autofill order logic
+    const maxVal = categories.reduce((max, c) => (c.sortOrder > max ? c.sortOrder : max), 0);
+    setCatFormData({
+      name: "",
+      description: "",
+      sanskritText: "",
+      sanskritMeaning: "",
+      sortOrder: maxVal + 10,
+      isActive: true,
+    });
     setCatModalOpen(true);
   };
 
@@ -242,22 +286,28 @@ function OfferingsDashboardContent() {
 
   const handleCatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!catFormData.name.trim()) {
+      toast.error("Category name is required");
+      return;
+    }
     setCatFormLoading(true);
+    const method = editingCat ? "PUT" : "POST";
+    const url = editingCat ? `/api/categories/${editingCat.id}` : "/api/categories";
+
     try {
-      const url = editingCat ? `/api/categories/${editingCat.id}` : "/api/categories";
-      const method = editingCat ? "PATCH" : "POST";
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(catFormData),
       });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save category");
 
-      if (!res.ok) throw new Error("Failed to save category details");
-      toast.success(editingCat ? "Category details updated" : "Category registered successfully");
+      toast.success(editingCat ? "Category updated successfully" : "Category created successfully");
       setCatModalOpen(false);
       fetchCategories();
     } catch (err: any) {
-      toast.error(err.message || "An error occurred");
+      toast.error(err.message || "Failed to commit category changes");
     } finally {
       setCatFormLoading(false);
     }
@@ -267,20 +317,27 @@ function OfferingsDashboardContent() {
     if (!deleteCatId) return;
     try {
       const res = await fetch(`/api/categories/${deleteCatId}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete category");
-      toast.success("Category deleted successfully");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete category");
+
+      toast.success("Category dropped from index");
       fetchCategories();
     } catch (err: any) {
-      toast.error(err.message || "An error occurred");
+      toast.error(err.message || "Failed to delete category");
     } finally {
       setDeleteCatId(null);
     }
   };
 
-  // Sub-Category CRUD Handlers
+  // Sub-Category Actions
   const handleOpenAddSub = () => {
-    const maxOrder = subCategories.length > 0 ? Math.max(...subCategories.map(s => s.sortOrder)) : 0;
+    if (!activeCategory) {
+      toast.error("Create a category folder first!");
+      return;
+    }
     setEditingSub(null);
+    // Autofill subcategory max sort order + 10 logic
+    const maxVal = subCategories.reduce((max, s) => (s.sortOrder > max ? s.sortOrder : max), 0);
     setSubFormData({
       name: "",
       description: "",
@@ -288,7 +345,7 @@ function OfferingsDashboardContent() {
       tagsRaw: "",
       requiresBooking: true,
       paymentQrId: "none",
-      sortOrder: maxOrder + 10,
+      sortOrder: maxVal + 10,
       isActive: true,
     });
     setSubModalOpen(true);
@@ -311,24 +368,20 @@ function OfferingsDashboardContent() {
 
   const handleSubSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeCategory) return;
+    if (!subFormData.name.trim()) {
+      toast.error("Offering name is required");
+      return;
+    }
     setSubFormLoading(true);
-
-    const tags = subFormData.tagsRaw
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
-    const topTags = subFormData.topTagsRaw
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
+    const method = editingSub ? "PUT" : "POST";
+    const url = editingSub ? `/api/sub-categories/${editingSub.id}` : "/api/sub-categories";
 
     const payload = {
-      name: subFormData.name,
-      description: subFormData.description || null,
       categoryId: activeCategory.id,
-      tags,
-      topTags,
+      name: subFormData.name,
+      description: subFormData.description,
+      topTags: subFormData.topTagsRaw.split(",").map((t) => t.trim()).filter(Boolean),
+      tags: subFormData.tagsRaw.split(",").map((t) => t.trim()).filter(Boolean),
       requiresBooking: subFormData.requiresBooking,
       paymentQrId: subFormData.paymentQrId === "none" ? null : subFormData.paymentQrId,
       sortOrder: subFormData.sortOrder,
@@ -336,20 +389,19 @@ function OfferingsDashboardContent() {
     };
 
     try {
-      const url = editingSub ? `/api/sub-categories/${editingSub.id}` : "/api/sub-categories";
-      const method = editingSub ? "PATCH" : "POST";
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save offering");
 
-      if (!res.ok) throw new Error("Failed to save sub-category");
-      toast.success(editingSub ? "Offering details updated" : "Offering created successfully");
+      toast.success(editingSub ? "Offering updated successfully" : "Offering created successfully");
       setSubModalOpen(false);
       fetchSubCategories();
     } catch (err: any) {
-      toast.error(err.message || "An error occurred");
+      toast.error(err.message || "Failed to save offering details");
     } finally {
       setSubFormLoading(false);
     }
@@ -398,7 +450,7 @@ function OfferingsDashboardContent() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* URL Tabbed Navigation */}
+          {/* URL Tabbed Navigation (No Stars) */}
           <div className="flex gap-2 border-b border-[#e8dcc4] pb-px overflow-x-auto selection:bg-transparent">
             {categories.map((cat) => {
               const isSel = activeCategory?.id === cat.id;
@@ -412,7 +464,7 @@ function OfferingsDashboardContent() {
                       : "border-transparent text-[#5a5e7a] hover:text-[#1c1f4a] hover:border-[#e8dcc4]"
                   }`}
                 >
-                  ✦ {cat.name}
+                  {cat.name}
                 </button>
               );
             })}
@@ -452,11 +504,60 @@ function OfferingsDashboardContent() {
             </div>
           )}
 
-          {/* Sub-Categories Offerings List Table */}
+          {/* Sub-Categories Offerings List Table with Filter Toolbar */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pt-2">
               <BookOpen className="w-4 h-4 text-[#b86a16]" />
               <h4 className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wider">Sub-Category Offerings List</h4>
+            </div>
+
+            {/* Filter Toolbar (Clear first, then Apply) */}
+            <div className="flex flex-col sm:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
+              <div className="flex-1 min-w-[200px] space-y-1 w-full">
+                <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Search Offerings</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-[#9396ae]" />
+                  <Input
+                    type="text"
+                    placeholder="Search by name or description..."
+                    value={localSearch}
+                    onChange={(e) => setLocalSearch(e.target.value)}
+                    className="pl-9 h-9 text-xs border-[#e8dcc4] bg-white rounded-xl placeholder:text-gray-400 text-[#1c1f4a]"
+                  />
+                </div>
+              </div>
+
+              <div className="w-full sm:w-48 space-y-1">
+                <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Display status</Label>
+                <Select value={localStatus} onValueChange={setLocalStatus}>
+                  <SelectTrigger className="w-full h-9 text-xs border-[#e8dcc4] bg-white rounded-xl text-[#1c1f4a]">
+                    <SelectValue placeholder="All Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active Only</SelectItem>
+                    <SelectItem value="inactive">Hidden Only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                <Button
+                  type="button"
+                  onClick={handleClearFilters}
+                  variant="outline"
+                  className="h-9 px-4 border-[#e8dcc4] bg-white hover:bg-[#faf7f2] text-xs font-bold text-[#5a5e7a] rounded-xl flex items-center justify-center cursor-pointer flex-1 sm:flex-none"
+                >
+                  Clear
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleApplyFilters}
+                  className="h-9 px-4 bg-[#b86a16] hover:bg-[#b86a16]/90 text-white text-xs font-bold rounded-xl flex items-center justify-center cursor-pointer shadow-sm transition-all flex-1 sm:flex-none"
+                >
+                  Apply
+                </Button>
+              </div>
             </div>
 
             {loadingSubs && subCategories.length === 0 ? (
@@ -466,10 +567,10 @@ function OfferingsDashboardContent() {
               </div>
             ) : subCategories.length === 0 ? (
               <div className="border border-dashed border-[#e8dcc4] bg-white/40 p-8 rounded-2xl text-center">
-                <p className="text-xs text-[#5a5e7a]">No offerings configured inside this category. Click Add Offering above to register a slot booking program.</p>
+                <p className="text-xs text-[#5a5e7a]">No offerings found fitting this filter. Click Add Offering to create program configurations.</p>
               </div>
             ) : (
-              <div className={`p-1 transition-opacity duration-200 ${loadingSubs ? "opacity-50 pointer-events-none" : ""}`}>
+              <div className={`p-1 bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs transition-opacity duration-200 ${loadingSubs ? "opacity-50 pointer-events-none" : ""}`}>
                 <TablePaginationFooter pagination={subPagination} variant="top" />
                 <Table>
                   <TableHeader className="bg-[#1c1f4a]/5">
@@ -732,19 +833,20 @@ function OfferingsDashboardContent() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-6 pt-2 border-t border-[#e8dcc4]/60">
-              <div className="flex items-center gap-2">
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <div className="flex items-center gap-2.5">
                 <input
                   type="checkbox"
-                  id="subRequiresBooking"
+                  id="requiresBooking"
                   checked={subFormData.requiresBooking}
                   onChange={(e) => setSubFormData({ ...subFormData, requiresBooking: e.target.checked })}
                   disabled={subFormLoading}
                   className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16]"
                 />
-                <Label htmlFor="subRequiresBooking" className="text-xs font-semibold text-[#1c1f4a] cursor-pointer">Requires timing slot booking</Label>
+                <Label htmlFor="requiresBooking" className="text-xs font-semibold text-[#1c1f4a] cursor-pointer">Requires timing slot selection</Label>
               </div>
-              <div className="flex items-center gap-2">
+
+              <div className="flex items-center gap-2.5">
                 <input
                   type="checkbox"
                   id="subActive"
@@ -753,7 +855,7 @@ function OfferingsDashboardContent() {
                   disabled={subFormLoading}
                   className="w-4 h-4 text-[#b86a16] border-[#e8dcc4] rounded accent-[#b86a16]"
                 />
-                <Label htmlFor="subActive" className="text-xs font-semibold text-[#1c1f4a] cursor-pointer">Active on Website</Label>
+                <Label htmlFor="subActive" className="text-xs font-semibold text-[#1c1f4a] cursor-pointer">Show on website</Label>
               </div>
             </div>
 
@@ -769,41 +871,41 @@ function OfferingsDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* ALERT: Delete Category */}
-      <AlertDialog open={deleteCatId !== null} onOpenChange={(open) => !open && setDeleteCatId(null)}>
-        <AlertDialogContent className="w-[300px] max-w-[90vw] bg-white rounded-3xl border-0 shadow-xl p-6">
-          <AlertDialogHeader className="text-center flex flex-col items-center">
-            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">Delete Category</AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              Are you sure? This will delete this category and ALL sub-categories/offerings linked inside it!
+      {/* ALERT DIALOG: Delete Category */}
+      <AlertDialog open={!!deleteCatId} onOpenChange={(open) => !open && setDeleteCatId(null)}>
+        <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#1c1f4a] font-bold">Delete Category Folder</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+              Are you sure you want to permanently delete this category folder? All associated offering items and seeker booking queues under this category will no longer match this scope.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
-            <AlertDialogCancel className="flex-1 border border-[#c4796a] text-[#c4796a] hover:bg-[#c4796a]/5 rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
-              No
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel className="border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50">
+              Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDeleteCat} className="flex-1 bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
-              Yes
+            <AlertDialogAction onClick={handleConfirmDeleteCat} className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white text-xs font-semibold rounded-xl">
+              Delete Category
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ALERT: Delete Sub-Category */}
-      <AlertDialog open={deleteSubId !== null} onOpenChange={(open) => !open && setDeleteSubId(null)}>
-        <AlertDialogContent className="w-[300px] max-w-[90vw] bg-white rounded-3xl border-0 shadow-xl p-6">
-          <AlertDialogHeader className="text-center flex flex-col items-center">
-            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">Delete Offering</AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              Are you sure? This will remove this offering. Existing bookings and scheduled slots mapped to this offering will fail to render.
+      {/* ALERT DIALOG: Delete Sub-Category */}
+      <AlertDialog open={!!deleteSubId} onOpenChange={(open) => !open && setDeleteSubId(null)}>
+        <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#1c1f4a] font-bold">Delete Offering Program</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+              Are you sure you want to permanently delete this sub-category offering? This action cannot be undone and will affect live booking options.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
-            <AlertDialogCancel className="flex-1 border border-[#c4796a] text-[#c4796a] hover:bg-[#c4796a]/5 rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
-              No
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel className="border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50">
+              Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDeleteSub} className="flex-1 bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
-              Yes
+            <AlertDialogAction onClick={handleConfirmDeleteSub} className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white text-xs font-semibold rounded-xl">
+              Delete Offering
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -812,16 +914,13 @@ function OfferingsDashboardContent() {
   );
 }
 
-export default function OfferingsDashboardPage() {
+export default function OfferingsDashboard() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium">Loading offerings console...</p>
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin" />
+      </div>
+    }>
       <OfferingsDashboardContent />
     </Suspense>
   );

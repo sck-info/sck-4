@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { scheduledMessages } from "@/db/schema";
-import { desc, count } from "drizzle-orm";
+import { desc, count, and, eq, ilike } from "drizzle-orm";
 
 export async function GET(req: Request) {
   try {
@@ -10,14 +10,34 @@ export async function GET(req: Request) {
     const limit = Math.max(1, parseInt(searchParams.get("limit") || "25"));
     const offset = (page - 1) * limit;
 
+    const conditions = [];
+
+    const searchQuery = searchParams.get("search");
+    if (searchQuery) {
+      conditions.push(ilike(scheduledMessages.message, `%${searchQuery}%`));
+    }
+
+    const statusQuery = searchParams.get("status");
+    if (statusQuery === "sent") {
+      conditions.push(eq(scheduledMessages.isSent, true));
+    } else if (statusQuery === "pending") {
+      conditions.push(eq(scheduledMessages.isSent, false));
+    }
+
+    const condition = conditions.length > 0 ? and(...conditions) : undefined;
+
     // Fetch total count of scheduled messages
-    const [totalRes] = await db.select({ val: count() }).from(scheduledMessages);
+    const [totalRes] = await db
+      .select({ val: count() })
+      .from(scheduledMessages)
+      .where(condition);
     const total = totalRes?.val || 0;
 
     // Fetch paginated messages sorted by creation time
     const data = await db
       .select()
       .from(scheduledMessages)
+      .where(condition)
       .orderBy(desc(scheduledMessages.createdAt))
       .limit(limit)
       .offset(offset);

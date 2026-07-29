@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { users, roles } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, and, or, ilike, desc, sql } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
 export async function GET(req: Request) {
@@ -15,11 +15,32 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const { page, limit, offset } = parsePaginationParams(searchParams);
 
+    const conditions = [eq(roles.roleName, "USER")];
+
+    const searchQuery = searchParams.get("search");
+    if (searchQuery) {
+      const searchPattern = `%${searchQuery}%`;
+      conditions.push(
+        or(
+          ilike(users.name, searchPattern),
+          ilike(users.email, searchPattern),
+          ilike(users.phone, searchPattern)
+        ) as any
+      );
+    }
+
+    const statusQuery = searchParams.get("status");
+    if (statusQuery === "active") {
+      conditions.push(eq(users.isActive, true));
+    } else if (statusQuery === "inactive") {
+      conditions.push(eq(users.isActive, false));
+    }
+
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(users)
       .innerJoin(roles, eq(users.roleId, roles.id))
-      .where(eq(roles.roleName, "USER"));
+      .where(and(...conditions)!);
 
     const total = Number(countResult[0]?.count || 0);
 
@@ -38,7 +59,7 @@ export async function GET(req: Request) {
       })
       .from(users)
       .innerJoin(roles, eq(users.roleId, roles.id))
-      .where(eq(roles.roleName, "USER"))
+      .where(and(...conditions)!)
       .orderBy(desc(users.createdAt))
       .limit(limit)
       .offset(offset);

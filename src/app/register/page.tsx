@@ -347,6 +347,7 @@ export default function RegisterPage() {
                           }
                         }}
                         disabled={loading}
+                        disabledDates={(d) => d > new Date()}
                       />
                     </div>
 

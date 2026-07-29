@@ -6,7 +6,15 @@ import { useRealtime } from "@/hooks/useRealtime";
 import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
 import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
 import { toast } from "sonner";
-import { Loader2, Calendar as CalendarIcon, Trash2, Play, CheckCircle, Plus } from "lucide-react";
+import {
+  Loader2,
+  Calendar as CalendarIcon,
+  Trash2,
+  Play,
+  CheckCircle,
+  Plus,
+  Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -23,6 +31,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { formatDate } from "@/lib/format";
 
@@ -39,8 +55,16 @@ function ScheduledMessagesContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // URL pagination & filter parameters
   const page = searchParams.get("page") || "1";
   const limit = searchParams.get("limit") || "25";
+  const statusFilter = searchParams.get("status") || "all";
+  const searchQuery = searchParams.get("search") || "";
+
+  // Local filter states
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [localStatus, setLocalStatus] = useState(statusFilter);
 
   const pushParams = useCallback((params: URLSearchParams, replace = false) => {
     const url = `${pathname}?${params.toString()}`;
@@ -62,7 +86,13 @@ function ScheduledMessagesContent() {
     if (changed) {
       pushParams(params, true);
     }
-  }, [pathname, router, searchParams, pushParams]);
+  }, [searchParams, pushParams]);
+
+  // Sync local inputs when URL search parameters change
+  useEffect(() => {
+    setLocalSearch(searchQuery);
+    setLocalStatus(statusFilter);
+  }, [searchQuery, statusFilter]);
 
   // Data states
   const [scheduledList, setScheduledList] = useState<ScheduledMessage[]>([]);
@@ -94,8 +124,11 @@ function ScheduledMessagesContent() {
         setLoading(true);
         isInitialLoadRef.current = false;
       }
+      const searchPart = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
+      const statusPart = statusFilter !== "all" ? `&status=${statusFilter}` : "";
+
       const res = await fetch(
-        `/api/communication/scheduled?page=${page}&limit=${limit}`,
+        `/api/communication/scheduled?page=${page}&limit=${limit}${searchPart}${statusPart}`,
       );
       if (!res.ok) {
         throw new Error("Failed to load scheduled messages.");
@@ -114,7 +147,7 @@ function ScheduledMessagesContent() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit]);
+  }, [page, limit, searchQuery, statusFilter]);
 
   useEffect(() => {
     fetchScheduled();
@@ -125,6 +158,25 @@ function ScheduledMessagesContent() {
     console.log("[Realtime Trigger] Scheduled messages modified, refetching...");
     fetchScheduled();
   });
+
+  const handleApplyFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("search", localSearch.trim());
+    params.set("status", localStatus);
+    params.set("page", "1");
+    pushParams(params);
+  };
+
+  const handleClearFilters = () => {
+    setLocalSearch("");
+    setLocalStatus("all");
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("search", "");
+    params.set("status", "all");
+    params.set("page", "1");
+    pushParams(params);
+  };
 
   const handleOpenCreate = () => {
     setMessage("");
@@ -146,14 +198,14 @@ function ScheduledMessagesContent() {
     }
   };
 
-  const handleCreateSchedule = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) {
-      toast.error("Please enter the message content.");
+      toast.error("Please enter message content template.");
       return;
     }
     if (!scheduledDate) {
-      toast.error("Please select a target date using the calendar.");
+      toast.error("Please pick a scheduled dispatch date.");
       return;
     }
 
@@ -169,34 +221,30 @@ function ScheduledMessagesContent() {
       });
 
       if (!res.ok) {
-        const json = await res.json();
-        throw new Error(json.error || "Failed to schedule message");
+        const data = await res.json();
+        throw new Error(data.error || "Failed to schedule broadcast message.");
       }
 
       toast.success("Broadcast message scheduled successfully!");
       setModalOpen(false);
-      setMessage("");
-      setScheduledDate("");
-      setSelectedDateObj(undefined);
       fetchScheduled();
     } catch (err: any) {
-      console.error(err);
-      toast.error(err.message || "Failed to save scheduled message.");
+      toast.error(err.message || "Failed to save broadcast schedule.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    setActionId(id);
+  const handleCancelMessage = async () => {
+    if (!actionId) return;
     try {
-      const res = await fetch(`/api/communication/scheduled/${id}`, {
+      const res = await fetch(`/api/communication/scheduled/${actionId}`, {
         method: "DELETE",
       });
 
       if (!res.ok) {
-        const json = await res.json();
-        throw new Error(json.error || "Failed to cancel scheduled message");
+        const data = await res.json();
+        throw new Error(data.error || "Failed to cancel scheduled message.");
       }
 
       toast.success("Scheduled message cancelled successfully!");
@@ -257,11 +305,60 @@ function ScheduledMessagesContent() {
 
           <button
             onClick={handleOpenCreate}
-            className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white font-semibold text-xs shadow-sm transition-all cursor-pointer w-full sm:w-auto text-center justify-center"
+            className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white font-semibold text-xs shadow-sm transition-all cursor-pointer w-full sm:w-auto text-center"
           >
             <Plus className="w-4 h-4 shrink-0" />
             Create Schedule
           </button>
+        </div>
+      </div>
+
+      {/* Filter Toolbar (Clear first, then Apply) */}
+      <div className="flex flex-col sm:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
+        <div className="flex-1 min-w-[200px] space-y-1 w-full">
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Search Messages</Label>
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-[#9396ae]" />
+            <Input
+              type="text"
+              placeholder="Search message text keywords..."
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              className="pl-9 h-9 text-xs border-[#e8dcc4] bg-white rounded-xl placeholder:text-gray-400 text-[#1c1f4a]"
+            />
+          </div>
+        </div>
+
+        <div className="w-full sm:w-48 space-y-1">
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Dispatch Status</Label>
+          <Select value={localStatus} onValueChange={setLocalStatus}>
+            <SelectTrigger className="w-full h-9 text-xs border-[#e8dcc4] bg-white rounded-xl text-[#1c1f4a]">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Broadcasts</SelectItem>
+              <SelectItem value="pending">Pending / Queued</SelectItem>
+              <SelectItem value="sent">Dispatched Only</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+          <Button
+            type="button"
+            onClick={handleClearFilters}
+            variant="outline"
+            className="h-9 px-4 border-[#e8dcc4] bg-white hover:bg-[#faf7f2] text-xs font-bold text-[#5a5e7a] rounded-xl flex items-center justify-center cursor-pointer flex-1 sm:flex-none"
+          >
+            Clear
+          </Button>
+          <Button
+            type="button"
+            onClick={handleApplyFilters}
+            className="h-9 px-4 bg-[#b86a16] hover:bg-[#b86a16]/90 text-white text-xs font-bold rounded-xl flex items-center justify-center cursor-pointer shadow-sm transition-all flex-1 sm:flex-none"
+          >
+            Apply
+          </Button>
         </div>
       </div>
 
@@ -281,17 +378,11 @@ function ScheduledMessagesContent() {
         <div className="border border-dashed border-[#e8dcc4] bg-white/40 p-12 rounded-[2rem] text-center">
           <CalendarIcon className="w-12 h-12 text-[#9396ae] mx-auto mb-4" />
           <h3 className="text-md font-bold text-[#1c1f4a] font-display">
-            No scheduled broadcasts
+            No scheduled broadcasts found
           </h3>
           <p className="text-xs text-[#5a5e7a] mt-1 max-w-sm mx-auto">
-            You don't have any pending or completed scheduled broadcasts in the queue. Create one to notify your seekers.
+            Try adjusting your search criteria or status filter to locate broadcasts.
           </p>
-          <button
-            onClick={handleOpenCreate}
-            className="mt-6 inline-flex items-center justify-center gap-2 h-9 px-4 rounded-full bg-[#b86a16] hover:bg-[#b86a16]/90 text-white font-semibold text-xs shadow-sm transition-all cursor-pointer"
-          >
-            Add First Schedule
-          </button>
         </div>
       ) : (
         <div className="p-1 space-y-4">
@@ -300,72 +391,66 @@ function ScheduledMessagesContent() {
             <Table className="w-full min-w-[700px]">
               <TableHeader className="bg-[#1c1f4a]/5">
                 <TableRow className="border-b border-[#e8dcc4]">
-                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-36">
-                    Target Date
+                  <TableHead className="py-3.5 px-4 font-bold text-[#1c1f4a] text-xs">
+                    Broadcast Template Message
                   </TableHead>
-                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-32">
+                  <TableHead className="py-3.5 px-4 font-bold text-[#1c1f4a] text-xs">
+                    Target Broadcast Date
+                  </TableHead>
+                  <TableHead className="py-3.5 px-4 font-bold text-[#1c1f4a] text-xs">
+                    Dispatch Time
+                  </TableHead>
+                  <TableHead className="py-3.5 px-4 font-bold text-[#1c1f4a] text-xs">
                     Status
                   </TableHead>
-                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
-                    Message Template (sent to ALL active seekers)
-                  </TableHead>
-                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] w-40">
-                    Created At
-                  </TableHead>
-                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right w-24">
+                  <TableHead className="py-3.5 px-4 font-bold text-[#1c1f4a] text-xs text-right">
                     Actions
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {scheduledList.map((item) => {
-                  const isPending = !item.isSent;
-                  return (
-                    <TableRow
-                      key={item.id}
-                      className={`border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors ${
-                        item.isSent ? "bg-[#eaf2eb]/30" : ""
-                      }`}
-                    >
-                      <TableCell className="py-4 px-4 font-semibold text-[#1c1f4a] text-xs">
-                        {formatDate(item.scheduledDate)}
-                      </TableCell>
-                      <TableCell className="py-4 px-4">
-                        <span
-                          className={`text-[9px] font-extrabold px-2.5 py-0.5 rounded-full border ${
-                            item.isSent
-                              ? "bg-green-50 text-green-700 border-green-200"
-                              : "bg-yellow-50 text-yellow-700 border-yellow-200"
-                          }`}
-                        >
-                          {item.isSent ? "SENT" : "PENDING"}
+                {scheduledList.map((msg) => (
+                  <TableRow
+                    key={msg.id}
+                    className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-all"
+                  >
+                    <TableCell className="py-3.5 px-4 text-xs font-medium text-[#1c1f4a] max-w-md whitespace-pre-wrap leading-relaxed">
+                      {msg.message}
+                    </TableCell>
+                    <TableCell className="py-3.5 px-4 text-xs font-semibold text-[#1c1f4a]">
+                      {msg.scheduledDate}
+                    </TableCell>
+                    <TableCell className="py-3.5 px-4 text-xs text-[#5a5e7a] font-medium">
+                      {msg.isSent && msg.sentAt ? (
+                        <span>{new Date(msg.sentAt).toLocaleString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}</span>
+                      ) : (
+                        <span className="text-gray-400 italic">Scheduled 6:00 AM</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3.5 px-4 text-xs">
+                      {msg.isSent ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase bg-[#6b8f71]/15 text-[#6b8f71]">
+                          <CheckCircle className="w-3 h-3" /> Dispatched
                         </span>
-                      </TableCell>
-                      <TableCell className="py-4 px-4 text-xs text-[#5a5e7a] font-medium whitespace-pre-wrap leading-relaxed max-w-lg">
-                        {item.message}
-                      </TableCell>
-                      <TableCell className="py-4 px-4 text-[10px] text-[#9396ae]">
-                        {formatDate(item.createdAt)}
-                      </TableCell>
-                      <TableCell className="py-4 px-4 text-right">
-                        {isPending && (
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            disabled={actionId === item.id}
-                            className="p-2 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer inline-flex items-center justify-center"
-                            title="Delete Schedule"
-                          >
-                            {actionId === item.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-4 h-4" />
-                            )}
-                          </button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase bg-[#b86a16]/15 text-[#b86a16]">
+                          ✦ Pending Queue
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3.5 px-4 text-right">
+                      {!msg.isSent && (
+                        <button
+                          onClick={() => setActionId(msg.id)}
+                          className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
+                          title="Cancel scheduled broadcast"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
@@ -373,68 +458,103 @@ function ScheduledMessagesContent() {
         </div>
       )}
 
-      {/* Create Dialog Modal (Gallery Style) */}
+      {/* Create Dialog Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-md border border-[#e8dcc4] bg-white rounded-3xl p-6">
-          <DialogHeader className="border-b border-[#e8dcc4]/30 pb-4">
-            <DialogTitle className="text-md font-bold text-[#1c1f4a] flex items-center gap-2">
-              <CalendarIcon className="w-4 h-4 text-[#b86a16]" />
-              Schedule WhatsApp Broadcast
+        <DialogContent className="sm:max-w-[500px] border border-[#e8dcc4] bg-white rounded-2xl overflow-hidden p-0 shadow-lg font-sans">
+          <DialogHeader className="bg-[#1c1f4a] text-white p-5">
+            <DialogTitle className="text-sm font-bold flex items-center gap-2 text-white">
+              <CalendarIcon className="w-4.5 h-4.5 text-[#b86a16]" />
+              Schedule Broadcast Message
             </DialogTitle>
           </DialogHeader>
-          
-          <form onSubmit={handleCreateSchedule} className="space-y-5 pt-4">
-            {/* Target Date Picker */}
-            <div className="space-y-1.5">
-              <Label className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider">
-                Target Broadcast Date
+
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                Target Date
               </Label>
               <DatePicker
                 value={selectedDateObj}
                 onChange={handleDateChange}
-                placeholder="Choose date from calendar"
-                disabledDates={(d: Date) => {
+                disabled={submitting}
+                placeholder="Pick a date"
+                disabledDates={(d) => {
                   const today = new Date();
                   today.setHours(0, 0, 0, 0);
-                  return d < today; // Disables past dates
+                  return d < today;
                 }}
               />
+              <p className="text-[10px] text-gray-500 italic mt-0.5">
+                The broadcast will trigger at 6:00 AM IST on the selected date.
+              </p>
             </div>
 
-            {/* Message template box */}
-            <div className="space-y-1.5">
-              <Label className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider">
-                WhatsApp Message Text
+            <div className="space-y-2">
+              <Label htmlFor="messageContent" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                Message Content Template
               </Label>
               <textarea
-                placeholder="Write the text notification to be scheduled to all active seekers..."
+                id="messageContent"
+                rows={5}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="w-full text-xs text-[#5a5e7a] border border-[#e8dcc4] bg-white rounded-xl p-3 focus:outline-none min-h-[140px] font-sans"
+                disabled={submitting}
+                placeholder="Enter notification or message to send to all users..."
+                className="w-full p-3 bg-[#faf7f2]/40 border border-[#e8dcc4] rounded-xl text-xs outline-none focus-visible:ring-1 focus-visible:ring-[#b86a16] text-[#1c1f4a]"
                 required
               />
             </div>
 
-            {/* Form actions */}
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex justify-end gap-2 pt-4 border-t border-[#e8dcc4]/50">
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 onClick={() => setModalOpen(false)}
-                className="text-xs font-bold text-[#5a5e7a] border border-[#e8dcc4] rounded-xl h-10 px-4 cursor-pointer"
+                disabled={submitting}
+                className="border-[#e8dcc4] text-[#1c1f4a] rounded-xl hover:bg-[#faf7f2]/40 text-xs font-semibold"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={submitting}
-                className="bg-[#b86a16] hover:bg-[#b86a16]/90 text-white font-bold text-xs h-10 px-5 rounded-xl flex items-center gap-2 cursor-pointer shadow-sm"
+                className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-xl text-xs font-semibold"
               >
-                {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                {submitting ? "Saving..." : "Schedule Broadcast"}
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Broadcast"}
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete / Cancel Broadcast Dialog Confirmation */}
+      <Dialog open={!!actionId} onOpenChange={(open) => !open && setActionId(null)}>
+        <DialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-[#1c1f4a] font-bold">
+              Cancel Scheduled Broadcast
+            </DialogTitle>
+            <p className="text-xs text-[#5a5e7a] leading-relaxed">
+              Are you sure you want to cancel and remove this scheduled broadcast message from the dispatch queue?
+            </p>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setActionId(null)}
+              className="border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50"
+            >
+              Back
+            </Button>
+            <Button
+              type="button"
+              onClick={handleCancelMessage}
+              className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white text-xs font-semibold rounded-xl"
+            >
+              Cancel Broadcast
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
@@ -443,16 +563,11 @@ function ScheduledMessagesContent() {
 
 export default function ScheduledMessagesPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium">
-            Loading scheduled messages dashboard...
-          </p>
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin" />
+      </div>
+    }>
       <ScheduledMessagesContent />
     </Suspense>
   );

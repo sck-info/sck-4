@@ -199,6 +199,7 @@ export default function ProfilePage() {
                     setAge(calculated.toString());
                   }
                 }}
+                disabledDates={(d) => d > new Date()}
               />
             </div>
 

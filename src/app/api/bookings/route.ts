@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { bookings, users, offeringSubCategories, offeringSlots, feedbacks, offeringCategories } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { eq, and, sql, desc, inArray } from "drizzle-orm";
+import { eq, and, sql, desc, inArray, or, ilike } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
 export async function GET(req: Request) {
@@ -20,9 +20,21 @@ export async function GET(req: Request) {
     const categoryId = searchParams.get("categoryId");
     const categoryName = searchParams.get("category");
     const subCategoryName = searchParams.get("subCategory");
+    const searchQuery = searchParams.get("search");
 
     const conditions = [];
-    if (status) {
+    if (searchQuery) {
+      const searchPattern = `%${searchQuery}%`;
+      conditions.push(
+        or(
+          ilike(users.name, searchPattern),
+          ilike(users.email, searchPattern),
+          ilike(users.phone, searchPattern)
+        ) as any
+      );
+    }
+
+    if (status && status !== "all") {
       conditions.push(eq(bookings.status, status as any));
     } else if (statusGroup === "active") {
       conditions.push(

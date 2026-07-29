@@ -7,7 +7,7 @@ import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter"
 import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
 import {
   MessageSquare,
-  Reply,
+  Reply as ReplyIcon,
   Trash2,
   CheckCircle,
   Loader2,
@@ -16,6 +16,7 @@ import {
   Phone,
   Calendar,
   X,
+  Search,
 } from "lucide-react";
 import {
   Table,
@@ -43,6 +44,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 interface QueryRow {
@@ -63,8 +72,15 @@ function QueriesPageContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // URL pagination & filter params
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || DEFAULT_PAGE_LIMIT.toString());
+  const statusFilter = searchParams.get("status") || "all";
+  const searchQuery = searchParams.get("search") || "";
+
+  // Local filter states
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [localStatus, setLocalStatus] = useState(statusFilter);
 
   const pushParams = useCallback(
     (newParams: Record<string, string>, replace = false) => {
@@ -94,7 +110,13 @@ function QueriesPageContent() {
     if (changed) {
       pushParams(params, true);
     }
-  }, [pathname, router, searchParams, pushParams]);
+  }, [searchParams, pushParams]);
+
+  // Sync local states with URL parameters
+  useEffect(() => {
+    setLocalSearch(searchQuery);
+    setLocalStatus(statusFilter);
+  }, [searchQuery, statusFilter]);
 
   const [queries, setQueries] = useState<QueryRow[]>([]);
   const isInitialLoadRef = useRef(true);
@@ -123,7 +145,10 @@ function QueriesPageContent() {
         setLoading(true);
         isInitialLoadRef.current = false;
       }
-      const res = await fetch(`/api/queries?page=${page}&limit=${limit}`);
+      const searchPart = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
+      const statusPart = statusFilter !== "all" ? `&status=${statusFilter}` : "";
+
+      const res = await fetch(`/api/queries?page=${page}&limit=${limit}${searchPart}${statusPart}`);
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to load queries.");
@@ -136,7 +161,7 @@ function QueriesPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit]);
+  }, [page, limit, searchQuery, statusFilter]);
 
   useEffect(() => {
     fetchQueries();
@@ -146,85 +171,143 @@ function QueriesPageContent() {
     fetchQueries();
   });
 
+  const handleApplyFilters = () => {
+    pushParams({
+      search: localSearch.trim(),
+      status: localStatus,
+      page: "1",
+    });
+  };
+
+  const handleClearFilters = () => {
+    setLocalSearch("");
+    setLocalStatus("all");
+    pushParams({
+      search: "",
+      status: "all",
+      page: "1",
+    });
+  };
+
   const handleOpenReply = (query: QueryRow) => {
     setActiveQuery(query);
-    setReplyText(
-      query.replyMessage ||
-        `Hi ${query.name}, this is Sharath's admin team replying to your message regarding: "${query.message.slice(0, 40)}${query.message.length > 40 ? "..." : ""}"\n\n`
-    );
+    setReplyText("");
     setReplyDialogOpen(true);
   };
 
   const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeQuery || !replyText.trim()) return;
-
     setReplyLoading(true);
 
     try {
       const res = await fetch(`/api/queries/${activeQuery.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ replyMessage: replyText }),
+        body: JSON.stringify({ replyMessage: replyText.trim() }),
       });
 
-      const data = await res.json();
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to dispatch reply message.");
 
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to dispatch reply.");
-      }
-
-      toast.success("Reply dispatched successfully to user via WhatsApp.");
+      toast.success("Reply successfully sent via WhatsApp!");
       setReplyDialogOpen(false);
       fetchQueries();
     } catch (err: any) {
-      toast.error(err.message || "An error occurred.");
+      toast.error(err.message || "Could not send reply.");
     } finally {
       setReplyLoading(false);
     }
   };
 
-  const handleDeleteQuery = async () => {
+  const handleConfirmDelete = async () => {
     if (!deleteQueryId) return;
-
     try {
-      const res = await fetch(`/api/queries/${deleteQueryId}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/queries/${deleteQueryId}`, { method: "DELETE" });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to delete query.");
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to delete query.");
-      }
-
-      toast.success("Query deleted successfully.");
+      toast.success("Contact query deleted successfully.");
       fetchQueries();
     } catch (err: any) {
-      toast.error(err.message || "An error occurred.");
+      toast.error(err.message || "Failed to delete query.");
     } finally {
       setDeleteQueryId(null);
     }
   };
 
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   return (
     <div className="space-y-6 max-w-6xl">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>
-          <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
-            Manage Queries
-          </h1>
-          <p className="text-xs text-[#5a5e7a] mt-1">
-            Review submitted messages and send replies via automated WhatsApp messages.
-          </p>
+          <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">Contact Queries Queue</h1>
+          <p className="text-xs text-[#5a5e7a] mt-1">Review contact inquiries submitted by users and reply directly using your WhatsApp gateway.</p>
+        </div>
+      </div>
+
+      {/* Filter Toolbar (Clear first, then Apply) */}
+      <div className="flex flex-col sm:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
+        <div className="flex-1 min-w-[200px] space-y-1 w-full">
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Search Queries</Label>
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-[#9396ae]" />
+            <Input
+              type="text"
+              placeholder="Search customer name, email, phone, message..."
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              className="pl-9 h-9 text-xs border-[#e8dcc4] bg-white rounded-xl placeholder:text-gray-400 text-[#1c1f4a]"
+            />
+          </div>
+        </div>
+
+        <div className="w-full sm:w-48 space-y-1">
+          <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Query Status</Label>
+          <Select value={localStatus} onValueChange={setLocalStatus}>
+            <SelectTrigger className="w-full h-9 text-xs border-[#e8dcc4] bg-white rounded-xl text-[#1c1f4a]">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Queries</SelectItem>
+              <SelectItem value="pending">Pending Only</SelectItem>
+              <SelectItem value="replied">Replied Only</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+          <Button
+            type="button"
+            onClick={handleClearFilters}
+            variant="outline"
+            className="h-9 px-4 border-[#e8dcc4] bg-white hover:bg-[#faf7f2] text-xs font-bold text-[#5a5e7a] rounded-xl flex items-center justify-center cursor-pointer flex-1 sm:flex-none"
+          >
+            Clear
+          </Button>
+          <Button
+            type="button"
+            onClick={handleApplyFilters}
+            className="h-9 px-4 bg-[#b86a16] hover:bg-[#b86a16]/90 text-white text-xs font-bold rounded-xl flex items-center justify-center cursor-pointer shadow-sm transition-all flex-1 sm:flex-none"
+          >
+            Apply
+          </Button>
         </div>
       </div>
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20">
           <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium">
-            Loading queries...
-          </p>
+          <p className="text-xs text-[#5a5e7a] font-medium">Loading queries queue...</p>
         </div>
       ) : error ? (
         <div className="p-6 border border-[#c4796a]/20 bg-[#faf0ee] rounded-2xl text-center text-[#c4796a]">
@@ -234,184 +317,180 @@ function QueriesPageContent() {
       ) : queries.length === 0 ? (
         <div className="border border-dashed border-[#e8dcc4] bg-white/40 p-12 rounded-[2rem] text-center">
           <MessageSquare className="w-12 h-12 text-[#9396ae] mx-auto mb-4" />
-          <h3 className="text-md font-bold text-[#1c1f4a] font-display">
-            No queries submitted
-          </h3>
+          <h3 className="text-md font-bold text-[#1c1f4a] font-display">No queries found</h3>
           <p className="text-xs text-[#5a5e7a] mt-1 max-w-sm mx-auto">
-            Queries submitted through the public contact page will appear here.
+            Try adjusting your search query or status filter to find inquiries.
           </p>
         </div>
       ) : (
-        <div className="p-1">
+        <div className="space-y-4">
           <TablePaginationFooter pagination={pagination} variant="top" />
-          <Table>
-            <TableHeader className="bg-[#1c1f4a]/5">
-              <TableRow className="border-b border-[#e8dcc4]">
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">User Info</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">Contact Number</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">Message / Query</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">Status</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {queries.map((q) => (
-                <TableRow
-                  key={q.id}
-                  className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors"
-                >
-                  <TableCell className="py-3 px-4">
-                    <div>
-                      <p className="text-sm font-semibold text-[#1c1f4a]">{q.name}</p>
-                      <span className="flex items-center gap-1.5 text-xs text-[#5a5e7a] mt-0.5">
-                        <Mail className="w-3.5 h-3.5 text-[#9396ae]" />
-                        {q.email}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-3 px-4">
-                    <span className="flex items-center gap-1.5 text-sm font-medium text-[#1c1f4a]">
-                      <Phone className="w-3.5 h-3.5 text-[#9396ae]" />
-                      {q.phoneCode} {q.phone}
-                    </span>
-                  </TableCell>
-                  <TableCell className="py-3 px-4 max-w-xs sm:max-w-md">
-                    <div>
-                      <p className="text-xs text-[#1c1f4a] font-normal leading-relaxed whitespace-pre-wrap">
-                        {q.message}
-                      </p>
-                      <div className="flex items-center gap-1 text-[10px] text-[#9396ae] mt-1.5">
-                        <Calendar className="w-3 h-3" />
-                        Submitted on {new Date(q.createdAt).toLocaleDateString()}
+          <div className="p-1 bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
+            <Table>
+              <TableHeader className="bg-[#1c1f4a]/5">
+                <TableRow className="border-b border-[#e8dcc4]">
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Customer Name</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Contact Details</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Message</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Created At</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Status</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {queries.map((query) => (
+                  <TableRow
+                    key={query.id}
+                    className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors"
+                  >
+                    <TableCell className="py-3 px-4 text-xs font-bold text-[#1c1f4a]">{query.name}</TableCell>
+                    <TableCell className="py-3 px-4 text-xs text-[#5a5e7a]">
+                      <div className="flex flex-col gap-1 font-medium">
+                        <span className="flex items-center gap-1.5">
+                          <Mail className="w-3.5 h-3.5 text-[#9396ae]" /> {query.email}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-[#9396ae]" /> {query.phoneCode} {query.phone}
+                        </span>
                       </div>
-                      {q.replyMessage && (
-                        <div className="mt-2.5 p-2 bg-[#6b8f71]/5 border border-[#6b8f71]/15 rounded-lg">
-                          <p className="text-[11px] font-bold text-[#6b8f71]">Our Response:</p>
-                          <p className="text-[11px] text-[#5a5e7a] whitespace-pre-wrap mt-0.5">{q.replyMessage}</p>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] max-w-[280px]">
+                      <p className="line-clamp-2" title={query.message}>{query.message}</p>
+                      {query.replyMessage && (
+                        <div className="mt-1.5 p-2 bg-[#faf7f2]/80 border border-[#e8dcc4] rounded-xl">
+                          <span className="text-[10px] font-bold text-[#b86a16] block uppercase tracking-wide">Reply Dispatched:</span>
+                          <p className="text-[11px] text-[#1c1f4a] font-medium leading-relaxed italic">"{query.replyMessage}"</p>
                         </div>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-3 px-4">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase ${
-                      q.status === "replied"
-                        ? "bg-[#6b8f71]/15 text-[#6b8f71]"
-                        : "bg-[#c4796a]/10 text-[#c4796a]"
-                    }`}>
-                      {q.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-right">
-                    <div className="inline-flex items-center gap-2">
-                      <button
-                        onClick={() => handleOpenReply(q)}
-                        className="p-2 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
-                        title={q.status === "replied" ? "Edit Reply" : "Send Reply"}
-                      >
-                        <Reply className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => setDeleteQueryId(q.id)}
-                        className="p-2 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] font-semibold">{formatDate(query.createdAt)}</TableCell>
+                    <TableCell className="py-3 px-4 text-xs">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase ${
+                        query.status === "replied"
+                          ? "bg-[#6b8f71]/15 text-[#6b8f71]"
+                          : "bg-[#b86a16]/15 text-[#b86a16]"
+                      }`}>
+                        {query.status === "replied" ? "Replied" : "Pending"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-right">
+                      <div className="inline-flex gap-2">
+                        <button
+                          onClick={() => handleOpenReply(query)}
+                          className={`p-2 border border-transparent rounded-xl transition-all cursor-pointer ${
+                            query.status === "replied"
+                              ? "hover:bg-[#1c1f4a]/10 text-[#1c1f4a] hover:border-[#1c1f4a]/30"
+                              : "bg-[#1c1f4a]/10 border-[#1c1f4a]/30 text-[#1c1f4a] hover:bg-[#1c1f4a]/20"
+                          }`}
+                          title={query.status === "replied" ? "View Conversation / Follow up" : "Send WhatsApp Reply"}
+                        >
+                          <ReplyIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteQueryId(query.id)}
+                          className="p-2 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
+                          title="Delete Query"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           <TablePaginationFooter pagination={pagination} variant="bottom" />
         </div>
       )}
 
-      {/* Reply Dialog */}
-      <Dialog open={replyDialogOpen} onOpenChange={setReplyDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-5 rounded-t-3xl">
-            <DialogTitle className="text-white text-md font-bold">
-              Reply to {activeQuery?.name}
+      {/* Reply Modal Dialog */}
+      <Dialog open={replyDialogOpen} onOpenChange={(open) => { if (!open) setReplyDialogOpen(false); }}>
+        <DialogContent className="max-w-lg border border-[#e8dcc4] bg-white rounded-2xl overflow-hidden p-0 shadow-lg font-sans">
+          <DialogHeader className="bg-[#1c1f4a] text-white p-5">
+            <DialogTitle className="text-sm font-bold flex items-center gap-2 text-white">
+              <ReplyIcon className="w-4.5 h-4.5 text-[#b86a16]" />
+              Reply via WhatsApp gateway
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSendReply} className="space-y-4 mt-2">
-            <div className="space-y-2">
-              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
-                User Query Message
-              </Label>
-              <div className="p-3 bg-[#faf7f2] border border-[#e8dcc4] rounded-xl text-xs text-[#5a5e7a] whitespace-pre-wrap">
-                {activeQuery?.message}
+          {activeQuery && (
+            <form onSubmit={handleSendReply} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <span className="text-[10px] text-[#5a5e7a] block font-bold uppercase">Customer</span>
+                  <span className="font-bold text-[#1c1f4a]">{activeQuery.name}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-[#5a5e7a] block font-bold uppercase">Phone number</span>
+                  <span className="font-mono font-bold text-[#1c1f4a]">{activeQuery.phoneCode} {activeQuery.phone}</span>
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="replyText" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
-                Reply Message (sent via WhatsApp)
-              </Label>
-              <textarea
-                id="replyText"
-                required
-                disabled={replyLoading}
-                rows={5}
-                placeholder="Write your response message..."
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                className="w-full p-3 bg-white border border-[#e8dcc4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#b86a16] focus:border-transparent transition-all"
-              />
-            </div>
+              <div className="p-3 bg-[#faf7f2]/30 border border-[#e8dcc4] rounded-xl text-xs space-y-1.5">
+                <span className="text-[10px] text-[#5a5e7a] block font-bold uppercase">Original Message:</span>
+                <p className="text-[#1c1f4a] leading-relaxed italic">
+                  "{activeQuery.message}"
+                </p>
+              </div>
 
-            <div className="flex justify-end gap-3 border-t border-[#e8dcc4]/60 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={replyLoading}
-                onClick={() => setReplyDialogOpen(false)}
-                className="h-10 px-5 rounded-full border border-[#e8dcc4] text-[#5a5e7a]"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={replyLoading}
-                className="h-10 px-5 rounded-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white font-semibold text-xs flex items-center gap-1.5"
-              >
-                {replyLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-4 h-4" />
-                    Send Reply via WhatsApp
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
+              <div className="space-y-2">
+                <Label htmlFor="replyText" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                  Reply Message
+                </Label>
+                <textarea
+                  id="replyText"
+                  rows={4}
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  disabled={replyLoading}
+                  placeholder="Type message to dispatch to seeker's phone..."
+                  className="w-full p-3 bg-[#faf7f2]/40 border border-[#e8dcc4] rounded-xl text-xs outline-none focus-visible:ring-1 focus-visible:ring-[#b86a16] text-[#1c1f4a]"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-[#e8dcc4]/50">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setReplyDialogOpen(false)}
+                  disabled={replyLoading}
+                  className="border-[#e8dcc4] text-[#1c1f4a] rounded-xl hover:bg-[#faf7f2]/40 text-xs font-semibold"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={replyLoading}
+                  className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-xl text-xs font-semibold"
+                >
+                  {replyLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Send WhatsApp message"}
+                </Button>
+              </div>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Alert */}
-      <AlertDialog open={deleteQueryId !== null} onOpenChange={(open) => !open && setDeleteQueryId(null)}>
-        <AlertDialogContent className="w-[300px] max-w-[90vw] bg-white rounded-3xl border-0 shadow-xl p-6">
-          <AlertDialogHeader className="text-center flex flex-col items-center">
-            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">
-              Delete Query
+      {/* Delete Query Confirmation Dialog */}
+      <AlertDialog open={!!deleteQueryId} onOpenChange={(open) => !open && setDeleteQueryId(null)}>
+        <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#1c1f4a] font-bold">
+              Confirm Query Deletion
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              Are you sure you want to delete this query? This action cannot be undone.
+            <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+              Are you sure you want to permanently delete this contact request record? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
-            <AlertDialogCancel className="flex-1 border border-[#c4796a] text-[#c4796a] hover:bg-[#c4796a]/5 rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel className="border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeleteQuery}
-              className="flex-1 bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer"
+              onClick={handleConfirmDelete}
+              className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white text-xs font-semibold rounded-xl"
             >
               Delete
             </AlertDialogAction>
@@ -424,16 +503,11 @@ function QueriesPageContent() {
 
 export default function QueriesPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium">
-            Loading queries dashboard...
-          </p>
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin" />
+      </div>
+    }>
       <QueriesPageContent />
     </Suspense>
   );

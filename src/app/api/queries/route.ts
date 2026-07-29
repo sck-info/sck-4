@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { userQueries } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { desc, sql } from "drizzle-orm";
+import { desc, sql, and, or, ilike, eq } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
 export async function GET(req: Request) {
@@ -15,15 +15,39 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const { page, limit, offset } = parsePaginationParams(searchParams);
 
+    const conditions = [];
+
+    const searchQuery = searchParams.get("search");
+    if (searchQuery) {
+      const searchPattern = `%${searchQuery}%`;
+      conditions.push(
+        or(
+          ilike(userQueries.name, searchPattern),
+          ilike(userQueries.email, searchPattern),
+          ilike(userQueries.phone, searchPattern),
+          ilike(userQueries.message, searchPattern)
+        ) as any
+      );
+    }
+
+    const statusQuery = searchParams.get("status");
+    if (statusQuery && statusQuery !== "all") {
+      conditions.push(eq(userQueries.status, statusQuery));
+    }
+
+    const condition = conditions.length > 0 ? and(...conditions) : undefined;
+
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
-      .from(userQueries);
+      .from(userQueries)
+      .where(condition);
 
     const total = Number(countResult[0]?.count || 0);
 
     const data = await db
       .select()
       .from(userQueries)
+      .where(condition)
       .orderBy(desc(userQueries.createdAt))
       .limit(limit)
       .offset(offset);

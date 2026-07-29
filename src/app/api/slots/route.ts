@@ -15,10 +15,20 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const { page, limit, offset } = parsePaginationParams(searchParams);
     const subCategoryId = searchParams.get("subCategoryId");
+    const status = searchParams.get("status");
+    const dateParam = searchParams.get("date");
 
-    const condition = subCategoryId
-      ? eq(offeringSlots.subCategoryId, subCategoryId)
-      : undefined;
+    const conditions = [];
+    if (subCategoryId && subCategoryId !== "all") {
+      conditions.push(eq(offeringSlots.subCategoryId, subCategoryId));
+    }
+    if (status && status !== "all") {
+      conditions.push(eq(offeringSlots.status, status as any));
+    }
+    if (dateParam) {
+      conditions.push(eq(offeringSlots.slotDate, dateParam));
+    }
+    const condition = conditions.length > 0 ? and(...conditions) : undefined;
 
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
