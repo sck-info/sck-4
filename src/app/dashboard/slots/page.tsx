@@ -228,6 +228,10 @@ function SlotsDashboardContent() {
       setFormError("Please select at least one format location.");
       return;
     }
+    if (formData.startTime >= formData.endTime) {
+      setFormError("End time must be greater than start time.");
+      return;
+    }
 
     setFormLoading(true);
 

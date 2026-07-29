@@ -128,6 +128,17 @@ export default function BookingClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Real-time slot validity check
+  useEffect(() => {
+    if (selectedSlot) {
+      const stillAvailable = slots.some((s) => s.id === selectedSlot.id);
+      if (!stillAvailable) {
+        setSelectedSlot(null);
+        setSelectedDate(null);
+      }
+    }
+  }, [slots, selectedSlot]);
+
   // Real-time Update listeners
   useRealtime(["offering_slots"], loadSlots);
   useRealtime(["sub_category_questions", "form_questions"], reloadQuestions);
@@ -539,6 +550,7 @@ export default function BookingClient({
                     <input
                       type="text"
                       required={q.isRequired}
+                      placeholder={`Enter ${q.fieldLabel.toLowerCase()}...`}
                       value={val}
                       onChange={(e) => handleInputChange(q.id, e.target.value)}
                       style={{ width: "100%", padding: "10px 12px", border: "1px solid rgba(28,31,74,0.15)", borderRadius: 8, outline: "none", fontSize: 14 }}
@@ -549,6 +561,7 @@ export default function BookingClient({
                     <textarea
                       required={q.isRequired}
                       rows={4}
+                      placeholder={`Provide details for ${q.fieldLabel.toLowerCase()}...`}
                       value={val}
                       onChange={(e) => handleInputChange(q.id, e.target.value)}
                       style={{ width: "100%", padding: "10px 12px", border: "1px solid rgba(28,31,74,0.15)", borderRadius: 8, outline: "none", fontSize: 14, resize: "vertical" }}
@@ -559,6 +572,7 @@ export default function BookingClient({
                     <input
                       type="number"
                       required={q.isRequired}
+                      placeholder="Enter number..."
                       value={val}
                       onChange={(e) => handleInputChange(q.id, e.target.value)}
                       style={{ width: "100%", padding: "10px 12px", border: "1px solid rgba(28,31,74,0.15)", borderRadius: 8, outline: "none", fontSize: 14 }}
@@ -569,6 +583,7 @@ export default function BookingClient({
                     <input
                       type="url"
                       required={q.isRequired}
+                      placeholder="https://example.com"
                       value={val}
                       onChange={(e) => handleInputChange(q.id, e.target.value)}
                       style={{ width: "100%", padding: "10px 12px", border: "1px solid rgba(28,31,74,0.15)", borderRadius: 8, outline: "none", fontSize: 14 }}

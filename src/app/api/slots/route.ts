@@ -89,6 +89,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required slot fields" }, { status: 400 });
     }
 
+    if (startTime >= endTime) {
+      return NextResponse.json({ error: "End time must be greater than start time" }, { status: 400 });
+    }
+
     // Double Booking Check: Query if there is an overlapping slot on the same date
     const clashingSlots = await db
       .select()
