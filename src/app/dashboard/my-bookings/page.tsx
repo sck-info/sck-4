@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRealtime } from "@/hooks/useRealtime";
 import {
   Calendar,
   Clock,
@@ -86,6 +87,8 @@ function SeekerBookingsContent() {
   useEffect(() => {
     fetchBookings();
   }, [fetchBookings]);
+
+  useRealtime(["bookings"], fetchBookings);
 
   const handleCancelSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
