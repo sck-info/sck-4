@@ -16,6 +16,7 @@ const ADMIN_ROUTES = [
   "/dashboard/offerings",
   "/dashboard/form-builder",
   "/dashboard/locations",
+  "/dashboard/payment-qrs",
   "/dashboard/feedbacks",
 ];
 

@@ -1,94 +1,93 @@
-import React from "react";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { aboutSlides, metrics, gallery, userQueries, users } from "@/db/schema";
-import { sql, eq } from "drizzle-orm";
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
+import { useRealtime } from "@/hooks/useRealtime";
 import {
   TrendingUp,
   Images,
   Camera,
   MessageSquare,
   Users,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
 
-export default async function AdminDashboard() {
-  const session = await auth();
+export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    totalAboutSlides: 0,
+    totalMetrics: 0,
+    totalGallery: 0,
+    totalQueries: 0,
+    pendingQueries: 0,
+    totalUsers: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  let totalAboutSlides = 0;
-  let totalMetrics = 0;
-  let totalGallery = 0;
-  let totalQueries = 0;
-  let pendingQueries = 0;
-  let totalUsers = 0;
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await fetch("/api/dashboard/stats");
+      if (!res.ok) throw new Error("Failed to load dashboard metrics.");
+      const json = await res.json();
+      if (json.data) {
+        setStats(json.data);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to load dashboard statistics.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  try {
-    const aboutCount = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(aboutSlides);
-    totalAboutSlides = Number(aboutCount[0]?.count || 0);
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
-    const metricsCount = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(metrics);
-    totalMetrics = Number(metricsCount[0]?.count || 0);
+  // Real-time synchronization
+  useRealtime(["users", "user_queries", "gallery", "about_slides", "metrics"], fetchStats);
 
-    const galleryCount = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(gallery);
-    totalGallery = Number(galleryCount[0]?.count || 0);
-
-    const queriesCount = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(userQueries);
-    totalQueries = Number(queriesCount[0]?.count || 0);
-
-    const pendingQueriesCount = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(userQueries)
-      .where(eq(userQueries.status, "pending"));
-    pendingQueries = Number(pendingQueriesCount[0]?.count || 0);
-
-    const usersCount = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(users);
-    totalUsers = Number(usersCount[0]?.count || 0);
-  } catch (err) {
-    console.error("Failed to query dashboard statistics:", err);
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 min-h-[40vh]">
+        <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
+        <p className="text-xs text-[#5a5e7a] font-medium">Synchronizing overview tracker...</p>
+      </div>
+    );
   }
 
   const cards = [
     {
       title: "User Queries",
-      value: `${totalQueries} Messages`,
-      description: `${pendingQueries} pending WhatsApp replies remaining`,
+      value: `${stats.totalQueries} Messages`,
+      description: `${stats.pendingQueries} pending WhatsApp replies remaining`,
       icon: MessageSquare,
       color: "border-[#7a5e9a]/30 text-[#7a5e9a] bg-[#7a5e9a]/5",
     },
     {
       title: "Registered Users",
-      value: `${totalUsers} Accounts`,
+      value: `${stats.totalUsers} Accounts`,
       description: "Active logins for client portals and dashboard",
       icon: Users,
       color: "border-[#6b8f71]/30 text-[#6b8f71] bg-[#6b8f71]/5",
     },
     {
       title: "Gallery Collection",
-      value: `${totalGallery} Items`,
+      value: `${stats.totalGallery} Items`,
       description: "Total uploaded masonry gallery photos",
       icon: Camera,
       color: "border-[#4a6fa5]/30 text-[#4a6fa5] bg-[#4a6fa5]/5",
     },
     {
       title: "Slideshow Assets",
-      value: `${totalAboutSlides} Slides`,
+      value: `${stats.totalAboutSlides} Slides`,
       description: "Rotating slides in the About section carousel",
       icon: Images,
       color: "border-[#c4796a]/30 text-[#c4796a] bg-[#c4796a]/5",
     },
     {
       title: "Landing Page Metrics",
-      value: `${totalMetrics} Stats`,
+      value: `${stats.totalMetrics} Stats`,
       description: "Dynamic performance markers inside our impact bar",
       icon: TrendingUp,
       color: "border-[#6b8f71]/30 text-[#6b8f71] bg-[#6b8f71]/5",
@@ -98,16 +97,11 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
-        <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
-          Overview
-        </h1>
-        <p className="text-xs text-[#5a5e7a] mt-1">
-          Welcome, {session?.user?.name || "Administrator"}. Here is the
-          overview of your system.
-        </p>
+        <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">Administrator Overview</h1>
+        <p className="text-xs text-[#5a5e7a] mt-1">Real-time status updates across database channels.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((card, idx) => {
           const Icon = card.icon;
           return (

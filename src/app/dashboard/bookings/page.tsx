@@ -377,173 +377,176 @@ function BookingsDashboardContent() {
           </p>
         </div>
       ) : (
-        <div className="p-1">
-          <Table>
-            <TableHeader className="bg-[#1c1f4a]/5">
-              <TableRow className="border-b border-[#e8dcc4]">
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">User / Credentials</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Offering</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Timing slot</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Format / Location</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Booking Status</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {bookings.map((booking) => (
-                <TableRow
-                  key={booking.id}
-                  className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors text-xs"
-                >
-                  {/* User credentials */}
-                  <TableCell className="py-3 px-4">
-                    <div className="space-y-1">
-                      <div className="font-bold text-[#1c1f4a] flex items-center gap-1">
-                        <User className="w-3.5 h-3.5 text-[#9396ae]" /> {booking.userName}
-                      </div>
-                      <div className="text-[10px] text-[#5a5e7a] flex items-center gap-1 font-mono">
-                        <Mail className="w-3 h-3 text-[#9396ae]" /> {booking.userEmail}
-                      </div>
-                      {booking.userPhone && (
+        <div className="space-y-4">
+          <TablePaginationFooter pagination={pagination} variant="top" />
+          <div className="p-1 bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
+            <Table>
+              <TableHeader className="bg-[#1c1f4a]/5">
+                <TableRow className="border-b border-[#e8dcc4]">
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">User / Credentials</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Offering</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Timing slot</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Format / Location</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Booking Status</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {bookings.map((booking) => (
+                  <TableRow
+                    key={booking.id}
+                    className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors text-xs"
+                  >
+                    {/* User credentials */}
+                    <TableCell className="py-3 px-4">
+                      <div className="space-y-1">
+                        <div className="font-bold text-[#1c1f4a] flex items-center gap-1">
+                          <User className="w-3.5 h-3.5 text-[#9396ae]" /> {booking.userName}
+                        </div>
                         <div className="text-[10px] text-[#5a5e7a] flex items-center gap-1 font-mono">
-                          <Phone className="w-3 h-3 text-[#6b8f71]" /> {booking.userPhone}
+                          <Mail className="w-3 h-3 text-[#9396ae]" /> {booking.userEmail}
                         </div>
-                      )}
-                    </div>
-                  </TableCell>
-
-                  {/* Offering */}
-                  <TableCell className="py-3 px-4 font-bold text-[#1c1f4a]">{booking.subCategoryName}</TableCell>
-
-                  {/* Timing slot */}
-                  <TableCell className="py-3 px-4">
-                    {booking.slotDate ? (
-                      <div className="space-y-0.5">
-                        <div className="font-semibold text-[#1c1f4a] font-mono">{booking.slotDate}</div>
-                        <div className="text-[10px] text-[#5a5e7a] font-mono flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-[#b86a16]" /> {booking.startTime} - {booking.endTime}
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-[#9396ae] italic">Direct Form (No slot)</span>
-                    )}
-                  </TableCell>
-
-                  {/* Location / Format */}
-                  <TableCell className="py-3 px-4">
-                    {booking.selectedFormat ? (
-                      <div className="space-y-0.5">
-                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wide border ${
-                          booking.selectedFormat === "online" ? "bg-[#b86a16]/5 border-[#b86a16]/25 text-[#b86a16]" : "bg-[#6b8f71]/5 border-[#6b8f71]/25 text-[#6b8f71]"
-                        }`}>
-                          {booking.selectedFormat}
-                        </span>
-                        {booking.locationName && (
-                          <div className="text-[10px] text-[#5a5e7a] max-w-[120px] truncate">
-                            {booking.locationUrl ? (
-                              <a href={booking.locationUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#b86a16]">
-                                {booking.locationName}
-                              </a>
-                            ) : (
-                              <span>{booking.locationName}</span>
-                            )}
+                        {booking.userPhone && (
+                          <div className="text-[10px] text-[#5a5e7a] flex items-center gap-1 font-mono">
+                            <Phone className="w-3 h-3 text-[#6b8f71]" /> {booking.userPhone}
                           </div>
                         )}
                       </div>
-                    ) : (
-                      <span className="text-[#9396ae] italic">N/A</span>
-                    )}
-                  </TableCell>
+                    </TableCell>
 
-                  {/* Booking status */}
-                  <TableCell className="py-3 px-4">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ${
-                      booking.status === "pending"
-                        ? "bg-[#b86a16]/10 text-[#b86a16]"
-                        : booking.status === "confirmed"
-                        ? "bg-[#6b8f71]/15 text-[#6b8f71]"
-                        : booking.status === "cancellation_pending"
-                        ? "bg-red-50 text-red-600 border border-red-200"
-                        : booking.status === "completed"
-                        ? "bg-blue-50 text-blue-600 border border-blue-200"
-                        : "bg-gray-100 text-gray-500"
-                    }`}>
-                      {booking.status.replace("_", " ")}
-                    </span>
-                  </TableCell>
+                    {/* Offering */}
+                    <TableCell className="py-3 px-4 font-bold text-[#1c1f4a]">{booking.subCategoryName}</TableCell>
 
-                  {/* Actions */}
-                  <TableCell className="py-3 px-4 text-right">
-                    <div className="inline-flex gap-2">
-                      <Button
-                        onClick={() => setViewResponsesBooking(booking)}
-                        variant="outline"
-                        className="h-8 w-8 p-0 rounded-lg border-[#e8dcc4] hover:bg-[#b86a16]/5"
-                        title="View Form Answers"
-                      >
-                        <Eye className="w-4 h-4 text-[#1c1f4a]" />
-                      </Button>
-
-                      {/* Pending: Confirm/Cancel */}
-                      {booking.status === "pending" && (
-                        <>
-                          <Button
-                            onClick={() => setConfirmStatusUpdate({ booking, nextStatus: "confirmed" })}
-                            className="bg-[#6b8f71] hover:bg-[#6b8f71]/90 text-white rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
-                          >
-                            Confirm
-                          </Button>
-                          <Button
-                            onClick={() => setCancelBooking(booking)}
-                            className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
-                          >
-                            Cancel
-                          </Button>
-                        </>
+                    {/* Timing slot */}
+                    <TableCell className="py-3 px-4">
+                      {booking.slotDate ? (
+                        <div className="space-y-0.5">
+                          <div className="font-semibold text-[#1c1f4a] font-mono">{booking.slotDate}</div>
+                          <div className="text-[10px] text-[#5a5e7a] font-mono flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-[#b86a16]" /> {booking.startTime} - {booking.endTime}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-[#9396ae] italic">Direct Form (No slot)</span>
                       )}
+                    </TableCell>
 
-                      {/* Confirmed: Complete/Cancel */}
-                      {booking.status === "confirmed" && (
-                        <>
-                          <Button
-                            onClick={() => setConfirmStatusUpdate({ booking, nextStatus: "completed" })}
-                            className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
-                          >
-                            Complete
-                          </Button>
-                          <Button
-                            onClick={() => setCancelBooking(booking)}
-                            className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
-                          >
-                            Cancel
-                          </Button>
-                        </>
+                    {/* Location / Format */}
+                    <TableCell className="py-3 px-4">
+                      {booking.selectedFormat ? (
+                        <div className="space-y-0.5">
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wide border ${
+                            booking.selectedFormat === "online" ? "bg-[#b86a16]/5 border-[#b86a16]/25 text-[#b86a16]" : "bg-[#6b8f71]/5 border-[#6b8f71]/25 text-[#6b8f71]"
+                          }`}>
+                            {booking.selectedFormat}
+                          </span>
+                          {booking.locationName && (
+                            <div className="text-[10px] text-[#5a5e7a] max-w-[120px] truncate">
+                              {booking.locationUrl ? (
+                                <a href={booking.locationUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#b86a16]">
+                                  {booking.locationName}
+                                </a>
+                              ) : (
+                                <span>{booking.locationName}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-[#9396ae] italic">N/A</span>
                       )}
+                    </TableCell>
 
-                      {/* Cancellation pending: Approve Cancellation/Deny */}
-                      {booking.status === "cancellation_pending" && (
-                        <>
-                          <Button
-                            onClick={() => setCancelBooking(booking)}
-                            className="bg-red-600 hover:bg-red-700 text-white rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
-                          >
-                            Approve Cancel
-                          </Button>
-                          <Button
-                            onClick={() => setConfirmStatusUpdate({ booking, nextStatus: "confirmed" })}
-                            className="border border-[#e8dcc4] hover:bg-gray-50 text-[#5a5e7a] rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
-                          >
-                            Deny
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <TablePaginationFooter pagination={pagination} variant="bottom" />
+                    {/* Booking status */}
+                    <TableCell className="py-3 px-4">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ${
+                        booking.status === "pending"
+                          ? "bg-[#b86a16]/10 text-[#b86a16]"
+                          : booking.status === "confirmed"
+                          ? "bg-[#6b8f71]/15 text-[#6b8f71]"
+                          : booking.status === "cancellation_pending"
+                          ? "bg-red-50 text-red-600 border border-red-200"
+                          : booking.status === "completed"
+                          ? "bg-blue-50 text-blue-600 border border-blue-200"
+                          : "bg-gray-100 text-gray-500"
+                      }`}>
+                        {booking.status.replace("_", " ")}
+                      </span>
+                    </TableCell>
+
+                    {/* Actions */}
+                    <TableCell className="py-3 px-4 text-right">
+                      <div className="inline-flex gap-2">
+                        <Button
+                          onClick={() => setViewResponsesBooking(booking)}
+                          variant="outline"
+                          className="h-8 w-8 p-0 rounded-lg border-[#e8dcc4] hover:bg-[#b86a16]/5"
+                          title="View Form Answers"
+                        >
+                          <Eye className="w-4 h-4 text-[#1c1f4a]" />
+                        </Button>
+
+                        {/* Pending: Confirm/Cancel */}
+                        {booking.status === "pending" && (
+                          <>
+                            <Button
+                              onClick={() => setConfirmStatusUpdate({ booking, nextStatus: "confirmed" })}
+                              className="bg-[#6b8f71] hover:bg-[#6b8f71]/90 text-white rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
+                            >
+                              Confirm
+                            </Button>
+                            <Button
+                              onClick={() => setCancelBooking(booking)}
+                              className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
+                            >
+                              Cancel
+                            </Button>
+                          </>
+                        )}
+
+                        {/* Confirmed: Complete/Cancel */}
+                        {booking.status === "confirmed" && (
+                          <>
+                            <Button
+                              onClick={() => setConfirmStatusUpdate({ booking, nextStatus: "completed" })}
+                              className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
+                            >
+                              Complete
+                            </Button>
+                            <Button
+                              onClick={() => setCancelBooking(booking)}
+                              className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
+                            >
+                              Cancel
+                            </Button>
+                          </>
+                        )}
+
+                        {/* Cancellation pending: Approve Cancellation/Deny */}
+                        {booking.status === "cancellation_pending" && (
+                          <>
+                            <Button
+                              onClick={() => setCancelBooking(booking)}
+                              className="bg-red-600 hover:bg-red-700 text-white rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
+                            >
+                              Approve Cancel
+                            </Button>
+                            <Button
+                              onClick={() => setConfirmStatusUpdate({ booking, nextStatus: "confirmed" })}
+                              className="border border-[#e8dcc4] hover:bg-gray-50 text-[#5a5e7a] rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
+                            >
+                              Deny
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <TablePaginationFooter pagination={pagination} variant="bottom" />
+          </div>
         </div>
       )}
 

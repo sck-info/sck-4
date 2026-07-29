@@ -16,6 +16,7 @@ import {
   Users,
   MessageSquare,
   MapPin,
+  QrCode,
   Grid,
   Sliders,
   Calendar,
@@ -62,7 +63,8 @@ const ADMIN_MENU_SECTIONS = [
     items: [
       { name: "Offerings", href: "/dashboard/offerings", icon: Grid },
       { name: "Form Builder", href: "/dashboard/form-builder", icon: Sliders },
-      { name: "Locations & QRs", href: "/dashboard/locations", icon: MapPin },
+      { name: "Locations", href: "/dashboard/locations", icon: MapPin },
+      { name: "Payment QRs", href: "/dashboard/payment-qrs", icon: QrCode },
       { name: "Feedbacks & Reviews", href: "/dashboard/feedbacks", icon: Star },
     ],
   },

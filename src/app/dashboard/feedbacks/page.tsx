@@ -202,6 +202,7 @@ function FeedbacksDashboardContent() {
         </div>
       ) : (
         <div className="p-1">
+          <TablePaginationFooter pagination={pagination} variant="top" />
           <Table>
             <TableHeader className="bg-[#1c1f4a]/5">
               <TableRow className="border-b border-[#e8dcc4]">

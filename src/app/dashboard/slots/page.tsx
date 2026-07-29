@@ -319,68 +319,71 @@ function SlotsDashboardContent() {
           </p>
         </div>
       ) : (
-        <div className="p-1">
-          <Table>
-            <TableHeader className="bg-[#1c1f4a]/5">
-              <TableRow className="border-b border-[#e8dcc4]">
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Offering sub-category</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Date</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Timing block</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Format options</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Booking Status</TableHead>
-                <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {slots.map((slot) => (
-                <TableRow
-                  key={slot.id}
-                  className={`border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors ${
-                    slot.status === "booked" ? "opacity-75 bg-[#f6faf8]/40" : ""
-                  }`}
-                >
-                  <TableCell className="py-3 px-4 text-xs font-bold text-[#1c1f4a]">{slot.subCategoryName}</TableCell>
-                  <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] font-mono">{slot.slotDate}</TableCell>
-                  <TableCell className="py-3 px-4 text-xs font-medium text-[#1c1f4a] flex items-center gap-1.5 pt-4">
-                    <Clock className="w-3.5 h-3.5 text-[#b86a16]" /> {slot.startTime} - {slot.endTime}
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-xs">
-                    <div className="flex flex-wrap gap-1">
-                      {slot.locations.map((loc) => (
-                        <span
-                          key={loc.id}
-                          className={`text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase ${
-                            loc.type === "online" ? "bg-[#b86a16]/5 border-[#b86a16]/25 text-[#b86a16]" : "bg-[#6b8f71]/5 border-[#6b8f71]/25 text-[#6b8f71]"
-                          }`}
-                        >
-                          {loc.name}
-                        </span>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-xs">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide uppercase ${
-                        slot.status === "booked" ? "bg-[#6b8f71]/15 text-[#6b8f71]" : "bg-gray-100 text-gray-500"
-                      }`}
-                    >
-                      {slot.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-right">
-                    <button
-                      onClick={() => setDeleteSlot(slot)}
-                      className="p-2 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
-                      title="Remove Slot"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </TableCell>
+        <div className="space-y-4">
+          <TablePaginationFooter pagination={pagination} variant="top" />
+          <div className="p-1 bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
+            <Table>
+              <TableHeader className="bg-[#1c1f4a]/5">
+                <TableRow className="border-b border-[#e8dcc4]">
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Offering sub-category</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Date</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Timing block</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Format options</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs">Booking Status</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-xs text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <TablePaginationFooter pagination={pagination} variant="bottom" />
+              </TableHeader>
+              <TableBody>
+                {slots.map((slot) => (
+                  <TableRow
+                    key={slot.id}
+                    className={`border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors ${
+                      slot.status === "booked" ? "opacity-75 bg-[#f6faf8]/40" : ""
+                    }`}
+                  >
+                    <TableCell className="py-3 px-4 text-xs font-bold text-[#1c1f4a]">{slot.subCategoryName}</TableCell>
+                    <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] font-mono">{slot.slotDate}</TableCell>
+                    <TableCell className="py-3 px-4 text-xs font-medium text-[#1c1f4a] flex items-center gap-1.5 pt-4">
+                      <Clock className="w-3.5 h-3.5 text-[#b86a16]" /> {slot.startTime} - {slot.endTime}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs">
+                      <div className="flex flex-wrap gap-1">
+                        {slot.locations.map((loc) => (
+                          <span
+                            key={loc.id}
+                            className={`text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase ${
+                              loc.type === "online" ? "bg-[#b86a16]/5 border-[#b86a16]/25 text-[#b86a16]" : "bg-[#6b8f71]/5 border-[#6b8f71]/25 text-[#6b8f71]"
+                            }`}
+                          >
+                            {loc.name}
+                          </span>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-xs">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide uppercase ${
+                          slot.status === "booked" ? "bg-[#6b8f71]/15 text-[#6b8f71]" : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {slot.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-right">
+                      <button
+                        onClick={() => setDeleteSlot(slot)}
+                        className="p-2 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
+                        title="Remove Slot"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <TablePaginationFooter pagination={pagination} variant="bottom" />
+          </div>
         </div>
       )}
 

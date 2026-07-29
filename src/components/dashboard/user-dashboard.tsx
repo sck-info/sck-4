@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useRealtime } from "@/hooks/useRealtime";
 import { motion } from "framer-motion";
 import {
   Calendar,
@@ -70,6 +71,9 @@ export default function UserDashboard() {
       fetchBookings();
     }
   }, [status, fetchBookings]);
+
+  // Real-time synchronization
+  useRealtime(["bookings"], fetchBookings);
 
   // Calculate statistics
   const totalCount = bookings.length;
