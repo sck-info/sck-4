@@ -92,6 +92,8 @@ function BookingsDashboardContent() {
   const statusFilter = searchParams.get("status") || "all";
   const page = searchParams.get("page") || "1";
   const limit = searchParams.get("limit") || "25";
+  const categoryFilter = searchParams.get("categoryId") || "all";
+  const subCategoryFilter = searchParams.get("subCategoryId") || "all";
 
   const pushParams = useCallback((params: URLSearchParams, replace = false) => {
     const url = `${pathname}?${params.toString()}`;
@@ -122,6 +124,8 @@ function BookingsDashboardContent() {
   // Data states
   const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [subCategories, setSubCategories] = useState<{ id: string; name: string; categoryId: string }[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta>({
     page: 1,
     limit: 25,
@@ -141,12 +145,35 @@ function BookingsDashboardContent() {
     nextStatus: BookingRow["status"];
   } | null>(null);
 
+  // Load Categories & Sub-Categories Config
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const catRes = await fetch("/api/categories");
+        if (catRes.ok) {
+          const json = await catRes.json();
+          setCategories(json.data || []);
+        }
+        const subRes = await fetch("/api/sub-categories");
+        if (subRes.ok) {
+          const json = await subRes.json();
+          setSubCategories(json.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to load category filters:", err);
+      }
+    };
+    fetchConfig();
+  }, []);
+
   // Fetch Bookings Queue
   const fetchBookings = useCallback(async () => {
     setLoading(true);
     try {
       const statusQuery = statusFilter !== "all" ? `&status=${statusFilter}` : "";
-      const res = await fetch(`/api/bookings?page=${page}&limit=${limit}${statusQuery}`);
+      const catQuery = categoryFilter !== "all" ? `&categoryId=${categoryFilter}` : "";
+      const subCatQuery = subCategoryFilter !== "all" ? `&subCategoryId=${subCategoryFilter}` : "";
+      const res = await fetch(`/api/bookings?page=${page}&limit=${limit}${statusQuery}${catQuery}${subCatQuery}`);
       if (!res.ok) throw new Error("Failed to load bookings");
       const json = await res.json();
       setBookings(json.data);
@@ -157,7 +184,7 @@ function BookingsDashboardContent() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, page, limit]);
+  }, [statusFilter, categoryFilter, subCategoryFilter, page, limit]);
 
   useEffect(() => {
     fetchBookings();
@@ -166,10 +193,34 @@ function BookingsDashboardContent() {
   // Real-time synchronization
   useRealtime(["bookings"], fetchBookings);
 
-  // Filter switch handler
+  // Filter switch handlers
   const handleFilterChange = (statusVal: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("status", statusVal);
+    params.set("page", "1");
+    pushParams(params);
+  };
+
+  const handleCategoryChange = (catVal: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (catVal === "all") {
+      params.delete("categoryId");
+    } else {
+      params.set("categoryId", catVal);
+    }
+    // Clear subcategory when parent category changes to avoid invalid combinations
+    params.delete("subCategoryId");
+    params.set("page", "1");
+    pushParams(params);
+  };
+
+  const handleSubCategoryChange = (subCatVal: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (subCatVal === "all") {
+      params.delete("subCategoryId");
+    } else {
+      params.set("subCategoryId", subCatVal);
+    }
     params.set("page", "1");
     pushParams(params);
   };
@@ -254,6 +305,43 @@ function BookingsDashboardContent() {
             </button>
           );
         })}
+      </div>
+
+      {/* Category & Subcategory select filters */}
+      <div className="flex flex-col sm:flex-row gap-4 bg-white/40 border border-[#e8dcc4]/60 p-4 rounded-2xl">
+        <div className="flex-1 flex flex-col gap-1.5">
+          <label className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider">Offering Category</label>
+          <select
+            value={categoryFilter}
+            onChange={(e) => handleCategoryChange(e.target.value)}
+            className="w-full text-xs text-[#5a5e7a] border border-[#e8dcc4] bg-white rounded-xl p-2.5 outline-none cursor-pointer"
+          >
+            <option value="all">✦ All Categories</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex-1 flex flex-col gap-1.5">
+          <label className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider">Offering Sub-category</label>
+          <select
+            value={subCategoryFilter}
+            onChange={(e) => handleSubCategoryChange(e.target.value)}
+            className="w-full text-xs text-[#5a5e7a] border border-[#e8dcc4] bg-white rounded-xl p-2.5 outline-none cursor-pointer"
+          >
+            <option value="all">✦ All Sub-categories</option>
+            {subCategories
+              .filter((sub) => categoryFilter === "all" || sub.categoryId === categoryFilter)
+              .map((sub) => (
+                <option key={sub.id} value={sub.id}>
+                  {sub.name}
+                </option>
+              ))}
+          </select>
+        </div>
       </div>
 
       {loading ? (

@@ -16,6 +16,7 @@ export async function GET(req: Request) {
     const { page, limit, offset } = parsePaginationParams(searchParams);
     const status = searchParams.get("status");
     const subCategoryId = searchParams.get("subCategoryId");
+    const categoryId = searchParams.get("categoryId");
 
     const conditions = [];
     if (status) {
@@ -23,6 +24,9 @@ export async function GET(req: Request) {
     }
     if (subCategoryId) {
       conditions.push(eq(bookings.subCategoryId, subCategoryId));
+    }
+    if (categoryId) {
+      conditions.push(eq(offeringSubCategories.categoryId, categoryId));
     }
 
     // Security Filter: non-admin users can ONLY retrieve their own bookings
