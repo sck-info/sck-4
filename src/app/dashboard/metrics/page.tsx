@@ -144,11 +144,12 @@ function MetricsCrudPageContent() {
   });
 
   const handleOpenCreate = () => {
+    const maxOrder = metricsList.length > 0 ? Math.max(...metricsList.map(m => m.sortOrder)) : 0;
     setEditingId(null);
     setFormData({
       num: "",
       label: "",
-      sortOrder: metricsList.length * 10,
+      sortOrder: maxOrder + 10,
       isActive: true,
     });
     setFormError("");
@@ -437,15 +438,16 @@ function MetricsCrudPageContent() {
                 </Label>
                 <Input
                   id="sortOrder"
-                  type="number"
+                  type="text"
                   placeholder="0, 10, 20"
-                  value={formData.sortOrder}
-                  onChange={(e) =>
+                  value={formData.sortOrder === 0 ? "" : formData.sortOrder}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFormData({
                       ...formData,
-                      sortOrder: parseInt(e.target.value) || 0,
-                    })
-                  }
+                      sortOrder: val === "" ? 0 : parseInt(val) || 0,
+                    });
+                  }}
                   disabled={formLoading}
                   className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
                 />

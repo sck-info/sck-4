@@ -205,9 +205,7 @@ export default function ProfilePage() {
             <div className="space-y-2">
               <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">Age</Label>
               <Input
-                type="number"
-                min={1}
-                max={150}
+                type="text"
                 placeholder="Enter age"
                 value={age}
                 onChange={(e) => {

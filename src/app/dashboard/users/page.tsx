@@ -439,9 +439,7 @@ function UsersPageContent() {
               <div className="space-y-2">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Age</Label>
                 <Input
-                  type="number"
-                  min={1}
-                  max={150}
+                  type="text"
                   placeholder="Age"
                   value={formData.age}
                   onChange={(e) => {

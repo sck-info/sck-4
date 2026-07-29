@@ -148,11 +148,12 @@ function GalleryCrudPageContent() {
   });
 
   const handleOpenCreate = () => {
+    const maxOrder = items.length > 0 ? Math.max(...items.map(i => i.sortOrder)) : 0;
     setEditingId(null);
     setFormData({
       caption: "",
       showInScroll: true,
-      sortOrder: items.length * 10,
+      sortOrder: maxOrder + 10,
       isActive: true,
     });
     setSelectedFile(null);
@@ -505,15 +506,16 @@ function GalleryCrudPageContent() {
                 </Label>
                 <Input
                   id="sortOrder"
-                  type="number"
+                  type="text"
                   placeholder="e.g. 10"
-                  value={formData.sortOrder}
-                  onChange={(e) =>
+                  value={formData.sortOrder === 0 ? "" : formData.sortOrder}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFormData({
                       ...formData,
-                      sortOrder: parseInt(e.target.value) || 0,
-                    })
-                  }
+                      sortOrder: val === "" ? 0 : parseInt(val) || 0,
+                    });
+                  }}
                   disabled={formLoading}
                   className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
                 />

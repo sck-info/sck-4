@@ -221,8 +221,9 @@ function OfferingsDashboardContent() {
 
   // Category CRUD Handlers
   const handleOpenAddCat = () => {
+    const maxOrder = categories.length > 0 ? Math.max(...categories.map(c => c.sortOrder)) : 0;
     setEditingCat(null);
-    setCatFormData({ name: "", description: "", sanskritText: "", sanskritMeaning: "", sortOrder: 10, isActive: true });
+    setCatFormData({ name: "", description: "", sanskritText: "", sanskritMeaning: "", sortOrder: maxOrder + 10, isActive: true });
     setCatModalOpen(true);
   };
 
@@ -278,6 +279,7 @@ function OfferingsDashboardContent() {
 
   // Sub-Category CRUD Handlers
   const handleOpenAddSub = () => {
+    const maxOrder = subCategories.length > 0 ? Math.max(...subCategories.map(s => s.sortOrder)) : 0;
     setEditingSub(null);
     setSubFormData({
       name: "",
@@ -286,7 +288,7 @@ function OfferingsDashboardContent() {
       tagsRaw: "",
       requiresBooking: true,
       paymentQrId: "none",
-      sortOrder: 10,
+      sortOrder: maxOrder + 10,
       isActive: true,
     });
     setSubModalOpen(true);
@@ -600,9 +602,12 @@ function OfferingsDashboardContent() {
               <div className="space-y-2">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Display order weight</Label>
                 <Input
-                  type="number"
-                  value={catFormData.sortOrder}
-                  onChange={(e) => setCatFormData({ ...catFormData, sortOrder: parseInt(e.target.value) || 0 })}
+                  type="text"
+                  value={catFormData.sortOrder === 0 ? "" : catFormData.sortOrder}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setCatFormData({ ...catFormData, sortOrder: val === "" ? 0 : parseInt(val) || 0 });
+                  }}
                   required
                   disabled={catFormLoading}
                   className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
@@ -714,9 +719,12 @@ function OfferingsDashboardContent() {
               <div className="space-y-2">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Sort Weight</Label>
                 <Input
-                  type="number"
-                  value={subFormData.sortOrder}
-                  onChange={(e) => setSubFormData({ ...subFormData, sortOrder: parseInt(e.target.value) || 0 })}
+                  type="text"
+                  value={subFormData.sortOrder === 0 ? "" : subFormData.sortOrder}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSubFormData({ ...subFormData, sortOrder: val === "" ? 0 : parseInt(val) || 0 });
+                  }}
                   required
                   disabled={subFormLoading}
                   className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"

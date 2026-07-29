@@ -1126,7 +1126,7 @@ export default function BookingClient({
 
                     {q.fieldType === "number" && (
                       <input
-                        type="number"
+                        type="text"
                         required={q.isRequired}
                         placeholder="Enter number..."
                         value={val}

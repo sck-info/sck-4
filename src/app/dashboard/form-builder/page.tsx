@@ -780,10 +780,11 @@ function FormBuilderDashboardContent() {
             {selectedSubId && (
               <Button
                 onClick={() => {
+                  const maxOrder = linkedQuestions.length > 0 ? Math.max(...linkedQuestions.map(q => q.sortOrder)) : 0;
                   setLinkFormData({
                     questionId: "",
                     isRequired: true,
-                    sortOrder: 10,
+                    sortOrder: maxOrder + 10,
                   });
                   setLinkModalOpen(true);
                 }}
@@ -1151,14 +1152,15 @@ function FormBuilderDashboardContent() {
                   Layout Order Weight
                 </Label>
                 <Input
-                  type="number"
-                  value={linkFormData.sortOrder}
-                  onChange={(e) =>
+                  type="text"
+                  value={linkFormData.sortOrder === 0 ? "" : linkFormData.sortOrder}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setLinkFormData({
                       ...linkFormData,
-                      sortOrder: parseInt(e.target.value) || 0,
-                    })
-                  }
+                      sortOrder: val === "" ? 0 : parseInt(val) || 0,
+                    });
+                  }}
                   required
                   disabled={linkLoading}
                   className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
@@ -1240,14 +1242,15 @@ function FormBuilderDashboardContent() {
                   Layout Order Weight
                 </Label>
                 <Input
-                  type="number"
-                  value={editLinkFormData.sortOrder}
-                  onChange={(e) =>
+                  type="text"
+                  value={editLinkFormData.sortOrder === 0 ? "" : editLinkFormData.sortOrder}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setEditLinkFormData({
                       ...editLinkFormData,
-                      sortOrder: parseInt(e.target.value) || 0,
-                    })
-                  }
+                      sortOrder: val === "" ? 0 : parseInt(val) || 0,
+                    });
+                  }}
                   required
                   disabled={editLinkLoading}
                   className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"

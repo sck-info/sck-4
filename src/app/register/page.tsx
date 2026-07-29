@@ -357,9 +357,7 @@ export default function RegisterPage() {
                       <div className="relative">
                         <Input
                           id="age"
-                          type="number"
-                          min={1}
-                          max={150}
+                          type="text"
                           placeholder="Enter age"
                           value={age}
                           onChange={(e) => {
