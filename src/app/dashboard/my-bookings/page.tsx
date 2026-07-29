@@ -37,14 +37,38 @@ function SeekerBookingsContent() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
+  const [firstLoad, setFirstLoad] = useState(true);
+  const [sortedQuestions, setSortedQuestions] = useState<any[]>([]);
 
   const [viewResponsesBooking, setViewResponsesBooking] = useState<any | null>(null);
+  const [allQuestions, setAllQuestions] = useState<Record<string, string>>({});
   const [cancelBooking, setCancelBooking] = useState<any | null>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [feedbackBooking, setFeedbackBooking] = useState<any | null>(null);
   const [feedbackRating, setFeedbackRating] = useState(5);
   const [feedbackText, setFeedbackText] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+
+  useEffect(() => {
+    if (!viewResponsesBooking) {
+      setSortedQuestions([]);
+      return;
+    }
+    const fetchSortedQuestions = async () => {
+      try {
+        const subId = viewResponsesBooking.subCategoryId || viewResponsesBooking.subCategory?.id;
+        if (!subId) return;
+        const res = await fetch(`/api/sub-categories/${subId}/questions`);
+        if (res.ok) {
+          const json = await res.json();
+          setSortedQuestions(json.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to load sorted questions:", err);
+      }
+    };
+    fetchSortedQuestions();
+  }, [viewResponsesBooking]);
 
   const handleTabChange = (newTab: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -59,37 +83,51 @@ function SeekerBookingsContent() {
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const fetchBookings = useCallback(async () => {
-    setLoading(true);
+  const fetchBookings = useCallback(async (isSilent = false) => {
+    if (!isSilent) {
+      setLoading(true);
+    }
     try {
-      const res = await fetch(`/api/bookings?page=${page}&limit=5`);
+      const groupParam = tabFilter !== "all" ? `&statusGroup=${tabFilter}` : "";
+      const res = await fetch(`/api/bookings?page=${page}&limit=5${groupParam}`);
       if (!res.ok) throw new Error("Failed to load bookings");
       const json = await res.json();
       
-      let filteredData = json.data || [];
-      if (tabFilter === "active") {
-        filteredData = filteredData.filter(
-          (b: any) => b.status === "pending" || b.status === "confirmed" || b.status === "cancellation_pending"
-        );
-      } else if (tabFilter === "past") {
-        filteredData = filteredData.filter((b: any) => b.status === "completed" || b.status === "cancelled");
-      }
-
-      setBookings(filteredData);
+      setBookings(json.data || []);
       setTotalPages(json.pagination?.totalPages || 1);
     } catch (err) {
       console.error(err);
       toast.error("Error loading your bookings.");
     } finally {
       setLoading(false);
+      setFirstLoad(false);
     }
   }, [page, tabFilter]);
 
   useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
+    fetchBookings(firstLoad);
+  }, [fetchBookings, firstLoad]);
 
-  useRealtime(["bookings"], fetchBookings);
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const res = await fetch("/api/questions?limit=500");
+        if (res.ok) {
+          const json = await res.json();
+          const qMap: Record<string, string> = {};
+          (json.data || []).forEach((q: any) => {
+            qMap[q.id] = q.fieldLabel;
+          });
+          setAllQuestions(qMap);
+        }
+      } catch (err) {
+        console.error("Failed to load questions:", err);
+      }
+    };
+    fetchQuestions();
+  }, []);
+
+  useRealtime(["bookings"], () => fetchBookings(true));
 
   const handleCancelSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +151,7 @@ function SeekerBookingsContent() {
       toast.success("Cancellation request submitted successfully.");
       setCancelBooking(null);
       setCancelReason("");
-      fetchBookings();
+      fetchBookings(true);
     } catch (err: any) {
       toast.error(err.message || "Something went wrong.");
     } finally {
@@ -148,7 +186,7 @@ function SeekerBookingsContent() {
       setFeedbackBooking(null);
       setFeedbackText("");
       setFeedbackRating(5);
-      fetchBookings();
+      fetchBookings(true);
     } catch (err: any) {
       toast.error(err.message || "Feedback submission failed.");
     } finally {
@@ -370,6 +408,45 @@ function SeekerBookingsContent() {
             <div className="space-y-4 mt-4 max-h-[350px] overflow-y-auto pr-1">
               {Object.keys(viewResponsesBooking.formResponses || {}).length === 0 ? (
                 <p className="text-xs text-[#5a5e7a] italic text-center py-4">No questionnaire responses recorded.</p>
+              ) : sortedQuestions.length > 0 ? (
+                sortedQuestions.map((q) => {
+                  const ans = viewResponsesBooking.formResponses[q.id];
+                  if (ans === undefined) return null;
+
+                  let displayAns = "";
+                  let customVal = "";
+
+                  if (ans && typeof ans === "object") {
+                    const obj = ans as any;
+                    if (Array.isArray(obj.selected)) {
+                      displayAns = obj.selected.join(", ");
+                    } else {
+                      displayAns = String(obj.selected || "");
+                    }
+                    customVal = obj.customValue || "";
+                  } else if (Array.isArray(ans)) {
+                    displayAns = ans.join(", ");
+                  } else {
+                    displayAns = String(ans || "");
+                  }
+
+                  return (
+                    <div key={q.id} className="border-b border-[#e8dcc4]/30 pb-3 last:border-0 last:pb-0">
+                      <Label className="text-xs font-bold text-[#1c1f4a] block mb-1">
+                        {q.fieldLabel}:
+                      </Label>
+                      <div className="text-xs text-[#5a5e7a] leading-relaxed bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                        {displayAns || <span className="text-gray-300 italic">No response</span>}
+                        {customVal && (
+                          <div className="mt-1.5 pt-1.5 border-t border-dashed border-gray-200">
+                            <span className="font-bold text-[#b86a16] block text-[9px] uppercase tracking-wider mb-0.5">Custom Value:</span>
+                            <span className="text-[#1c1f4a]">{customVal}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
               ) : (
                 Object.entries(viewResponsesBooking.formResponses).map(([qId, ans]) => {
                   let displayAns = "";
@@ -392,7 +469,7 @@ function SeekerBookingsContent() {
                   return (
                     <div key={qId} className="border-b border-[#e8dcc4]/30 pb-3 last:border-0 last:pb-0">
                       <Label className="text-xs font-bold text-[#1c1f4a] block mb-1">
-                        Question Ref: <span className="font-mono font-normal text-gray-500">{qId}</span>
+                        {allQuestions[qId] || `Question (${qId.substring(0, 8)})`}:
                       </Label>
                       <div className="text-xs text-[#5a5e7a] leading-relaxed bg-gray-50 p-2.5 rounded-lg border border-gray-100">
                         {displayAns || <span className="text-gray-300 italic">No response</span>}

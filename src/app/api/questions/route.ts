@@ -8,7 +8,7 @@ import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 export async function GET(req: Request) {
   try {
     const session = await auth();
-    if (!session?.user || session.user.role !== "ADMIN") {
+    if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

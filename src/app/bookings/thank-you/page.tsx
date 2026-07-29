@@ -183,10 +183,7 @@ function ThankYouContent() {
             >
               <Clock size={18} style={{ color: "var(--gold)" }} />
               <span>
-                Time:{" "}
-                <strong>
-                  {formatTimeRange(startTime, endTime)}
-                </strong>
+                Time: <strong>{formatTimeRange(startTime, endTime)}</strong>
               </span>
             </div>
           </div>
@@ -199,7 +196,7 @@ function ThankYouContent() {
               fontWeight: 500,
             }}
           >
-            ⚠️ Status: Pending Confirmation. We will review and update you via
+            Status: Pending Confirmation. We will review and update you via
             WhatsApp/Email within 12-24 hours.
           </p>
         </div>

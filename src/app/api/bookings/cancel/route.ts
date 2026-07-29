@@ -8,6 +8,7 @@ import { formatDate } from "@/lib/format";
 const WHATSAPP_GATEWAY_URL = process.env.WHATSAPP_GATEWAY_URL || "http://localhost:3001";
 const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
 const ADMIN_NOTIFICATION_PHONE = process.env.ADMIN_NOTIFICATION_PHONE;
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 async function sendWhatsApp(to: string, message: string) {
   if (!WHATSAPP_API_TOKEN) return;
@@ -85,7 +86,7 @@ export async function POST(req: Request) {
     // Trigger Admin Notification
     if (ADMIN_NOTIFICATION_PHONE) {
       const dateStr = bookingData.slot ? formatDate(bookingData.slot.slotDate) : "TBD";
-      const adminMsg = `User ${bookingData.user.name} requested cancellation for ${bookingData.subCategory.name} on date ${dateStr}.\n\nReason: ${reason}`;
+      const adminMsg = `User ${bookingData.user.name} requested cancellation for ${bookingData.subCategory.name} on date ${dateStr}.\n\nReason: ${reason}\n\nReview details here: ${APP_URL}/dashboard/bookings`;
       await sendWhatsApp(ADMIN_NOTIFICATION_PHONE, adminMsg);
     }
 

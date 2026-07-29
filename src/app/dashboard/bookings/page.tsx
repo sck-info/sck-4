@@ -132,8 +132,11 @@ function BookingsDashboardContent() {
   // Data states
   const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [firstLoad, setFirstLoad] = useState(true);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [subCategories, setSubCategories] = useState<{ id: string; name: string; categoryId: string }[]>([]);
+  const [allQuestions, setAllQuestions] = useState<Record<string, string>>({});
+  const [sortedQuestions, setSortedQuestions] = useState<any[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta>({
     page: 1,
     limit: 25,
@@ -143,6 +146,28 @@ function BookingsDashboardContent() {
 
   // Action states
   const [viewResponsesBooking, setViewResponsesBooking] = useState<BookingRow | null>(null);
+
+  useEffect(() => {
+    if (!viewResponsesBooking) {
+      setSortedQuestions([]);
+      return;
+    }
+    const fetchSortedQuestions = async () => {
+      try {
+        const subObj = subCategories.find((s) => s.name === viewResponsesBooking.subCategoryName);
+        const subId = subObj?.id;
+        if (!subId) return;
+        const res = await fetch(`/api/sub-categories/${subId}/questions`);
+        if (res.ok) {
+          const json = await res.json();
+          setSortedQuestions(json.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to load sorted questions:", err);
+      }
+    };
+    fetchSortedQuestions();
+  }, [viewResponsesBooking, subCategories]);
   const [cancelBooking, setCancelBooking] = useState<BookingRow | null>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
@@ -167,16 +192,27 @@ function BookingsDashboardContent() {
           const json = await subRes.json();
           setSubCategories(json.data || []);
         }
+        const qRes = await fetch("/api/questions?limit=500");
+        if (qRes.ok) {
+          const json = await qRes.json();
+          const qMap: Record<string, string> = {};
+          (json.data || []).forEach((q: any) => {
+            qMap[q.id] = q.fieldLabel;
+          });
+          setAllQuestions(qMap);
+        }
       } catch (err) {
-        console.error("Failed to load category filters:", err);
+        console.error("Failed to load category filters or questions:", err);
       }
     };
     fetchConfig();
   }, []);
 
   // Fetch Bookings Queue
-  const fetchBookings = useCallback(async () => {
-    setLoading(true);
+  const fetchBookings = useCallback(async (isSilent = false) => {
+    if (!isSilent) {
+      setLoading(true);
+    }
     try {
       const statusQuery = statusFilter !== "all" ? `&status=${statusFilter}` : "";
       const catQuery = categoryFilter !== "all" ? `&category=${encodeURIComponent(categoryFilter)}` : "";
@@ -184,22 +220,41 @@ function BookingsDashboardContent() {
       const res = await fetch(`/api/bookings?page=${page}&limit=${limit}${statusQuery}${catQuery}${subCatQuery}`);
       if (!res.ok) throw new Error("Failed to load bookings");
       const json = await res.json();
-      setBookings(json.data);
+      const mapped = (json.data || []).map((b: any) => ({
+        id: b.id,
+        status: b.status,
+        selectedFormat: b.selectedFormat,
+        formResponses: b.formResponses,
+        userCancellationReason: b.userCancellationReason,
+        adminCancellationReason: b.adminCancellationReason,
+        paymentReceiptUrl: b.paymentReceiptUrl,
+        createdAt: b.createdAt,
+        userId: b.user?.id || "",
+        userName: b.user?.name || "Guest",
+        userEmail: b.user?.email || "",
+        userPhone: b.user?.phone || null,
+        subCategoryName: b.subCategory?.name || "",
+        slotDate: b.slot?.slotDate || null,
+        startTime: b.slot?.startTime || null,
+        endTime: b.slot?.endTime || null,
+      }));
+      setBookings(mapped);
       setPagination(json.pagination);
     } catch (err) {
       console.error(err);
       toast.error("Error loading bookings queue");
     } finally {
       setLoading(false);
+      setFirstLoad(false);
     }
   }, [statusFilter, categoryFilter, subCategoryFilter, page, limit]);
 
   useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
+    fetchBookings(firstLoad);
+  }, [fetchBookings, firstLoad]);
 
   // Real-time synchronization
-  useRealtime(["bookings"], fetchBookings);
+  useRealtime(["bookings"], () => fetchBookings(true));
 
   // Filter switch handlers
   const handleFilterChange = (statusVal: string) => {
@@ -248,7 +303,7 @@ function BookingsDashboardContent() {
 
       toast.success(`Booking status transitioned to ${nextStatus.replace("_", " ")} successfully!`);
       setConfirmStatusUpdate(null);
-      fetchBookings();
+      fetchBookings(true);
     } catch (err: any) {
       toast.error(err.message || "Status update failed.");
     } finally {
@@ -279,7 +334,7 @@ function BookingsDashboardContent() {
       toast.success("Booking cancelled. WhatsApp notifications dispatched.");
       setCancelBooking(null);
       setCancelReason("");
-      fetchBookings();
+      fetchBookings(true);
     } catch (err: any) {
       toast.error(err.message || "Cancellation failed.");
     } finally {
@@ -534,9 +589,10 @@ function BookingsDashboardContent() {
                             </Button>
                             <Button
                               onClick={() => setConfirmStatusUpdate({ booking, nextStatus: "confirmed" })}
-                              className="border border-[#e8dcc4] hover:bg-gray-50 text-[#5a5e7a] rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
+                              variant="outline"
+                              className="border border-[#1c1f4a]/40 hover:bg-[#1c1f4a]/5 text-[#1c1f4a] rounded-lg h-8 px-3 text-[10px] font-bold uppercase"
                             >
-                              Deny
+                              Reject Request
                             </Button>
                           </>
                         )}
@@ -568,6 +624,44 @@ function BookingsDashboardContent() {
               <div className="space-y-3.5">
                 {Object.keys(viewResponsesBooking.formResponses || {}).length === 0 ? (
                   <p className="text-xs text-[#5a5e7a] italic">No additional questionnaire fields linked for this session offering.</p>
+                ) : sortedQuestions.length > 0 ? (
+                  sortedQuestions.map((q) => {
+                    const ans = viewResponsesBooking.formResponses[q.id];
+                    if (ans === undefined) return null;
+
+                    let displayAns = "";
+                    let customVal = "";
+
+                    if (ans && typeof ans === "object") {
+                      if (Array.isArray(ans.selected)) {
+                        displayAns = ans.selected.join(", ");
+                      } else {
+                        displayAns = String(ans.selected || "");
+                      }
+                      customVal = ans.customValue || "";
+                    } else if (Array.isArray(ans)) {
+                      displayAns = ans.join(", ");
+                    } else {
+                      displayAns = String(ans || "");
+                    }
+
+                    return (
+                      <div key={q.id} className="border-b border-[#e8dcc4]/40 pb-3">
+                        <Label className="text-xs font-bold text-[#1c1f4a] tracking-wide block mb-1">
+                          {q.fieldLabel}:
+                        </Label>
+                        <div className="text-xs text-[#5a5e7a] font-medium leading-relaxed bg-[#fafafa] p-2.5 rounded-lg border border-gray-100">
+                          {displayAns || <span className="text-gray-300 italic">No answer</span>}
+                          {customVal && (
+                            <div className="mt-1.5 pt-1.5 border-t border-dashed border-gray-200">
+                              <span className="font-bold text-[#b86a16] block text-[9px] uppercase tracking-wider mb-0.5">Custom Value:</span>
+                              <span className="text-[#1c1f4a]">{customVal}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
                 ) : (
                   Object.entries(viewResponsesBooking.formResponses).map(([qId, ans]) => {
                     let displayAns = "";
@@ -589,7 +683,7 @@ function BookingsDashboardContent() {
                     return (
                       <div key={qId} className="border-b border-[#e8dcc4]/40 pb-3">
                         <Label className="text-xs font-bold text-[#1c1f4a] tracking-wide block mb-1">
-                          Question ID: <span className="font-mono font-normal text-gray-500">{qId}</span>
+                          {allQuestions[qId] || `Question (${qId.substring(0, 8)})`}:
                         </Label>
                         <div className="text-xs text-[#5a5e7a] font-medium leading-relaxed bg-[#fafafa] p-2.5 rounded-lg border border-gray-100">
                           {displayAns || <span className="text-gray-300 italic">No answer</span>}

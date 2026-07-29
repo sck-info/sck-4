@@ -394,7 +394,7 @@ function SlotsDashboardContent() {
 
       {/* DIALOG: Announce Timings Form */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-[480px] overflow-visible">
+        <DialogContent className="sm:max-w-[480px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
             <DialogTitle className="text-white text-md font-bold">Announce Slot Timings</DialogTitle>
           </DialogHeader>

@@ -73,6 +73,8 @@ export default function BookingClient({
   }, [status, router]);
 
   // States
+  const [currentSubCategory, setCurrentSubCategory] = useState<SubCategory>(subCategory);
+  const [currentPaymentQr, setCurrentPaymentQr] = useState<PaymentQr>(paymentQr);
   const [questions, setQuestions] = useState<Question[]>(initialQuestions);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
@@ -123,6 +125,24 @@ export default function BookingClient({
     }
   };
 
+  // Reload sub-category state dynamically
+  const reloadSubCategory = async () => {
+    try {
+      const res = await fetch(`/api/sub-categories/${subCategory.id}`);
+      const json = await res.json();
+      if (json.success && json.data) {
+        const { subCategory: latestSub, paymentQr: qr } = json.data;
+        setCurrentSubCategory(latestSub);
+        setCurrentPaymentQr(qr);
+        if (!latestSub.isActive) {
+          router.push("/offerings");
+        }
+      }
+    } catch (err) {
+      console.error("Failed to reload sub-category:", err);
+    }
+  };
+
   useEffect(() => {
     loadSlots();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -142,6 +162,7 @@ export default function BookingClient({
   // Real-time Update listeners
   useRealtime(["offering_slots"], loadSlots);
   useRealtime(["sub_category_questions", "form_questions"], reloadQuestions);
+  useRealtime(["offering_sub_categories"], reloadSubCategory);
 
   // Month navigation calculations
   const nextMonth = () => {
@@ -226,7 +247,7 @@ export default function BookingClient({
     setErrorMsg("");
 
     // Validation
-    if (subCategory.requiresBooking && !selectedSlot) {
+    if (currentSubCategory.requiresBooking && !selectedSlot) {
       setErrorMsg("Please select an available timing slot.");
       return;
     }
@@ -240,7 +261,7 @@ export default function BookingClient({
     }
 
     // Payment receipt validation
-    if (paymentQr && !receiptFile) {
+    if (currentPaymentQr && !receiptFile) {
       setErrorMsg("Please upload your transaction screenshot receipt to complete registration.");
       return;
     }
@@ -248,6 +269,17 @@ export default function BookingClient({
     setSubmitting(true);
 
     try {
+      // 1. Fetch latest subcategory status before submitting
+      const checkRes = await fetch(`/api/sub-categories/${subCategory.id}`);
+      const checkJson = await checkRes.json();
+      if (checkJson.success && checkJson.data) {
+        const { subCategory: latestSub } = checkJson.data;
+        if (!latestSub.isActive) {
+          setErrorMsg("This offering is no longer active.");
+          router.push("/offerings");
+          return;
+        }
+      }
       // Map response to handle "Other" custom option text values
       const mappedResponses = { ...formResponses };
       for (const qId of Object.keys(mappedResponses)) {
@@ -303,7 +335,25 @@ export default function BookingClient({
   const userDetails = session?.user as any;
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "2rem 1.5rem", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ maxWidth: 900, margin: "0 auto", padding: "1.5rem 1.5rem 2rem", fontFamily: "'DM Sans', sans-serif" }}>
+      <a
+        href="/offerings"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          fontSize: 13,
+          color: "var(--gold)",
+          textDecoration: "none",
+          fontWeight: 600,
+          marginBottom: 20,
+          transition: "opacity 0.2s",
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+      >
+        ← Back to Offerings
+      </a>
       <h2
         style={{
           fontFamily: "'Cormorant Garamond', serif",
@@ -314,7 +364,7 @@ export default function BookingClient({
           marginBottom: 10,
         }}
       >
-        Book: {subCategory.name}
+        Book: {currentSubCategory.name}
       </h2>
       <p style={{ color: "var(--text-mid)", fontWeight: 300, fontSize: 15, marginBottom: "2rem" }}>
         Please complete the reservation slots &amp; details below.
@@ -323,7 +373,7 @@ export default function BookingClient({
       {/* Grid containing Calendar & Details */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 32, alignItems: "start" }}>
         {/* LEFT COLUMN: Calendar Picker (if slot reservation required) */}
-        {subCategory.requiresBooking ? (
+        {currentSubCategory.requiresBooking ? (
           <div style={{ background: "white", padding: 24, borderRadius: 20, border: "1px solid rgba(28,31,74,0.06)", boxShadow: "0 4px 20px rgba(28,31,74,0.03)" }}>
             <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, color: "var(--indigo)", margin: "0 0 16px 0", fontWeight: 500 }}>
               1. Select Date &amp; Timing
@@ -464,7 +514,7 @@ export default function BookingClient({
           style={{ background: "white", padding: 28, borderRadius: 20, border: "1px solid rgba(28,31,74,0.06)", boxShadow: "0 4px 20px rgba(28,31,74,0.03)" }}
         >
           <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, color: "var(--indigo)", margin: "0 0 20px 0", fontWeight: 500 }}>
-            {subCategory.requiresBooking ? "2. Complete Questionnaire" : "1. Complete Questionnaire"}
+            {currentSubCategory.requiresBooking ? "2. Complete Questionnaire" : "1. Complete Questionnaire"}
           </h3>
 
           {/* Prefilled user credentials */}
@@ -734,7 +784,7 @@ export default function BookingClient({
           </div>
 
           {/* Payment QR displays if configured */}
-          {paymentQr && (
+          {currentPaymentQr && (
             <div style={{ marginTop: 28, background: "rgba(232,150,46,0.03)", border: "1px dashed rgba(232,150,46,0.25)", borderRadius: 14, padding: 20, textAlign: "center" }}>
               <h4 style={{ fontSize: 14, color: "var(--indigo)", fontWeight: 600, marginBottom: 8 }}>
                 3. Scan QR Code &amp; Pay
@@ -744,11 +794,11 @@ export default function BookingClient({
               </p>
               {/* QR Image */}
               <img
-                src={paymentQr.qrImageUrl}
-                alt={paymentQr.name}
+                src={currentPaymentQr.qrImageUrl}
+                alt={currentPaymentQr.name}
                 style={{ width: 180, height: 180, objectFit: "contain", borderRadius: 10, border: "1px solid #ddd", background: "white", display: "block", margin: "0 auto 12px" }}
               />
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--gold)", display: "block", marginBottom: 20 }}>{paymentQr.name}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--gold)", display: "block", marginBottom: 20 }}>{currentPaymentQr.name}</span>
 
               {/* Upload Screenshot File Field */}
               <div style={{ textAlign: "left", borderTop: "1px solid rgba(232,150,46,0.15)", paddingTop: 16 }}>

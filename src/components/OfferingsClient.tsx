@@ -583,7 +583,7 @@ export default function OfferingsClient({
 
                           {/* Booking Route Link Button */}
                           <a
-                            href={`/offerings/${sub.id}/book`}
+                            href={`/offerings/${encodeURIComponent(sub.name)}/book`}
                             style={{
                               display: "inline-flex",
                               alignItems: "center",

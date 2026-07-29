@@ -1,8 +1,45 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { offeringSubCategories } from "@/db/schema";
+import { offeringSubCategories, paymentQrs } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
+
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const subCategoryList = await db
+      .select()
+      .from(offeringSubCategories)
+      .where(eq(offeringSubCategories.id, id))
+      .limit(1);
+
+    if (subCategoryList.length === 0) {
+      return NextResponse.json({ error: "Sub-category not found" }, { status: 404 });
+    }
+
+    const subCategory = subCategoryList[0];
+
+    let paymentQr = null;
+    if (subCategory.paymentQrId) {
+      const qrList = await db
+        .select()
+        .from(paymentQrs)
+        .where(eq(paymentQrs.id, subCategory.paymentQrId))
+        .limit(1);
+      if (qrList.length > 0) {
+        paymentQr = qrList[0];
+      }
+    }
+
+    return NextResponse.json({ success: true, data: { subCategory, paymentQr } });
+  } catch (err) {
+    console.error("GET sub-category error:", err);
+    return NextResponse.json({ error: "Failed to fetch sub-category" }, { status: 500 });
+  }
+}
 
 export async function PATCH(
   req: Request,

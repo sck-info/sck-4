@@ -122,13 +122,13 @@ export async function PATCH(
         ? formatTimeRange(bookingData.slot.startTime, bookingData.slot.endTime)
         : "TBD";
 
-      const message = `Dear ${bookingData.user.name},\n\nYour booking for ${bookingData.subCategory.name} has been CONFIRMED!\n\n📅 Date: ${dateStr}\n⏰ Time: ${timingStr}\n🌐 Format: ${formatLabel}\n🔗 Session Link/Map: ${locationLink}\n\nThank you,\nSharath Kancherla Admin Team.`;
+      const message = `Dear ${bookingData.user.name},\n\nYour booking for ${bookingData.subCategory.name} has been CONFIRMED!\n\n📅 Date: ${dateStr}\n⏰ Time: ${timingStr}\n🌐 Format: ${formatLabel}\n🔗 Session Link/Map: ${locationLink}\n\nView booking status: ${APP_URL}/dashboard/my-bookings\n\nThank you,\nSharath Kancherla Admin Team.`;
       await sendWhatsApp(userPhone, message);
 
     } else if (status === "cancelled") {
       const dateStr = bookingData.slot ? formatDate(bookingData.slot.slotDate) : "TBD";
       const reason = adminCancellationReason || "Rescheduling conflict";
-      const message = `Dear ${bookingData.user.name},\n\nYour booking for ${bookingData.subCategory.name} on date ${dateStr} has been cancelled.\n\nReason: ${reason}\n\nThank you,\nSharath Kancherla Admin Team.`;
+      const message = `Dear ${bookingData.user.name},\n\nYour booking for ${bookingData.subCategory.name} on date ${dateStr} has been cancelled.\n\nReason: ${reason}\n\nView bookings: ${APP_URL}/dashboard/my-bookings\n\nThank you,\nSharath Kancherla Admin Team.`;
       await sendWhatsApp(userPhone, message);
 
     } else if (status === "completed") {

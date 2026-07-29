@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { bookings, users, offeringSubCategories, offeringSlots, feedbacks, offeringCategories } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { eq, and, sql, desc } from "drizzle-orm";
+import { eq, and, sql, desc, inArray } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
 export async function GET(req: Request) {
@@ -15,6 +15,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const { page, limit, offset } = parsePaginationParams(searchParams);
     const status = searchParams.get("status");
+    const statusGroup = searchParams.get("statusGroup");
     const subCategoryId = searchParams.get("subCategoryId");
     const categoryId = searchParams.get("categoryId");
     const categoryName = searchParams.get("category");
@@ -23,6 +24,14 @@ export async function GET(req: Request) {
     const conditions = [];
     if (status) {
       conditions.push(eq(bookings.status, status as any));
+    } else if (statusGroup === "active") {
+      conditions.push(
+        inArray(bookings.status, ["pending", "confirmed", "cancellation_pending"] as any[])
+      );
+    } else if (statusGroup === "past") {
+      conditions.push(
+        inArray(bookings.status, ["completed", "cancelled"] as any[])
+      );
     }
     if (subCategoryId) {
       conditions.push(eq(bookings.subCategoryId, subCategoryId));

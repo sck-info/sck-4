@@ -1,7 +1,7 @@
 import Navbar from "@/components/Navbar";
 import { db } from "@/lib/db";
 import { offeringSubCategories, subCategoryQuestions, formQuestions, paymentQrs } from "@/db/schema";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, or } from "drizzle-orm";
 import BookingClient from "@/components/BookingClient";
 import { notFound } from "next/navigation";
 
@@ -14,11 +14,22 @@ export default async function BookOfferingPage({
 }) {
   const { id } = await params;
 
-  // Fetch offering sub-category details
+  // Since id is string, decode it from URL format
+  const decodedId = decodeURIComponent(id);
+
+  // We check if decodedId is a valid UUID
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(decodedId);
+
+  // Fetch offering sub-category details by ID or Name
   const subCategoryList = await db
     .select()
     .from(offeringSubCategories)
-    .where(eq(offeringSubCategories.id, id))
+    .where(
+      or(
+        isUuid ? eq(offeringSubCategories.id, decodedId) : undefined,
+        eq(offeringSubCategories.name, decodedId)
+      )
+    )
     .limit(1);
 
   if (subCategoryList.length === 0) {
@@ -53,7 +64,7 @@ export default async function BookOfferingPage({
     })
     .from(subCategoryQuestions)
     .innerJoin(formQuestions, eq(subCategoryQuestions.questionId, formQuestions.id))
-    .where(eq(subCategoryQuestions.subCategoryId, id))
+    .where(eq(subCategoryQuestions.subCategoryId, subCategory.id))
     .orderBy(asc(subCategoryQuestions.sortOrder));
 
   return (
