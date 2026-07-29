@@ -62,7 +62,7 @@ export async function GET(req: Request) {
 
     const total = Number(countResult[0]?.count || 0);
 
-    const data = await db
+    const baseQuery = db
       .select({
         id: bookings.id,
         status: bookings.status,
@@ -77,6 +77,9 @@ export async function GET(req: Request) {
           name: users.name,
           email: users.email,
           phone: users.phone,
+        },
+        category: {
+          name: offeringCategories.name,
         },
         subCategory: {
           id: offeringSubCategories.id,
@@ -102,13 +105,18 @@ export async function GET(req: Request) {
       .leftJoin(offeringSlots, eq(bookings.slotId, offeringSlots.id))
       .leftJoin(feedbacks, eq(bookings.id, feedbacks.bookingId))
       .where(condition)
-      .orderBy(desc(bookings.createdAt))
-      .limit(limit)
-      .offset(offset);
+      .orderBy(desc(bookings.createdAt));
+
+    const isExport = searchParams.get("export") === "true";
+    if (!isExport) {
+      baseQuery.limit(limit).offset(offset);
+    }
+
+    const data = await baseQuery;
 
     return NextResponse.json({
       data,
-      pagination: createPaginationMeta({ page, limit, total }),
+      pagination: isExport ? null : createPaginationMeta({ page, limit, total }),
     });
   } catch (err) {
     console.error("GET bookings error:", err);

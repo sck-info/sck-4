@@ -24,6 +24,7 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  Download,
 } from "lucide-react";
 import {
   Table,
@@ -133,6 +134,7 @@ function BookingsDashboardContent() {
   const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [firstLoad, setFirstLoad] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [subCategories, setSubCategories] = useState<{ id: string; name: string; categoryId: string }[]>([]);
   const [allQuestions, setAllQuestions] = useState<Record<string, string>>({});
@@ -253,6 +255,100 @@ function BookingsDashboardContent() {
     fetchBookings(firstLoad);
   }, [fetchBookings, firstLoad]);
 
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const statusQuery = statusFilter !== "all" ? `&status=${statusFilter}` : "";
+      const catQuery = categoryFilter !== "all" ? `&category=${encodeURIComponent(categoryFilter)}` : "";
+      const subCatQuery = subCategoryFilter !== "all" ? `&subCategory=${encodeURIComponent(subCategoryFilter)}` : "";
+      
+      const res = await fetch(`/api/bookings?export=true${statusQuery}${catQuery}${subCatQuery}`);
+      if (!res.ok) throw new Error("Failed to export bookings");
+      const json = await res.json();
+      
+      const dataRows = json.data || [];
+      
+      // Define CSV columns
+      const headers = [
+        "Booking Reference ID",
+        "Customer Name",
+        "Customer Email",
+        "Customer Phone",
+        "Offering Category",
+        "Session Offering",
+        "Session Format",
+        "Slot Date",
+        "Slot Timing",
+        "Booking Status",
+        "Feedback Rating",
+        "Feedback Comments",
+        "Created At"
+      ];
+      
+      const csvRows = [headers.join(",")];
+      
+      for (const row of dataRows) {
+        const slotDateStr = row.slot?.slotDate ? formatDate(row.slot.slotDate) : "Direct coordinated";
+        const slotTimingStr = row.slot ? formatTimeRange(row.slot.startTime, row.slot.endTime) : "";
+        const formattedCreatedStr = formatDate(row.createdAt);
+        
+        const values = [
+          row.id,
+          row.user?.name || "Guest",
+          row.user?.email || "",
+          row.user?.phone || "",
+          row.category?.name || "",
+          row.subCategory?.name || "",
+          row.selectedFormat || "To be coordinated",
+          slotDateStr,
+          slotTimingStr,
+          row.status || "",
+          row.feedback?.rating ? String(row.feedback.rating) : "",
+          row.feedback?.rawFeedback || "",
+          formattedCreatedStr
+        ];
+        
+        // Escape quotes and commas in CSV fields
+        const escaped = values.map(val => {
+          const stringified = String(val);
+          if (stringified.includes(",") || stringified.includes("\"") || stringified.includes("\n")) {
+            return `"${stringified.replace(/"/g, '""')}"`;
+          }
+          return stringified;
+        });
+        
+        csvRows.push(escaped.join(","));
+      }
+      
+      const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + encodeURIComponent(csvRows.join("\n"));
+      const link = document.createElement("a");
+      link.setAttribute("href", csvContent);
+      
+      const catClean = categoryFilter !== "all" ? categoryFilter.replace(/[^a-zA-Z0-9]/g, "_") : "";
+      const subCatClean = subCategoryFilter !== "all" ? subCategoryFilter.replace(/[^a-zA-Z0-9]/g, "_") : "";
+      
+      let filterParts = [];
+      if (catClean) filterParts.push(catClean);
+      if (subCatClean) filterParts.push(subCatClean);
+      filterParts.push(statusFilter);
+      
+      const filterName = filterParts.join("_").replace(/__+/g, "_").toLowerCase();
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const filename = `bookings_export_${filterName}_${timestamp}.csv`;
+      link.setAttribute("download", filename);
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("CSV export downloaded successfully!");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to export bookings");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   // Real-time synchronization
   useRealtime(["bookings", "feedbacks"], () => fetchBookings(true));
 
@@ -371,8 +467,8 @@ function BookingsDashboardContent() {
       </div>
 
       {/* Category & Subcategory select filters */}
-      <div className="flex flex-col sm:flex-row gap-4 bg-white/40 border border-[#e8dcc4]/60 p-4 rounded-2xl">
-        <div className="flex-1 flex flex-col gap-1.5">
+      <div className="flex flex-col md:flex-row gap-4 items-end bg-white/40 border border-[#e8dcc4]/60 p-4 rounded-2xl">
+        <div className="flex-1 flex flex-col gap-1.5 w-full">
           <label className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider">Offering Category</label>
           <Select
             value={categoryFilter}
@@ -392,7 +488,7 @@ function BookingsDashboardContent() {
           </Select>
         </div>
 
-        <div className="flex-1 flex flex-col gap-1.5">
+        <div className="flex-1 flex flex-col gap-1.5 w-full">
           <label className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wider">Offering Sub-category</label>
           <Select
             value={subCategoryFilter}
@@ -416,6 +512,21 @@ function BookingsDashboardContent() {
                 ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="w-full md:w-auto shrink-0">
+          <Button
+            onClick={handleExportCSV}
+            disabled={exporting}
+            className="w-full md:w-auto h-10 px-5 rounded-xl bg-[#b86a16] hover:bg-[#b86a16]/90 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-sm transition-all"
+          >
+            {exporting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            {exporting ? "Exporting..." : "Export Bookings (CSV)"}
+          </Button>
         </div>
       </div>
 

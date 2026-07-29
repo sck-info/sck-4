@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useRealtime } from "@/hooks/useRealtime";
 
 const testimonials = [
@@ -305,6 +305,7 @@ function TestimonialCard({
     role: string;
     text: string;
     therapy: string;
+    rating?: number;
   };
   active?: boolean;
 }) {
@@ -326,14 +327,35 @@ function TestimonialCard({
     >
       <div
         style={{
-          fontSize: 40,
-          lineHeight: 0.5,
-          color: "var(--gold)",
-          opacity: 0.3,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
           marginBottom: "1rem",
         }}
       >
-        &ldquo;
+        <div
+          style={{
+            fontSize: 40,
+            lineHeight: 0.5,
+            color: "var(--gold)",
+            opacity: 0.3,
+          }}
+        >
+          &ldquo;
+        </div>
+        <div style={{ display: "flex", gap: "2px" }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star
+              key={i}
+              size={13}
+              style={{
+                fill: i < (data.rating ?? 5) ? "var(--gold)" : "none",
+                stroke: "var(--gold)",
+                opacity: i < (data.rating ?? 5) ? 1 : 0.3,
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       <p
