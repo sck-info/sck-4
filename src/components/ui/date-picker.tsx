@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -32,6 +32,16 @@ const currentYear = new Date().getFullYear()
 export function DatePicker({ value, onChange, disabled, placeholder = "Pick a date", disabledDates }: DatePickerProps) {
   const [month, setMonth] = useState<number>(value ? value.getMonth() : new Date().getMonth())
   const [year, setYear] = useState<number>(value ? value.getFullYear() : currentYear)
+  const [isMediumOrMobile, setIsMediumOrMobile] = useState(false)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMediumOrMobile(window.innerWidth < 1024)
+    }
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   const months = [
     "January", "February", "March", "April", "May", "June",
@@ -72,7 +82,7 @@ export function DatePicker({ value, onChange, disabled, placeholder = "Pick a da
           {value ? format(value, "PPP") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-4" align="start" side="top">
+      <PopoverContent className="w-auto p-4" align={isMediumOrMobile ? "center" : "start"} side={isMediumOrMobile ? "bottom" : "right"} sideOffset={8}>
         <div className="flex gap-2 mb-3">
           <Select value={months[month]} onValueChange={handleMonthChange}>
             <SelectTrigger className="flex-1 text-xs" size="sm">

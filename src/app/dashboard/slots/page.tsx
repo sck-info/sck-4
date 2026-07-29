@@ -73,6 +73,19 @@ type LocationRow = {
   type: string;
 };
 
+const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+  const hour = Math.floor(i / 2);
+  const min = i % 2 === 0 ? "00" : "30";
+  const hourStr = hour.toString().padStart(2, "0");
+  const value = `${hourStr}:${min}`;
+
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  const label = `${hour12}:${min} ${ampm}`;
+
+  return { value, label };
+});
+
 function SlotsDashboardContent() {
   const router = useRouter();
   const pathname = usePathname();
@@ -373,7 +386,7 @@ function SlotsDashboardContent() {
 
       {/* DIALOG: Announce Timings Form */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-[480px]">
+        <DialogContent className="sm:max-w-[480px] overflow-visible">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
             <DialogTitle className="text-white text-md font-bold">Announce Slot Timings</DialogTitle>
           </DialogHeader>
@@ -423,25 +436,42 @@ function SlotsDashboardContent() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Start Time</Label>
-                <Input
-                  type="time"
+                <Select
                   value={formData.startTime}
-                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                  required
+                  onValueChange={(val) => setFormData({ ...formData, startTime: val })}
                   disabled={formLoading}
-                  className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
-                />
+                >
+                  <SelectTrigger className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs w-full">
+                    <SelectValue placeholder="Select start..." />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-48">
+                    {TIME_OPTIONS.map((time) => (
+                      <SelectItem key={`start-${time.value}`} value={time.value}>
+                        {time.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+
               <div className="space-y-2">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">End Time</Label>
-                <Input
-                  type="time"
+                <Select
                   value={formData.endTime}
-                  onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                  required
+                  onValueChange={(val) => setFormData({ ...formData, endTime: val })}
                   disabled={formLoading}
-                  className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
-                />
+                >
+                  <SelectTrigger className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs w-full">
+                    <SelectValue placeholder="Select end..." />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-48">
+                    {TIME_OPTIONS.map((time) => (
+                      <SelectItem key={`end-${time.value}`} value={time.value}>
+                        {time.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
