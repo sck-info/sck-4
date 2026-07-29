@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRealtime } from "@/hooks/useRealtime";
 
 const testimonials = [
   {
@@ -52,21 +53,24 @@ export default function Testimonials() {
   const [items, setItems] = useState<typeof testimonials>(testimonials);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    const fetchActiveFeedbacks = async () => {
-      try {
-        const res = await fetch("/api/feedbacks/active");
-        if (!res.ok) return;
-        const json = await res.json();
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setItems(json.data);
-        }
-      } catch (err) {
-        console.error("Failed to load active testimonials:", err);
+  const fetchActiveFeedbacks = async () => {
+    try {
+      const res = await fetch("/api/feedbacks/active");
+      if (!res.ok) return;
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        setItems(json.data);
       }
-    };
+    } catch (err) {
+      console.error("Failed to load active testimonials:", err);
+    }
+  };
+
+  useEffect(() => {
     fetchActiveFeedbacks();
   }, []);
+
+  useRealtime(["session_feedbacks"], fetchActiveFeedbacks);
 
   const nextSlide = () =>
     setCurrentIndex((prev) => (prev + 1) % items.length);

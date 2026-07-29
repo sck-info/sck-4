@@ -4,7 +4,15 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useRealtime } from "@/hooks/useRealtime";
-import { Calendar, Clock, MapPin, Check, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+} from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimeSelect } from "@/components/ui/time-select";
 import { format } from "date-fns";
@@ -73,20 +81,26 @@ export default function BookingClient({
   }, [status, router]);
 
   // States
-  const [currentSubCategory, setCurrentSubCategory] = useState<SubCategory>(subCategory);
-  const [currentPaymentQr, setCurrentPaymentQr] = useState<PaymentQr>(paymentQr);
+  const [currentSubCategory, setCurrentSubCategory] =
+    useState<SubCategory>(subCategory);
+  const [currentPaymentQr, setCurrentPaymentQr] =
+    useState<PaymentQr>(paymentQr);
   const [questions, setQuestions] = useState<Question[]>(initialQuestions);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
-  const [selectedFormat, setSelectedFormat] = useState<"online" | "offline" | null>(null);
+  const [selectedFormat, setSelectedFormat] = useState<
+    "online" | "offline" | null
+  >(null);
   const [selectedLocationId, setSelectedLocationId] = useState<string>("");
 
   // Form states
   const [formResponses, setFormResponses] = useState<Record<string, any>>({});
-  const [otherResponses, setOtherResponses] = useState<Record<string, string>>({});
+  const [otherResponses, setOtherResponses] = useState<Record<string, string>>(
+    {},
+  );
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -100,7 +114,9 @@ export default function BookingClient({
   // Load available slots
   const loadSlots = async () => {
     try {
-      const res = await fetch(`/api/offerings/slots?subCategoryId=${subCategory.id}`);
+      const res = await fetch(
+        `/api/offerings/slots?subCategoryId=${subCategory.id}`,
+      );
       const json = await res.json();
       if (json.success) {
         setSlots(json.data);
@@ -115,7 +131,9 @@ export default function BookingClient({
   // Reload schema changes dynamically
   const reloadQuestions = async () => {
     try {
-      const res = await fetch(`/api/sub-categories/${subCategory.id}/questions`);
+      const res = await fetch(
+        `/api/sub-categories/${subCategory.id}/questions`,
+      );
       const json = await res.json();
       if (json.success && json.data) {
         setQuestions(json.data);
@@ -177,7 +195,8 @@ export default function BookingClient({
   };
 
   const prevMonth = () => {
-    const isCurrentMonth = currentMonth === today.getMonth() && currentYear === today.getFullYear();
+    const isCurrentMonth =
+      currentMonth === today.getMonth() && currentYear === today.getFullYear();
     if (isCurrentMonth) return; // Disable backward navigation
 
     if (currentMonth === 0) {
@@ -195,8 +214,18 @@ export default function BookingClient({
   const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
 
   const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
   // Helper: check if a date has slots available
@@ -262,7 +291,9 @@ export default function BookingClient({
 
     // Payment receipt validation
     if (currentPaymentQr && !receiptFile) {
-      setErrorMsg("Please upload your transaction screenshot receipt to complete registration.");
+      setErrorMsg(
+        "Please upload your transaction screenshot receipt to complete registration.",
+      );
       return;
     }
 
@@ -284,7 +315,10 @@ export default function BookingClient({
       const mappedResponses = { ...formResponses };
       for (const qId of Object.keys(mappedResponses)) {
         const val = mappedResponses[qId];
-        if (otherResponses[qId] && (val === "Other" || (Array.isArray(val) && val.includes("Other")))) {
+        if (
+          otherResponses[qId] &&
+          (val === "Other" || (Array.isArray(val) && val.includes("Other")))
+        ) {
           mappedResponses[qId] = {
             selected: val,
             customValue: otherResponses[qId],
@@ -297,7 +331,8 @@ export default function BookingClient({
       formData.append("subCategoryId", subCategory.id);
       if (selectedSlot?.id) formData.append("slotId", selectedSlot.id);
       if (selectedFormat) formData.append("selectedFormat", selectedFormat);
-      if (selectedLocationId) formData.append("selectedLocationId", selectedLocationId);
+      if (selectedLocationId)
+        formData.append("selectedLocationId", selectedLocationId);
       formData.append("formResponses", JSON.stringify(mappedResponses));
       if (receiptFile) {
         formData.append("receiptFile", receiptFile);
@@ -324,9 +359,29 @@ export default function BookingClient({
 
   if (status === "loading" || status === "unauthenticated") {
     return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "50vh" }}>
-        <Loader2 className="animate-spin" size={40} style={{ color: "var(--indigo)" }} />
-        <p style={{ marginTop: 16, color: "var(--text-mid)", fontFamily: "'DM Sans', sans-serif" }}>Verifying your session...</p>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "50vh",
+        }}
+      >
+        <Loader2
+          className="animate-spin"
+          size={40}
+          style={{ color: "var(--indigo)" }}
+        />
+        <p
+          style={{
+            marginTop: 16,
+            color: "var(--text-mid)",
+            fontFamily: "'DM Sans', sans-serif",
+          }}
+        >
+          Verifying your session...
+        </p>
       </div>
     );
   }
@@ -335,7 +390,14 @@ export default function BookingClient({
   const userDetails = session?.user as any;
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "1.5rem 1.5rem 2rem", fontFamily: "'DM Sans', sans-serif" }}>
+    <div
+      style={{
+        maxWidth: 900,
+        margin: "0 auto",
+        padding: "1.5rem 1.5rem 2rem",
+        fontFamily: "'DM Sans', sans-serif",
+      }}
+    >
       <a
         href="/offerings"
         style={{
@@ -349,8 +411,12 @@ export default function BookingClient({
           marginBottom: 20,
           transition: "opacity 0.2s",
         }}
-        onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = "0.85";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = "1";
+        }}
       >
         ← Back to Offerings
       </a>
@@ -366,549 +432,1096 @@ export default function BookingClient({
       >
         Book: {currentSubCategory.name}
       </h2>
-      <p style={{ color: "var(--text-mid)", fontWeight: 300, fontSize: 15, marginBottom: "2rem" }}>
+      <p
+        style={{
+          color: "var(--text-mid)",
+          fontWeight: 300,
+          fontSize: 15,
+          marginBottom: "2rem",
+        }}
+      >
         Please complete the reservation slots &amp; details below.
       </p>
 
       {/* Grid containing Calendar & Details */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 32, alignItems: "start" }}>
-        {/* LEFT COLUMN: Calendar Picker (if slot reservation required) */}
-        {currentSubCategory.requiresBooking ? (
-          <div style={{ background: "white", padding: 24, borderRadius: 20, border: "1px solid rgba(28,31,74,0.06)", boxShadow: "0 4px 20px rgba(28,31,74,0.03)" }}>
-            <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, color: "var(--indigo)", margin: "0 0 16px 0", fontWeight: 500 }}>
-              1. Select Date &amp; Timing
-            </h3>
+      {!loadingSlots &&
+      currentSubCategory.requiresBooking &&
+      slots.length === 0 ? (
+        <div
+          style={{
+            background: "white",
+            padding: "3.5rem 2rem",
+            borderRadius: 24,
+            border: "1px solid rgba(28,31,74,0.06)",
+            boxShadow: "0 4px 30px rgba(28,31,74,0.04)",
+            textAlign: "center",
+            maxWidth: 580,
+            margin: "3rem auto",
+          }}
+        >
+          <Calendar
+            style={{
+              width: 44,
+              height: 44,
+              color: "var(--gold)",
+              margin: "0 auto 16px",
+            }}
+          />
+          <h3
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 28,
+              color: "var(--indigo)",
+              marginBottom: 8,
+              fontWeight: 500,
+            }}
+          >
+            No Available Slots
+          </h3>
+          <p
+            style={{
+              color: "var(--text-mid)",
+              fontSize: 14,
+              lineHeight: 1.65,
+              margin: "0 0 24px",
+            }}
+          >
+            There are no timings or slots currently announced for{" "}
+            <strong>{currentSubCategory.name}</strong>. Please check back later
+            or contact the administrator.
+          </p>
+          <a
+            href="/offerings"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              background: "var(--gold)",
+              color: "white",
+              padding: "10px 24px",
+              borderRadius: 100,
+              fontSize: 13,
+              fontWeight: 600,
+              textDecoration: "none",
+              boxShadow: "0 4px 14px rgba(232,150,46,0.15)",
+              transition: "transform 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-1.5px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
+            Explore Other Offerings
+          </a>
+        </div>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gap: 32,
+            alignItems: "start",
+          }}
+        >
+          {/* LEFT COLUMN: Calendar Picker (if slot reservation required) */}
+          {currentSubCategory.requiresBooking ? (
+            <div
+              style={{
+                background: "white",
+                padding: 24,
+                borderRadius: 20,
+                border: "1px solid rgba(28,31,74,0.06)",
+                boxShadow: "0 4px 20px rgba(28,31,74,0.03)",
+              }}
+            >
+              <h3
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 24,
+                  color: "var(--indigo)",
+                  margin: "0 0 16px 0",
+                  fontWeight: 500,
+                }}
+              >
+                1. Select Date &amp; Timing
+              </h3>
 
-            {loadingSlots ? (
-              <div style={{ display: "flex", justifyContent: "center", padding: "2rem" }}>
-                <Loader2 className="animate-spin" size={24} style={{ color: "var(--gold)" }} />
+              <div
+                style={{
+                  background: "rgba(232,150,46,0.05)",
+                  border: "1px solid rgba(232,150,46,0.18)",
+                  borderRadius: 12,
+                  padding: "10px 14px",
+                  marginBottom: 16,
+                  fontSize: 12,
+                  color: "var(--indigo)",
+                  lineHeight: 1.5,
+                  fontWeight: 400,
+                }}
+              >
+                <strong>Tip:</strong> Dates with available slots are highlighted
+                in light gold. Please toggle months using the arrows if no slots
+                are visible in the current month.
               </div>
-            ) : (
-              <div>
-                {/* Month Navigation Banner */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                  <button
-                    onClick={prevMonth}
-                    disabled={currentMonth === today.getMonth() && currentYear === today.getFullYear()}
+
+              {loadingSlots ? (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "2rem",
+                  }}
+                >
+                  <Loader2
+                    className="animate-spin"
+                    size={24}
+                    style={{ color: "var(--gold)" }}
+                  />
+                </div>
+              ) : (
+                <div>
+                  {/* Month Navigation Banner */}
+                  <div
                     style={{
-                      background: "none",
-                      border: "none",
-                      color: "var(--indigo)",
-                      cursor: "pointer",
-                      opacity: currentMonth === today.getMonth() && currentYear === today.getFullYear() ? 0.3 : 1,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: 16,
                     }}
                   >
-                    <ChevronLeft size={20} />
-                  </button>
-                  <span style={{ fontWeight: 600, color: "var(--indigo)", fontSize: 16 }}>
-                    {monthNames[currentMonth]} {currentYear}
-                  </span>
-                  <button onClick={nextMonth} style={{ background: "none", border: "none", color: "var(--indigo)", cursor: "pointer" }}>
-                    <ChevronRight size={20} />
-                  </button>
-                </div>
+                    <button
+                      onClick={prevMonth}
+                      disabled={
+                        currentMonth === today.getMonth() &&
+                        currentYear === today.getFullYear()
+                      }
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "var(--indigo)",
+                        cursor: "pointer",
+                        opacity:
+                          currentMonth === today.getMonth() &&
+                          currentYear === today.getFullYear()
+                            ? 0.3
+                            : 1,
+                      }}
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        color: "var(--indigo)",
+                        fontSize: 16,
+                      }}
+                    >
+                      {monthNames[currentMonth]} {currentYear}
+                    </span>
+                    <button
+                      onClick={nextMonth}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "var(--indigo)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
 
-                {/* Week Day Labels */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontWeight: 600, color: "var(--gold)", fontSize: 12, marginBottom: 8 }}>
-                  <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-                </div>
+                  {/* Week Day Labels */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(7, 1fr)",
+                      textAlign: "center",
+                      fontWeight: 600,
+                      color: "var(--gold)",
+                      fontSize: 12,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <span>Su</span>
+                    <span>Mo</span>
+                    <span>Tu</span>
+                    <span>We</span>
+                    <span>Th</span>
+                    <span>Fr</span>
+                    <span>Sa</span>
+                  </div>
 
-                {/* Calendar Days Grid */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
-                  {/* Empty cells leading up to 1st of month */}
-                  {Array.from({ length: firstDayIndex }).map((_, i) => (
-                    <div key={`empty-${i}`} />
-                  ))}
+                  {/* Calendar Days Grid */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(7, 1fr)",
+                      gap: 6,
+                    }}
+                  >
+                    {/* Empty cells leading up to 1st of month */}
+                    {Array.from({ length: firstDayIndex }).map((_, i) => (
+                      <div key={`empty-${i}`} />
+                    ))}
 
-                  {/* Days */}
-                  {Array.from({ length: daysInMonth }).map((_, i) => {
-                    const day = i + 1;
-                    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-                    const dateSlots = getSlotsForDate(dateStr);
-                    const isAvailable = dateSlots.length > 0;
-                    const isSelected = selectedDate === dateStr;
+                    {/* Days */}
+                    {Array.from({ length: daysInMonth }).map((_, i) => {
+                      const day = i + 1;
+                      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                      const dateSlots = getSlotsForDate(dateStr);
+                      const isAvailable = dateSlots.length > 0;
+                      const isSelected = selectedDate === dateStr;
 
-                    return (
-                      <button
-                        key={`day-${day}`}
-                        onClick={() => handleDayClick(day)}
-                        disabled={!isAvailable}
+                      return (
+                        <button
+                          key={`day-${day}`}
+                          onClick={() => handleDayClick(day)}
+                          disabled={!isAvailable}
+                          style={{
+                            aspectRatio: "1/1",
+                            borderRadius: "50%",
+                            border: isSelected
+                              ? "2px solid var(--gold)"
+                              : "none",
+                            background: isSelected
+                              ? "rgba(232,150,46,0.12)"
+                              : isAvailable
+                                ? "rgba(232,150,46,0.05)"
+                                : "transparent",
+                            color: isAvailable ? "var(--indigo)" : "#bbb",
+                            fontWeight: isAvailable ? 600 : 300,
+                            cursor: isAvailable ? "pointer" : "default",
+                            transition: "all 0.2s",
+                            fontSize: 13,
+                          }}
+                        >
+                          {day}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Time Slot display */}
+                  {selectedDate && (
+                    <div
+                      style={{
+                        marginTop: 24,
+                        borderTop: "1px solid rgba(28,31,74,0.06)",
+                        paddingTop: 16,
+                      }}
+                    >
+                      <h4
                         style={{
-                          aspectRatio: "1/1",
-                          borderRadius: "50%",
-                          border: isSelected ? "2px solid var(--gold)" : "none",
-                          background: isSelected
-                            ? "rgba(232,150,46,0.12)"
-                            : isAvailable
-                            ? "rgba(232,150,46,0.05)"
-                            : "transparent",
-                          color: isAvailable ? "var(--indigo)" : "#bbb",
-                          fontWeight: isAvailable ? 600 : 300,
-                          cursor: isAvailable ? "pointer" : "default",
-                          transition: "all 0.2s",
-                          fontSize: 13,
+                          fontSize: 14,
+                          color: "var(--indigo)",
+                          fontWeight: 600,
+                          marginBottom: 12,
                         }}
                       >
-                        {day}
+                        Available Timings on {formatDate(selectedDate)}:
+                      </h4>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 10,
+                        }}
+                      >
+                        {getSlotsForDate(selectedDate).map((slot) => {
+                          const isSlotSelected = selectedSlot?.id === slot.id;
+                          return (
+                            <button
+                              key={slot.id}
+                              type="button"
+                              onClick={() => handleSlotClick(slot)}
+                              style={{
+                                padding: "12px 16px",
+                                borderRadius: 10,
+                                border: isSlotSelected
+                                  ? "2px solid var(--gold)"
+                                  : "1px solid rgba(28,31,74,0.1)",
+                                background: isSlotSelected
+                                  ? "rgba(232,150,46,0.05)"
+                                  : "transparent",
+                                textAlign: "left",
+                                cursor: "pointer",
+                                transition: "all 0.2s",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  fontSize: 13,
+                                  fontWeight: 500,
+                                  color: "var(--indigo)",
+                                }}
+                              >
+                                <Clock
+                                  size={16}
+                                  style={{ color: "var(--gold)" }}
+                                />
+                                {formatTimeRange(slot.startTime, slot.endTime)}
+                              </span>
+                              {isSlotSelected && (
+                                <Check
+                                  size={16}
+                                  style={{ color: "var(--gold)" }}
+                                />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div
+              style={{
+                background: "white",
+                padding: 24,
+                borderRadius: 20,
+                border: "1px solid rgba(28,31,74,0.06)",
+                boxShadow: "0 4px 20px rgba(28,31,74,0.03)",
+              }}
+            >
+              <h3
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 24,
+                  color: "var(--indigo)",
+                  margin: "0 0 16px 0",
+                  fontWeight: 500,
+                }}
+              >
+                Direct Submission
+              </h3>
+              <p
+                style={{
+                  color: "var(--text-mid)",
+                  fontSize: 14,
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}
+              >
+                This session does not require booking scheduled slots. Please
+                complete the registration form below, and we will contact you
+                directly to confirm.
+              </p>
+            </div>
+          )}
+
+          {/* RIGHT COLUMN: Questionnaire Form & Details */}
+          <form
+            onSubmit={handleSubmit}
+            style={{
+              background: "white",
+              padding: 28,
+              borderRadius: 20,
+              border: "1px solid rgba(28,31,74,0.06)",
+              boxShadow: "0 4px 20px rgba(28,31,74,0.03)",
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: 24,
+                color: "var(--indigo)",
+                margin: "0 0 20px 0",
+                fontWeight: 500,
+              }}
+            >
+              {currentSubCategory.requiresBooking
+                ? "2. Complete Questionnaire"
+                : "1. Complete Questionnaire"}
+            </h3>
+
+            {/* Prefilled user credentials */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                marginBottom: 24,
+                borderBottom: "1px solid rgba(28,31,74,0.06)",
+                paddingBottom: 20,
+              }}
+            >
+              <div>
+                <label
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "var(--text-mid)",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  Name
+                </label>
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    border: "1px solid rgba(28,31,74,0.08)",
+                    background: "#fafafa",
+                    borderRadius: 8,
+                    color: "var(--text-mid)",
+                    fontSize: 14,
+                    marginTop: 4,
+                  }}
+                >
+                  {userDetails?.name}
+                </div>
+              </div>
+              <div>
+                <label
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "var(--text-mid)",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  Email
+                </label>
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    border: "1px solid rgba(28,31,74,0.08)",
+                    background: "#fafafa",
+                    borderRadius: 8,
+                    color: "var(--text-mid)",
+                    fontSize: 14,
+                    marginTop: 4,
+                  }}
+                >
+                  {userDetails?.email}
+                </div>
+              </div>
+              {/* If user phone exists */}
+              {userDetails?.phone && (
+                <div>
+                  <label
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "var(--text-mid)",
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    Phone Number
+                  </label>
+                  <div
+                    style={{
+                      padding: "10px 12px",
+                      border: "1px solid rgba(28,31,74,0.08)",
+                      background: "#fafafa",
+                      borderRadius: 8,
+                      color: "var(--text-mid)",
+                      fontSize: 14,
+                      marginTop: 4,
+                    }}
+                  >
+                    {userDetails.phoneCode} {userDetails.phone}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Configured Slot Format Options */}
+            {selectedSlot && selectedSlot.locations.length > 0 && (
+              <div style={{ marginBottom: 24 }}>
+                <label
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "var(--text-mid)",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  Select Format Type
+                </label>
+                <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+                  {selectedSlot.locations.map((loc) => {
+                    const isLocSelected = selectedLocationId === loc.id;
+                    return (
+                      <button
+                        key={loc.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedLocationId(loc.id);
+                          setSelectedFormat(loc.type as any);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: "12px",
+                          borderRadius: 10,
+                          border: isLocSelected
+                            ? "2px solid var(--gold)"
+                            : "1px solid rgba(28,31,74,0.1)",
+                          background: isLocSelected
+                            ? "rgba(232,150,46,0.05)"
+                            : "transparent",
+                          cursor: "pointer",
+                          fontWeight: 600,
+                          fontSize: 13,
+                          color: "var(--indigo)",
+                          textTransform: "capitalize",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 8,
+                        }}
+                      >
+                        {loc.type === "online" ? (
+                          <Clock size={16} />
+                        ) : (
+                          <MapPin size={16} />
+                        )}
+                        {loc.name}
                       </button>
                     );
                   })}
                 </div>
-
-                {/* Time Slot display */}
-                {selectedDate && (
-                  <div style={{ marginTop: 24, borderTop: "1px solid rgba(28,31,74,0.06)", paddingTop: 16 }}>
-                    <h4 style={{ fontSize: 14, color: "var(--indigo)", fontWeight: 600, marginBottom: 12 }}>
-                      Available Timings on {formatDate(selectedDate)}:
-                    </h4>
-
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      {getSlotsForDate(selectedDate).map((slot) => {
-                        const isSlotSelected = selectedSlot?.id === slot.id;
-                        return (
-                          <button
-                            key={slot.id}
-                            type="button"
-                            onClick={() => handleSlotClick(slot)}
-                            style={{
-                              padding: "12px 16px",
-                              borderRadius: 10,
-                              border: isSlotSelected ? "2px solid var(--gold)" : "1px solid rgba(28,31,74,0.1)",
-                              background: isSlotSelected ? "rgba(232,150,46,0.05)" : "transparent",
-                              textAlign: "left",
-                              cursor: "pointer",
-                              transition: "all 0.2s",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 500, color: "var(--indigo)" }}>
-                              <Clock size={16} style={{ color: "var(--gold)" }} />
-                              {formatTimeRange(slot.startTime, slot.endTime)}
-                            </span>
-                            {isSlotSelected && <Check size={16} style={{ color: "var(--gold)" }} />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
-          </div>
-        ) : (
-          <div style={{ background: "white", padding: 24, borderRadius: 20, border: "1px solid rgba(28,31,74,0.06)", boxShadow: "0 4px 20px rgba(28,31,74,0.03)" }}>
-            <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, color: "var(--indigo)", margin: "0 0 16px 0", fontWeight: 500 }}>
-              Direct Submission
-            </h3>
-            <p style={{ color: "var(--text-mid)", fontSize: 14, lineHeight: 1.6, margin: 0 }}>
-              This session does not require booking scheduled slots. Please complete the registration form below, and we will contact you directly to confirm.
-            </p>
-          </div>
-        )}
 
-        {/* RIGHT COLUMN: Questionnaire Form & Details */}
-        <form
-          onSubmit={handleSubmit}
-          style={{ background: "white", padding: 28, borderRadius: 20, border: "1px solid rgba(28,31,74,0.06)", boxShadow: "0 4px 20px rgba(28,31,74,0.03)" }}
-        >
-          <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, color: "var(--indigo)", margin: "0 0 20px 0", fontWeight: 500 }}>
-            {currentSubCategory.requiresBooking ? "2. Complete Questionnaire" : "1. Complete Questionnaire"}
-          </h3>
+            {/* Dynamic Form questions rendering */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {questions.map((q) => {
+                const opts = Array.isArray(q.options)
+                  ? (q.options as string[])
+                  : [];
+                const val = formResponses[q.id] || "";
 
-          {/* Prefilled user credentials */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24, borderBottom: "1px solid rgba(28,31,74,0.06)", paddingBottom: 20 }}>
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-mid)", textTransform: "uppercase", letterSpacing: 0.5 }}>Name</label>
-              <div style={{ padding: "10px 12px", border: "1px solid rgba(28,31,74,0.08)", background: "#fafafa", borderRadius: 8, color: "var(--text-mid)", fontSize: 14, marginTop: 4 }}>
-                {userDetails?.name}
-              </div>
-            </div>
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-mid)", textTransform: "uppercase", letterSpacing: 0.5 }}>Email</label>
-              <div style={{ padding: "10px 12px", border: "1px solid rgba(28,31,74,0.08)", background: "#fafafa", borderRadius: 8, color: "var(--text-mid)", fontSize: 14, marginTop: 4 }}>
-                {userDetails?.email}
-              </div>
-            </div>
-            {/* If user phone exists */}
-            {userDetails?.phone && (
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-mid)", textTransform: "uppercase", letterSpacing: 0.5 }}>Phone Number</label>
-                <div style={{ padding: "10px 12px", border: "1px solid rgba(28,31,74,0.08)", background: "#fafafa", borderRadius: 8, color: "var(--text-mid)", fontSize: 14, marginTop: 4 }}>
-                  {userDetails.phoneCode} {userDetails.phone}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Configured Slot Format Options */}
-          {selectedSlot && selectedSlot.locations.length > 0 && (
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-mid)", textTransform: "uppercase", letterSpacing: 0.5 }}>Select Format Type</label>
-              <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
-                {selectedSlot.locations.map((loc) => {
-                  const isLocSelected = selectedLocationId === loc.id;
-                  return (
-                    <button
-                      key={loc.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedLocationId(loc.id);
-                        setSelectedFormat(loc.type as any);
-                      }}
+                return (
+                  <div key={q.id}>
+                    <label
                       style={{
-                        flex: 1,
-                        padding: "12px",
-                        borderRadius: 10,
-                        border: isLocSelected ? "2px solid var(--gold)" : "1px solid rgba(28,31,74,0.1)",
-                        background: isLocSelected ? "rgba(232,150,46,0.05)" : "transparent",
-                        cursor: "pointer",
-                        fontWeight: 600,
                         fontSize: 13,
+                        fontWeight: 600,
                         color: "var(--indigo)",
-                        textTransform: "capitalize",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 8,
+                        display: "block",
+                        marginBottom: 6,
                       }}
                     >
-                      {loc.type === "online" ? <Clock size={16} /> : <MapPin size={16} />}
-                      {loc.name}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+                      {q.fieldLabel}{" "}
+                      {q.isRequired && (
+                        <span style={{ color: "var(--gold)" }}>*</span>
+                      )}
+                    </label>
 
-          {/* Dynamic Form questions rendering */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            {questions.map((q) => {
-              const opts = Array.isArray(q.options) ? (q.options as string[]) : [];
-              const val = formResponses[q.id] || "";
-
-              return (
-                <div key={q.id}>
-                  <label style={{ fontSize: 13, fontWeight: 600, color: "var(--indigo)", display: "block", marginBottom: 6 }}>
-                    {q.fieldLabel} {q.isRequired && <span style={{ color: "var(--gold)" }}>*</span>}
-                  </label>
-
-                  {/* RENDER FIELD INPUT TYPES */}
-                  {q.fieldType === "short_answer" && (
-                    <input
-                      type="text"
-                      required={q.isRequired}
-                      placeholder={`Enter ${q.fieldLabel.toLowerCase()}...`}
-                      value={val}
-                      onChange={(e) => handleInputChange(q.id, e.target.value)}
-                      style={{ width: "100%", padding: "10px 12px", border: "1px solid rgba(28,31,74,0.15)", borderRadius: 8, outline: "none", fontSize: 14 }}
-                    />
-                  )}
-
-                  {q.fieldType === "long_answer" && (
-                    <textarea
-                      required={q.isRequired}
-                      rows={4}
-                      placeholder={`Provide details for ${q.fieldLabel.toLowerCase()}...`}
-                      value={val}
-                      onChange={(e) => handleInputChange(q.id, e.target.value)}
-                      style={{ width: "100%", padding: "10px 12px", border: "1px solid rgba(28,31,74,0.15)", borderRadius: 8, outline: "none", fontSize: 14, resize: "vertical" }}
-                    />
-                  )}
-
-                  {q.fieldType === "number" && (
-                    <input
-                      type="number"
-                      required={q.isRequired}
-                      placeholder="Enter number..."
-                      value={val}
-                      onChange={(e) => handleInputChange(q.id, e.target.value)}
-                      style={{ width: "100%", padding: "10px 12px", border: "1px solid rgba(28,31,74,0.15)", borderRadius: 8, outline: "none", fontSize: 14 }}
-                    />
-                  )}
-
-                  {q.fieldType === "url" && (
-                    <input
-                      type="url"
-                      required={q.isRequired}
-                      placeholder="https://example.com"
-                      value={val}
-                      onChange={(e) => handleInputChange(q.id, e.target.value)}
-                      style={{ width: "100%", padding: "10px 12px", border: "1px solid rgba(28,31,74,0.15)", borderRadius: 8, outline: "none", fontSize: 14 }}
-                    />
-                  )}
-
-                  {q.fieldType === "date" && (() => {
-                    const parsedDate = val && !isNaN(Date.parse(val)) ? new Date(val) : undefined;
-                    return (
-                      <DatePicker
-                        value={parsedDate}
-                        onChange={(d) => handleInputChange(q.id, d ? format(d, "yyyy-MM-dd") : "")}
-                        placeholder="Select date..."
-                      />
-                    );
-                  })()}
-
-                  {q.fieldType === "time" && (
-                    <TimeSelect
-                      value={val}
-                      onChange={(newVal) => handleInputChange(q.id, newVal)}
-                      placeholder="Select time..."
-                    />
-                  )}
-
-                  {q.fieldType === "star_rating" && (
-                    <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-                      {[1, 2, 3, 4, 5].map((star) => {
-                        const active = Number(val) >= star;
-                        return (
-                          <button
-                            key={star}
-                            type="button"
-                            onClick={() => handleInputChange(q.id, star)}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
-                              fontSize: 24,
-                              color: active ? "var(--gold)" : "#ddd",
-                              padding: 0,
-                            }}
-                          >
-                            ★
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {q.fieldType === "single_select" && (
-                    <div>
-                      <Select
+                    {/* RENDER FIELD INPUT TYPES */}
+                    {q.fieldType === "short_answer" && (
+                      <input
+                        type="text"
+                        required={q.isRequired}
+                        placeholder={`Enter ${q.fieldLabel.toLowerCase()}...`}
                         value={val}
-                        onValueChange={(newVal) => handleInputChange(q.id, newVal)}
-                      >
-                        <SelectTrigger className="w-full h-11 bg-white border border-gray-300 rounded-xl text-xs w-full flex items-center justify-between text-left whitespace-normal [&>span]:line-clamp-none [&>span]:block [&>span]:w-full text-[#1c1f4a] font-semibold hover:bg-gray-100/50">
-                          <SelectValue placeholder="Select option..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {opts.map((opt) => (
-                            <SelectItem key={opt} value={opt} className="text-xs">
-                              {opt}
-                            </SelectItem>
-                          ))}
-                          {q.allowOther && (
-                            <SelectItem value="Other" className="text-xs">
-                              Other
-                            </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-
-                      {/* Conditional Short Answer field if 'Other' chosen */}
-                      {q.allowOther && val === "Other" && (
-                        <input
-                          type="text"
-                          required={q.isRequired}
-                          placeholder="Please specify..."
-                          value={otherResponses[q.id] || ""}
-                          onChange={(e) => handleOtherTextChange(q.id, e.target.value)}
-                          style={{ width: "100%", marginTop: 8, padding: "10px 12px", border: "1px solid rgba(28,31,74,0.15)", borderRadius: 8, outline: "none", fontSize: 14 }}
-                        />
-                      )}
-                    </div>
-                  )}
-
-                  {q.fieldType === "multi_select" && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
-                      {opts.map((opt) => {
-                        const list: string[] = Array.isArray(val) ? val : [];
-                        const checked = list.includes(opt);
-                        return (
-                          <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#1c1f4a] cursor-pointer">
-                            <Checkbox
-                              checked={checked}
-                              onCheckedChange={(checkedState) => {
-                                let newList = [...list];
-                                if (checkedState) {
-                                  newList.push(opt);
-                                } else {
-                                  newList = newList.filter((item) => item !== opt);
-                                }
-                                handleInputChange(q.id, newList);
-                              }}
-                            />
-                            <span>{opt}</span>
-                          </label>
-                        );
-                      })}
-                      {q.allowOther && (
-                        <div className="flex flex-col gap-2">
-                          <label className="flex items-center gap-2 text-xs font-semibold text-[#1c1f4a] cursor-pointer">
-                            <Checkbox
-                              checked={(Array.isArray(val) ? val : []).includes("Other")}
-                              onCheckedChange={(checkedState) => {
-                                const list = Array.isArray(val) ? val : [];
-                                let newList = [...list];
-                                if (checkedState) {
-                                  newList.push("Other");
-                                } else {
-                                  newList = newList.filter((item) => item !== "Other");
-                                }
-                                handleInputChange(q.id, newList);
-                              }}
-                            />
-                            <span>Other</span>
-                          </label>
-
-                          {/* Conditional specify input */}
-                          {(Array.isArray(val) ? val : []).includes("Other") && (
-                            <input
-                              type="text"
-                              required={q.isRequired}
-                              placeholder="Please specify..."
-                              value={otherResponses[q.id] || ""}
-                              onChange={(e) => handleOtherTextChange(q.id, e.target.value)}
-                              style={{ width: "100%", marginTop: 8, padding: "10px 12px", border: "1px solid rgba(28,31,74,0.15)", borderRadius: 8, outline: "none", fontSize: 14 }}
-                            />
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Payment QR displays if configured */}
-          {currentPaymentQr && (
-            <div style={{ marginTop: 28, background: "rgba(232,150,46,0.03)", border: "1px dashed rgba(232,150,46,0.25)", borderRadius: 14, padding: 20, textAlign: "center" }}>
-              <h4 style={{ fontSize: 14, color: "var(--indigo)", fontWeight: 600, marginBottom: 8 }}>
-                3. Scan QR Code &amp; Pay
-              </h4>
-              <p style={{ fontSize: 12, color: "var(--text-mid)", lineHeight: 1.5, margin: "0 0 14px 0" }}>
-                Scan the QR code below via UPI or your banking application to complete the session fee payment.
-              </p>
-              {/* QR Image */}
-              <img
-                src={currentPaymentQr.qrImageUrl}
-                alt={currentPaymentQr.name}
-                style={{ width: 180, height: 180, objectFit: "contain", borderRadius: 10, border: "1px solid #ddd", background: "white", display: "block", margin: "0 auto 12px" }}
-              />
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--gold)", display: "block", marginBottom: 20 }}>{currentPaymentQr.name}</span>
-
-              {/* Upload Screenshot File Field */}
-              <div style={{ textAlign: "left", borderTop: "1px solid rgba(232,150,46,0.15)", paddingTop: 16 }}>
-                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--indigo)", display: "block", marginBottom: 6 }}>
-                  Upload Payment Screenshot Receipt <span style={{ color: "var(--gold)" }}>*</span>
-                </label>
-                {receiptPreview ? (
-                  <div className="relative border border-[#e8dcc4] bg-[#faf7f2]/30 rounded-xl p-4 flex flex-col items-center justify-center gap-3">
-                    <img
-                      src={receiptPreview}
-                      alt="Receipt Preview"
-                      className="w-32 h-32 object-cover rounded-lg border border-dashed border-[#e8dcc4]"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setReceiptFile(null);
-                          setReceiptPreview(null);
-                        }}
-                        className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition"
-                      >
-                        Remove Image
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#e8dcc4] hover:border-[#b86a16] bg-[#faf7f2]/10 hover:bg-[#faf7f2]/30 rounded-xl cursor-pointer transition p-4">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <svg className="w-8 h-8 text-[#b86a16] mb-2 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                      </svg>
-                      <p className="mb-1 text-xs text-[#1c1f4a] font-semibold">Click to upload payment receipt</p>
-                      <p className="text-[10px] text-gray-500">PNG, JPG, or WEBP (Max 5MB)</p>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/png, image/jpeg, image/webp"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] || null;
-                        setReceiptFile(file);
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            setReceiptPreview(reader.result as string);
-                          };
-                          reader.readAsDataURL(file);
-                        } else {
-                          setReceiptPreview(null);
+                        onChange={(e) =>
+                          handleInputChange(q.id, e.target.value)
                         }
-                      }}
-                      className="hidden"
-                    />
-                  </label>
-                )}
-              </div>
-            </div>
-          )}
+                        style={{
+                          width: "100%",
+                          padding: "10px 12px",
+                          border: "1px solid rgba(28,31,74,0.15)",
+                          borderRadius: 8,
+                          outline: "none",
+                          fontSize: 14,
+                        }}
+                      />
+                    )}
 
-          {errorMsg && (
-            <div style={{ marginTop: 20, background: "#fff5f5", border: "1px solid #ffd8d8", color: "#e03e3e", padding: "10px 14px", borderRadius: 8, fontSize: 13 }}>
-              {errorMsg}
-            </div>
-          )}
+                    {q.fieldType === "long_answer" && (
+                      <textarea
+                        required={q.isRequired}
+                        rows={4}
+                        placeholder={`Provide details for ${q.fieldLabel.toLowerCase()}...`}
+                        value={val}
+                        onChange={(e) =>
+                          handleInputChange(q.id, e.target.value)
+                        }
+                        style={{
+                          width: "100%",
+                          padding: "10px 12px",
+                          border: "1px solid rgba(28,31,74,0.15)",
+                          borderRadius: 8,
+                          outline: "none",
+                          fontSize: 14,
+                          resize: "vertical",
+                        }}
+                      />
+                    )}
 
-          {/* Submit Action */}
-          {(() => {
-            const isSubmitDisabled = submitting || (subCategory.requiresBooking && !selectedSlot);
-            return (
-              <button
-                type="submit"
-                disabled={isSubmitDisabled}
+                    {q.fieldType === "number" && (
+                      <input
+                        type="number"
+                        required={q.isRequired}
+                        placeholder="Enter number..."
+                        value={val}
+                        onChange={(e) =>
+                          handleInputChange(q.id, e.target.value)
+                        }
+                        style={{
+                          width: "100%",
+                          padding: "10px 12px",
+                          border: "1px solid rgba(28,31,74,0.15)",
+                          borderRadius: 8,
+                          outline: "none",
+                          fontSize: 14,
+                        }}
+                      />
+                    )}
+
+                    {q.fieldType === "url" && (
+                      <input
+                        type="url"
+                        required={q.isRequired}
+                        placeholder="https://example.com"
+                        value={val}
+                        onChange={(e) =>
+                          handleInputChange(q.id, e.target.value)
+                        }
+                        style={{
+                          width: "100%",
+                          padding: "10px 12px",
+                          border: "1px solid rgba(28,31,74,0.15)",
+                          borderRadius: 8,
+                          outline: "none",
+                          fontSize: 14,
+                        }}
+                      />
+                    )}
+
+                    {q.fieldType === "date" &&
+                      (() => {
+                        const parsedDate =
+                          val && !isNaN(Date.parse(val))
+                            ? new Date(val)
+                            : undefined;
+                        return (
+                          <DatePicker
+                            value={parsedDate}
+                            onChange={(d) =>
+                              handleInputChange(
+                                q.id,
+                                d ? format(d, "yyyy-MM-dd") : "",
+                              )
+                            }
+                            placeholder="Select date..."
+                          />
+                        );
+                      })()}
+
+                    {q.fieldType === "time" && (
+                      <TimeSelect
+                        value={val}
+                        onChange={(newVal) => handleInputChange(q.id, newVal)}
+                        placeholder="Select time..."
+                      />
+                    )}
+
+                    {q.fieldType === "star_rating" && (
+                      <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                        {[1, 2, 3, 4, 5].map((star) => {
+                          const active = Number(val) >= star;
+                          return (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => handleInputChange(q.id, star)}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                fontSize: 24,
+                                color: active ? "var(--gold)" : "#ddd",
+                                padding: 0,
+                              }}
+                            >
+                              ★
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {q.fieldType === "single_select" && (
+                      <div>
+                        <Select
+                          value={val}
+                          onValueChange={(newVal) =>
+                            handleInputChange(q.id, newVal)
+                          }
+                        >
+                          <SelectTrigger className="w-full h-11 bg-white border border-gray-300 rounded-xl text-xs w-full flex items-center justify-between text-left whitespace-normal [&>span]:line-clamp-none [&>span]:block [&>span]:w-full text-[#1c1f4a] font-semibold hover:bg-gray-100/50">
+                            <SelectValue placeholder="Select option..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {opts.map((opt) => (
+                              <SelectItem
+                                key={opt}
+                                value={opt}
+                                className="text-xs"
+                              >
+                                {opt}
+                              </SelectItem>
+                            ))}
+                            {q.allowOther && (
+                              <SelectItem value="Other" className="text-xs">
+                                Other
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+
+                        {/* Conditional Short Answer field if 'Other' chosen */}
+                        {q.allowOther && val === "Other" && (
+                          <input
+                            type="text"
+                            required={q.isRequired}
+                            placeholder="Please specify..."
+                            value={otherResponses[q.id] || ""}
+                            onChange={(e) =>
+                              handleOtherTextChange(q.id, e.target.value)
+                            }
+                            style={{
+                              width: "100%",
+                              marginTop: 8,
+                              padding: "10px 12px",
+                              border: "1px solid rgba(28,31,74,0.15)",
+                              borderRadius: 8,
+                              outline: "none",
+                              fontSize: 14,
+                            }}
+                          />
+                        )}
+                      </div>
+                    )}
+
+                    {q.fieldType === "multi_select" && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 10,
+                          marginTop: 8,
+                        }}
+                      >
+                        {opts.map((opt) => {
+                          const list: string[] = Array.isArray(val) ? val : [];
+                          const checked = list.includes(opt);
+                          return (
+                            <label
+                              key={opt}
+                              className="flex items-center gap-2 text-xs font-semibold text-[#1c1f4a] cursor-pointer"
+                            >
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={(checkedState) => {
+                                  let newList = [...list];
+                                  if (checkedState) {
+                                    newList.push(opt);
+                                  } else {
+                                    newList = newList.filter(
+                                      (item) => item !== opt,
+                                    );
+                                  }
+                                  handleInputChange(q.id, newList);
+                                }}
+                              />
+                              <span>{opt}</span>
+                            </label>
+                          );
+                        })}
+                        {q.allowOther && (
+                          <div className="flex flex-col gap-2">
+                            <label className="flex items-center gap-2 text-xs font-semibold text-[#1c1f4a] cursor-pointer">
+                              <Checkbox
+                                checked={(Array.isArray(val)
+                                  ? val
+                                  : []
+                                ).includes("Other")}
+                                onCheckedChange={(checkedState) => {
+                                  const list = Array.isArray(val) ? val : [];
+                                  let newList = [...list];
+                                  if (checkedState) {
+                                    newList.push("Other");
+                                  } else {
+                                    newList = newList.filter(
+                                      (item) => item !== "Other",
+                                    );
+                                  }
+                                  handleInputChange(q.id, newList);
+                                }}
+                              />
+                              <span>Other</span>
+                            </label>
+
+                            {/* Conditional specify input */}
+                            {(Array.isArray(val) ? val : []).includes(
+                              "Other",
+                            ) && (
+                              <input
+                                type="text"
+                                required={q.isRequired}
+                                placeholder="Please specify..."
+                                value={otherResponses[q.id] || ""}
+                                onChange={(e) =>
+                                  handleOtherTextChange(q.id, e.target.value)
+                                }
+                                style={{
+                                  width: "100%",
+                                  marginTop: 8,
+                                  padding: "10px 12px",
+                                  border: "1px solid rgba(28,31,74,0.15)",
+                                  borderRadius: 8,
+                                  outline: "none",
+                                  fontSize: 14,
+                                }}
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Payment QR displays if configured */}
+            {currentPaymentQr && (
+              <div
                 style={{
                   marginTop: 28,
-                  width: "100%",
-                  background: isSubmitDisabled ? "#8c90ad" : "var(--indigo)",
-                  color: "white",
-                  padding: "12px 24px",
-                  borderRadius: 100,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: isSubmitDisabled ? "not-allowed" : "pointer",
-                  transition: "background 0.2s",
-                  border: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  boxShadow: isSubmitDisabled ? "none" : "0 4px 14px rgba(28,31,74,0.1)",
-                  opacity: isSubmitDisabled ? 0.7 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSubmitDisabled) (e.currentTarget as HTMLElement).style.background = "var(--gold)";
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSubmitDisabled) (e.currentTarget as HTMLElement).style.background = "var(--indigo)";
+                  background: "rgba(232,150,46,0.03)",
+                  border: "1px dashed rgba(232,150,46,0.25)",
+                  borderRadius: 14,
+                  padding: 20,
+                  textAlign: "center",
                 }}
               >
-                {submitting ? (
-                  <>
-                    <Loader2 className="animate-spin" size={16} /> Submitting Reservation...
-                  </>
-                ) : (
-                  "Submit Registration"
-                )}
-              </button>
-            );
-          })()}
-        </form>
-      </div>
+                <h4
+                  style={{
+                    fontSize: 14,
+                    color: "var(--indigo)",
+                    fontWeight: 600,
+                    marginBottom: 8,
+                  }}
+                >
+                  3. Scan QR Code &amp; Pay
+                </h4>
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: "var(--text-mid)",
+                    lineHeight: 1.5,
+                    margin: "0 0 14px 0",
+                  }}
+                >
+                  Scan the QR code below via UPI or your banking application to
+                  complete the session fee payment.
+                </p>
+                {/* QR Image */}
+                <img
+                  src={currentPaymentQr.qrImageUrl}
+                  alt={currentPaymentQr.name}
+                  style={{
+                    width: 180,
+                    height: 180,
+                    objectFit: "contain",
+                    borderRadius: 10,
+                    border: "1px solid #ddd",
+                    background: "white",
+                    display: "block",
+                    margin: "0 auto 12px",
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "var(--gold)",
+                    display: "block",
+                    marginBottom: 20,
+                  }}
+                >
+                  {currentPaymentQr.name}
+                </span>
+
+                {/* Upload Screenshot File Field */}
+                <div
+                  style={{
+                    textAlign: "left",
+                    borderTop: "1px solid rgba(232,150,46,0.15)",
+                    paddingTop: 16,
+                  }}
+                >
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "var(--indigo)",
+                      display: "block",
+                      marginBottom: 6,
+                    }}
+                  >
+                    Upload Payment Screenshot Receipt{" "}
+                    <span style={{ color: "var(--gold)" }}>*</span>
+                  </label>
+                  {receiptPreview ? (
+                    <div className="relative border border-[#e8dcc4] bg-[#faf7f2]/30 rounded-xl p-4 flex flex-col items-center justify-center gap-3">
+                      <img
+                        src={receiptPreview}
+                        alt="Receipt Preview"
+                        className="w-32 h-32 object-cover rounded-lg border border-dashed border-[#e8dcc4]"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReceiptFile(null);
+                            setReceiptPreview(null);
+                          }}
+                          className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition"
+                        >
+                          Remove Image
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#e8dcc4] hover:border-[#b86a16] bg-[#faf7f2]/10 hover:bg-[#faf7f2]/30 rounded-xl cursor-pointer transition p-4">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg
+                          className="w-8 h-8 text-[#b86a16] mb-2 animate-bounce"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                          ></path>
+                        </svg>
+                        <p className="mb-1 text-xs text-[#1c1f4a] font-semibold">
+                          Click to upload payment receipt
+                        </p>
+                        <p className="text-[10px] text-gray-500">
+                          PNG, JPG, or WEBP (Max 5MB)
+                        </p>
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/webp"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setReceiptFile(file);
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setReceiptPreview(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          } else {
+                            setReceiptPreview(null);
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {errorMsg && (
+              <div
+                style={{
+                  marginTop: 20,
+                  background: "#fff5f5",
+                  border: "1px solid #ffd8d8",
+                  color: "#e03e3e",
+                  padding: "10px 14px",
+                  borderRadius: 8,
+                  fontSize: 13,
+                }}
+              >
+                {errorMsg}
+              </div>
+            )}
+
+            {/* Submit Action */}
+            {(() => {
+              const isSubmitDisabled =
+                submitting || (subCategory.requiresBooking && !selectedSlot);
+              return (
+                <button
+                  type="submit"
+                  disabled={isSubmitDisabled}
+                  style={{
+                    marginTop: 28,
+                    width: "100%",
+                    background: isSubmitDisabled ? "#8c90ad" : "var(--indigo)",
+                    color: "white",
+                    padding: "12px 24px",
+                    borderRadius: 100,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: isSubmitDisabled ? "not-allowed" : "pointer",
+                    transition: "background 0.2s",
+                    border: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    boxShadow: isSubmitDisabled
+                      ? "none"
+                      : "0 4px 14px rgba(28,31,74,0.1)",
+                    opacity: isSubmitDisabled ? 0.7 : 1,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSubmitDisabled)
+                      (e.currentTarget as HTMLElement).style.background =
+                        "var(--gold)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSubmitDisabled)
+                      (e.currentTarget as HTMLElement).style.background =
+                        "var(--indigo)";
+                  }}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="animate-spin" size={16} /> Submitting
+                      Reservation...
+                    </>
+                  ) : (
+                    "Submit Registration"
+                  )}
+                </button>
+              );
+            })()}
+          </form>
+        </div>
+      )}
     </div>
   );
 }

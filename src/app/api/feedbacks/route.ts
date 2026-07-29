@@ -25,16 +25,12 @@ export async function GET(req: Request) {
       .select({
         id: feedbacks.id,
         rating: feedbacks.rating,
-        rawFeedback: feedbacks.rawFeedback,
+        comments: feedbacks.rawFeedback,
         enhancedFeedback: feedbacks.enhancedFeedback,
         isActive: feedbacks.isActive,
         createdAt: feedbacks.createdAt,
-        user: {
-          name: users.name,
-        },
-        subCategory: {
-          name: offeringSubCategories.name,
-        },
+        userName: users.name,
+        subCategoryName: offeringSubCategories.name,
       })
       .from(feedbacks)
       .innerJoin(bookings, eq(feedbacks.bookingId, bookings.id))

@@ -126,16 +126,28 @@ export default function Navbar() {
             </a>
           ))}
 
-          {/* Offerings Link */}
-          <a
-            href="/offerings"
+          {/* Wall of Love Link */}
+          <button
+            onClick={() => {
+              if (isHome) {
+                const el = document.getElementById("Testimonials");
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth" });
+                }
+              } else {
+                window.location.href = "/#Testimonials";
+              }
+            }}
             style={{
               fontFamily: "'DM Sans', sans-serif",
               fontSize: 14,
               fontWeight: 500,
               color: scrolled || !isHome ? "var(--text-mid)" : "rgba(250,247,242,0.8)",
-              textDecoration: "none",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
               letterSpacing: 0.3,
+              padding: 0,
               transition: "color 0.2s",
             }}
             onMouseEnter={(e) =>
@@ -148,6 +160,38 @@ export default function Navbar() {
                 ? "var(--text-mid)"
                 : "rgba(250,247,242,0.8)")
             }
+          >
+            Wall of Love
+          </button>
+
+          {/* Offerings Link */}
+          <a
+            href="/offerings"
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 13,
+              fontWeight: 600,
+              color: scrolled || !isHome ? "var(--indigo)" : "var(--ivory)",
+              border: scrolled || !isHome ? "1.5px solid rgba(28,31,74,0.15)" : "1.5px solid rgba(250,247,242,0.3)",
+              padding: "7px 18px",
+              borderRadius: 100,
+              textDecoration: "none",
+              letterSpacing: 0.5,
+              transition: "all 0.2s ease",
+              background: "transparent",
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget;
+              el.style.background = scrolled || !isHome ? "var(--indigo)" : "var(--ivory)";
+              el.style.color = scrolled || !isHome ? "var(--ivory)" : "var(--indigo)";
+              el.style.borderColor = scrolled || !isHome ? "var(--indigo)" : "var(--ivory)";
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget;
+              el.style.background = "transparent";
+              el.style.color = scrolled || !isHome ? "var(--indigo)" : "rgba(250,247,242,0.85)";
+              el.style.borderColor = scrolled || !isHome ? "rgba(28,31,74,0.15)" : "rgba(250,247,242,0.3)";
+            }}
           >
             Offerings
           </a>
@@ -271,6 +315,35 @@ export default function Navbar() {
               {l.label}
             </a>
           ))}
+
+          {/* Wall of Love Link */}
+          <button
+            onClick={() => {
+              setMenuOpen(false);
+              if (isHome) {
+                const el = document.getElementById("Testimonials");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              } else {
+                window.location.href = "/#Testimonials";
+              }
+            }}
+            style={{
+              color: "var(--text-dark)",
+              textDecoration: "none",
+              fontSize: 16,
+              fontWeight: 500,
+              padding: "10px 0",
+              borderBottom: "1px solid rgba(28,31,74,0.06)",
+              fontFamily: "'DM Sans', sans-serif",
+              background: "none",
+              border: "none",
+              textAlign: "left",
+              width: "100%",
+              cursor: "pointer",
+            }}
+          >
+            Wall of Love
+          </button>
 
           {/* Offerings Link */}
           <a
