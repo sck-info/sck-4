@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { paymentQrs } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
-import { uploadImages } from "@/lib/cloudinaryUpload";
+import { uploadImages, deleteImage } from "@/lib/cloudinaryUpload";
 
 export async function PATCH(
   req: Request,
@@ -16,6 +16,18 @@ export async function PATCH(
     }
 
     const { id } = await params;
+    
+    // Fetch existing QR first to verify and get old image URL
+    const existing = await db
+      .select()
+      .from(paymentQrs)
+      .where(eq(paymentQrs.id, id))
+      .limit(1);
+
+    if (existing.length === 0) {
+      return NextResponse.json({ error: "QR code not found" }, { status: 404 });
+    }
+
     const contentType = req.headers.get("content-type") || "";
     let name: string | undefined = undefined;
     let qrImageUrl: string | undefined = undefined;
@@ -24,14 +36,22 @@ export async function PATCH(
       const formData = await req.formData();
       if (formData.has("name")) name = formData.get("name") as string;
       const file = formData.get("file") as File | null;
-      if (file) {
+      if (file && file.size > 0) {
         const urls = await uploadImages([file], "qrs");
         qrImageUrl = urls[0];
+
+        // Clean up old QR image from Cloudinary
+        if (existing[0].qrImageUrl) {
+          await deleteImage(existing[0].qrImageUrl);
+        }
       }
     } else {
       const body = await req.json();
       name = body.name;
       qrImageUrl = body.qrImageUrl;
+      if (qrImageUrl && qrImageUrl !== existing[0].qrImageUrl && existing[0].qrImageUrl) {
+        await deleteImage(existing[0].qrImageUrl);
+      }
     }
 
     const updateFields: any = {};
@@ -47,10 +67,6 @@ export async function PATCH(
       .set(updateFields)
       .where(eq(paymentQrs.id, id))
       .returning();
-
-    if (!updatedQR) {
-      return NextResponse.json({ error: "QR code not found" }, { status: 404 });
-    }
 
     return NextResponse.json({ success: true, data: updatedQR });
   } catch (err) {
@@ -78,6 +94,11 @@ export async function DELETE(
 
     if (!deletedQR) {
       return NextResponse.json({ error: "QR code not found" }, { status: 404 });
+    }
+
+    // Clean up old QR image from Cloudinary
+    if (deletedQR.qrImageUrl) {
+      await deleteImage(deletedQR.qrImageUrl);
     }
 
     return NextResponse.json({ success: true, data: deletedQR });

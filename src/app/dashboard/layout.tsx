@@ -298,6 +298,7 @@ export default function DashboardLayout({
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [profileName, setProfileName] = useState(session?.user?.name || "User");
   const [profileEmail, setProfileEmail] = useState(session?.user?.email || "");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   const fetchProfile = React.useCallback(async () => {
     try {
@@ -306,6 +307,7 @@ export default function DashboardLayout({
         const data = await res.json();
         setProfileName(data.name || "User");
         setProfileEmail(data.email || "");
+        setProfileImage(data.image || null);
       }
     } catch (err) {
       console.error("Failed to fetch profile in layout:", err);
@@ -339,7 +341,7 @@ export default function DashboardLayout({
         <AppSidebar
           onSignOutClick={() => setLogoutDialogOpen(true)}
           role={session?.user?.role}
-          sessionLoading={status === "loading"}
+          sessionLoading={status === "loading" && !session}
         />
 
         <SidebarInset className="min-w-0 h-screen flex flex-col overflow-hidden bg-[#faf7f2]">
@@ -359,8 +361,12 @@ export default function DashboardLayout({
                 href="/dashboard/profile"
                 className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white border border-[#e8dcc4]/60 shadow-xs hover:bg-[#faf7f2] transition-colors"
               >
-                <div className="w-7 h-7 rounded-full bg-[#b86a16] flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-xs">
-                  {profileName ? profileName[0] : "U"}
+                <div className="w-7 h-7 rounded-full bg-[#b86a16] flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-xs overflow-hidden">
+                  {profileImage ? (
+                    <img src={profileImage} alt={profileName} className="w-full h-full object-cover" />
+                  ) : (
+                    profileName ? profileName[0] : "U"
+                  )}
                 </div>
                 <div className="flex flex-col text-left min-w-0 max-w-[120px] sm:max-w-[180px]">
                   <span className="text-[11px] font-bold text-[#1c1f4a] leading-none truncate">

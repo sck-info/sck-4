@@ -70,7 +70,7 @@ export default function Testimonials() {
     fetchActiveFeedbacks();
   }, []);
 
-  useRealtime(["feedbacks"], fetchActiveFeedbacks);
+  useRealtime(["feedbacks", "users"], fetchActiveFeedbacks);
 
   const nextSlide = () =>
     setCurrentIndex((prev) => (prev + 1) % items.length);
@@ -306,6 +306,7 @@ function TestimonialCard({
     text: string;
     therapy: string;
     rating?: number;
+    avatar?: string | null;
   };
   active?: boolean;
 }) {
@@ -376,41 +377,70 @@ function TestimonialCard({
           marginTop: "auto",
           borderTop: "1px solid rgba(28,31,74,0.1)",
           paddingTop: "1rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
         }}
       >
-        <p
+        {/* Avatar or Letter block */}
+        <div
           style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 14,
-            fontWeight: 700,
-            color: "var(--indigo)",
-            marginBottom: 4,
+            width: 44,
+            height: 44,
+            borderRadius: "50%",
+            overflow: "hidden",
+            background: "rgba(28,31,74,0.05)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            border: "1px solid rgba(28,31,74,0.08)",
           }}
         >
-          {data.name}
-        </p>
+          {data.avatar ? (
+            <img
+              src={data.avatar}
+              alt={data.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <span
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 15,
+                fontWeight: 700,
+                color: "var(--indigo)",
+              }}
+            >
+              {data.name.charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
 
-        <p
-          style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 12,
-            color: "var(--text-mid)",
-            marginBottom: 6,
-          }}
-        >
-          {data.role}
-        </p>
+        <div>
+          <p
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 14,
+              fontWeight: 700,
+              color: "var(--indigo)",
+              marginBottom: 2,
+            }}
+          >
+            {data.name}
+          </p>
 
-        <p
-          style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 12,
-            color: "var(--gold)",
-            fontWeight: 600,
-          }}
-        >
-          {data.therapy}
-        </p>
+          <p
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 12,
+              color: "var(--text-mid)",
+              marginBottom: 2,
+            }}
+          >
+            {data.role} &bull; <span style={{ color: "var(--gold)", fontWeight: 600 }}>{data.therapy}</span>
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -16,6 +16,7 @@ export const users = pgTable("users", {
   isPhoneVerified: boolean("is_phone_verified").default(false),
   isActive: boolean("is_active").default(true).notNull(),
   roleId: uuid("role_id").notNull().references(() => roles.id),
+  image: text("image"),
   sessionVersion: integer("session_version").notNull().default(1),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

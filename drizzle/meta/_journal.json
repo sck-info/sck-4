@@ -92,6 +92,13 @@
       "when": 1785337537751,
       "tag": "0012_add_booking_drafts",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1785348134107,
+      "tag": "0013_add_image_to_users",
+      "breakpoints": true
     }
   ]
 }

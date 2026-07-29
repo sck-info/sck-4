@@ -13,6 +13,7 @@ export async function GET() {
         enhancedFeedback: feedbacks.enhancedFeedback,
         user: {
           name: users.name,
+          image: users.image,
         },
         subCategory: {
           name: offeringSubCategories.name,
@@ -31,6 +32,7 @@ export async function GET() {
       text: r.enhancedFeedback || r.rawFeedback,
       rating: r.rating,
       therapy: r.subCategory.name,
+      avatar: r.user.image || null,
     }));
 
     return NextResponse.json({ success: true, data: formatted });

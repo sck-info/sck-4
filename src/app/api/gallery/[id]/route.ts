@@ -3,21 +3,7 @@ import { db } from "@/lib/db";
 import { gallery } from "@/db/schema/gallery";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
-import { v2 as cloudinary } from "cloudinary";
-import { uploadImages } from "@/lib/cloudinaryUpload";
-
-cloudinary.config();
-
-function getPublicIdFromUrl(url: string): string | null {
-  try {
-    const parts = url.split("/upload/");
-    if (parts.length < 2) return null;
-    const versionRemoved = parts[1].replace(/^v\d+\//, "");
-    return versionRemoved.replace(/\.[^/.]+$/, "");
-  } catch {
-    return null;
-  }
-}
+import { uploadImages, deleteImage } from "@/lib/cloudinaryUpload";
 
 export async function PUT(
   request: Request,
@@ -61,9 +47,8 @@ export async function PUT(
         imageUrl = urls[0];
 
         // Delete old image in Cloudinary
-        const oldPublicId = getPublicIdFromUrl(oldItem.imageUrl);
-        if (oldPublicId) {
-          await cloudinary.uploader.destroy(oldPublicId, { invalidate: true });
+        if (oldItem.imageUrl) {
+          await deleteImage(oldItem.imageUrl);
         }
       }
     }
@@ -113,9 +98,8 @@ export async function DELETE(
     }
 
     // Delete image asset from Cloudinary
-    const publicId = getPublicIdFromUrl(deletedItem.imageUrl);
-    if (publicId) {
-      await cloudinary.uploader.destroy(publicId, { invalidate: true });
+    if (deletedItem.imageUrl) {
+      await deleteImage(deletedItem.imageUrl);
     }
 
     return NextResponse.json({ message: "Gallery item deleted successfully" });

@@ -22,6 +22,7 @@ export async function GET() {
         gender: users.gender,
         dateOfBirth: users.dateOfBirth,
         age: users.age,
+        image: users.image,
         isPhoneVerified: users.isPhoneVerified,
         roleId: users.roleId,
       })
@@ -40,6 +41,8 @@ export async function GET() {
   }
 }
 
+import { uploadImages, deleteImage } from "@/lib/cloudinaryUpload";
+
 export async function PATCH(req: Request) {
   try {
     const session = await auth();
@@ -47,11 +50,40 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { name, gender, dateOfBirth, age, currentPassword, newPassword } = body;
+    const contentType = req.headers.get("content-type") || "";
+    let name: string | undefined = undefined;
+    let gender: string | undefined = undefined;
+    let dateOfBirth: string | undefined = undefined;
+    let age: number | undefined = undefined;
+    let currentPassword: string | undefined = undefined;
+    let newPassword: string | undefined = undefined;
+    let deletePhoto: string | undefined = undefined;
+    let file: File | null = null;
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      name = (formData.get("name") as string) || undefined;
+      gender = (formData.get("gender") as string) || undefined;
+      dateOfBirth = (formData.get("dateOfBirth") as string) || undefined;
+      const rawAge = formData.get("age") as string;
+      if (rawAge) age = parseInt(rawAge);
+      currentPassword = (formData.get("currentPassword") as string) || undefined;
+      newPassword = (formData.get("newPassword") as string) || undefined;
+      deletePhoto = (formData.get("deletePhoto") as string) || undefined;
+      file = formData.get("file") as File | null;
+    } else {
+      const body = await req.json();
+      name = body.name;
+      gender = body.gender;
+      dateOfBirth = body.dateOfBirth;
+      if (body.age !== undefined) age = parseInt(body.age);
+      currentPassword = body.currentPassword;
+      newPassword = body.newPassword;
+      deletePhoto = body.deletePhoto;
+    }
 
     const user = await db
-      .select({ id: users.id, password: users.password })
+      .select({ id: users.id, password: users.password, image: users.image })
       .from(users)
       .where(eq(users.id, session.user.id))
       .limit(1);
@@ -66,6 +98,22 @@ export async function PATCH(req: Request) {
     if (gender !== undefined) updates.gender = gender;
     if (dateOfBirth !== undefined) updates.dateOfBirth = dateOfBirth;
     if (age !== undefined) updates.age = age;
+
+    // Handle Cloudinary Image Deletion or Replacement
+    if (deletePhoto === "true") {
+      updates.image = null;
+      if (user[0].image) {
+        await deleteImage(user[0].image);
+      }
+    } else if (file && file.size > 0) {
+      const urls = await uploadImages([file], "profiles");
+      if (urls.length > 0) {
+        updates.image = urls[0];
+        if (user[0].image) {
+          await deleteImage(user[0].image);
+        }
+      }
+    }
 
     if (newPassword) {
       if (!currentPassword) {
@@ -96,6 +144,7 @@ export async function PATCH(req: Request) {
         gender: users.gender,
         dateOfBirth: users.dateOfBirth,
         age: users.age,
+        image: users.image,
       });
 
     return NextResponse.json(updated[0]);

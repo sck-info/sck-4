@@ -123,3 +123,16 @@ export async function uploadImages(
 
   return urls;
 }
+
+export async function deleteImage(url: string): Promise<void> {
+  try {
+    const match = url.match(/\/upload\/(?:v\d+\/)?(sck\/[^\.]+)/) || url.match(/\/upload\/(?:v\d+\/)?([^\.]+)/);
+    if (match && match[1]) {
+      const publicId = match[1];
+      await cloudinary.uploader.destroy(publicId);
+      console.log(`Successfully deleted publicId: ${publicId} from Cloudinary`);
+    }
+  } catch (err) {
+    console.error("Failed to delete image from Cloudinary:", err);
+  }
+}
