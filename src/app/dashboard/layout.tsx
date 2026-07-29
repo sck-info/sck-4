@@ -22,6 +22,7 @@ import {
   Calendar,
   ClipboardList,
   Star,
+  AlertCircle,
 } from "lucide-react";
 import {
   Sidebar,
@@ -55,6 +56,7 @@ const ADMIN_MENU_SECTIONS = [
     items: [
       { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
       { name: "Bookings Queue", href: "/dashboard/bookings", icon: ClipboardList },
+      { name: "Abandoned Bookings", href: "/dashboard/bookings/abandoned", icon: AlertCircle },
       { name: "Announce Slots", href: "/dashboard/slots", icon: Calendar },
     ],
   },

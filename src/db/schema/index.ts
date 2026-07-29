@@ -17,6 +17,7 @@ export * from "./slot_locations_map";
 export * from "./bookings";
 export * from "./feedbacks";
 export * from "./scheduled_messages";
+export * from "./booking_drafts";
 
 
 

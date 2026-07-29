@@ -93,13 +93,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "End time must be greater than start time" }, { status: 400 });
     }
 
-    // Double Booking Check: Query if there is an overlapping slot on the same date
+    // Double Booking Check: Query if there is an overlapping slot on the same date irrespective of subcategory
     const clashingSlots = await db
       .select()
       .from(offeringSlots)
       .where(
         and(
-          eq(offeringSlots.subCategoryId, subCategoryId),
           eq(offeringSlots.slotDate, slotDate),
           sql`${offeringSlots.status} != 'suspended'`,
           sql`${offeringSlots.startTime} < ${endTime}::time`,
@@ -109,7 +108,7 @@ export async function POST(req: Request) {
 
     if (clashingSlots.length > 0) {
       return NextResponse.json(
-        { error: "A slot already exists for this offering on the same date and overlapping time interval!" },
+        { error: "A slot already exists on the same date and overlapping time interval!" },
         { status: 400 }
       );
     }

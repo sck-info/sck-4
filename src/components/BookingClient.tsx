@@ -182,6 +182,63 @@ export default function BookingClient({
   useRealtime(["sub_category_questions", "form_questions"], reloadQuestions);
   useRealtime(["offering_sub_categories"], reloadSubCategory);
 
+  // Debounced Autosave Effect for Abandoned Lead Recovery
+  useEffect(() => {
+    if (status !== "authenticated" || !session?.user?.id) return;
+
+    const hasResponses = Object.keys(formResponses).length > 0;
+    const hasSlot = !!selectedSlot;
+    const hasFormat = !!selectedFormat;
+    const hasLocation = !!selectedLocationId;
+
+    if (!hasResponses && !hasSlot && !hasFormat && !hasLocation) return;
+
+    const mappedResponses = { ...formResponses };
+    for (const qId of Object.keys(mappedResponses)) {
+      const val = mappedResponses[qId];
+      if (
+        otherResponses[qId] &&
+        (val === "Other" || (Array.isArray(val) && val.includes("Other")))
+      ) {
+        mappedResponses[qId] = {
+          selected: val,
+          customValue: otherResponses[qId],
+        };
+      }
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      try {
+        await fetch("/api/bookings/autosave", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            subCategoryId: subCategory.id,
+            slotId: selectedSlot?.id || null,
+            selectedFormat: selectedFormat || null,
+            selectedLocationId: selectedLocationId || null,
+            formResponses: mappedResponses,
+          }),
+        });
+      } catch (err) {
+        console.warn("Failed to autosave booking draft:", err);
+      }
+    }, 2000);
+
+    return () => clearTimeout(delayDebounce);
+  }, [
+    formResponses,
+    otherResponses,
+    selectedSlot,
+    selectedFormat,
+    selectedLocationId,
+    status,
+    session?.user?.id,
+    subCategory.id,
+  ]);
+
   // Month navigation calculations
   const nextMonth = () => {
     if (currentMonth === 11) {

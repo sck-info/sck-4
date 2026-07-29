@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { bookings, offeringSlots, offeringSubCategories, users } from "@/db/schema";
+import { bookings, offeringSlots, offeringSubCategories, users, bookingDrafts } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, and, gt } from "drizzle-orm";
 import { uploadImages } from "@/lib/cloudinaryUpload";
@@ -127,6 +127,16 @@ export async function POST(req: Request) {
           .set({ status: "booked" as any })
           .where(eq(offeringSlots.id, slotId));
       }
+
+      // Delete draft registration to clean up abandoned leads
+      await tx
+        .delete(bookingDrafts)
+        .where(
+          and(
+            eq(bookingDrafts.userId, session.user.id),
+            eq(bookingDrafts.subCategoryId, subCategoryId)
+          )
+        );
 
       return res;
     });

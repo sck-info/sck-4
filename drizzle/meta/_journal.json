@@ -85,6 +85,13 @@
       "when": 1785335395746,
       "tag": "0011_simplify_scheduled_messages",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1785337537751,
+      "tag": "0012_add_booking_drafts",
+      "breakpoints": true
     }
   ]
 }
