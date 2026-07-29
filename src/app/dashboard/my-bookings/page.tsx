@@ -31,7 +31,10 @@ function SeekerBookingsContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const tabFilter = (searchParams.get("tab") || "all") as "all" | "active" | "past";
+  const tabFilter = (searchParams.get("tab") || "all") as
+    | "all"
+    | "active"
+    | "past";
   const page = Number(searchParams.get("page") || "1");
 
   const [bookings, setBookings] = useState<any[]>([]);
@@ -40,7 +43,9 @@ function SeekerBookingsContent() {
   const [firstLoad, setFirstLoad] = useState(true);
   const [sortedQuestions, setSortedQuestions] = useState<any[]>([]);
 
-  const [viewResponsesBooking, setViewResponsesBooking] = useState<any | null>(null);
+  const [viewResponsesBooking, setViewResponsesBooking] = useState<any | null>(
+    null,
+  );
   const [allQuestions, setAllQuestions] = useState<Record<string, string>>({});
   const [cancelBooking, setCancelBooking] = useState<any | null>(null);
   const [cancelReason, setCancelReason] = useState("");
@@ -56,7 +61,9 @@ function SeekerBookingsContent() {
     }
     const fetchSortedQuestions = async () => {
       try {
-        const subId = viewResponsesBooking.subCategoryId || viewResponsesBooking.subCategory?.id;
+        const subId =
+          viewResponsesBooking.subCategoryId ||
+          viewResponsesBooking.subCategory?.id;
         if (!subId) return;
         const res = await fetch(`/api/sub-categories/${subId}/questions`);
         if (res.ok) {
@@ -83,26 +90,32 @@ function SeekerBookingsContent() {
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const fetchBookings = useCallback(async (isSilent = false) => {
-    if (!isSilent) {
-      setLoading(true);
-    }
-    try {
-      const groupParam = tabFilter !== "all" ? `&statusGroup=${tabFilter}` : "";
-      const res = await fetch(`/api/bookings?page=${page}&limit=5${groupParam}`);
-      if (!res.ok) throw new Error("Failed to load bookings");
-      const json = await res.json();
-      
-      setBookings(json.data || []);
-      setTotalPages(json.pagination?.totalPages || 1);
-    } catch (err) {
-      console.error(err);
-      toast.error("Error loading your bookings.");
-    } finally {
-      setLoading(false);
-      setFirstLoad(false);
-    }
-  }, [page, tabFilter]);
+  const fetchBookings = useCallback(
+    async (isSilent = false) => {
+      if (!isSilent) {
+        setLoading(true);
+      }
+      try {
+        const groupParam =
+          tabFilter !== "all" ? `&statusGroup=${tabFilter}` : "";
+        const res = await fetch(
+          `/api/bookings?page=${page}&limit=5${groupParam}`,
+        );
+        if (!res.ok) throw new Error("Failed to load bookings");
+        const json = await res.json();
+
+        setBookings(json.data || []);
+        setTotalPages(json.pagination?.totalPages || 1);
+      } catch (err) {
+        console.error(err);
+        toast.error("Error loading your bookings.");
+      } finally {
+        setLoading(false);
+        setFirstLoad(false);
+      }
+    },
+    [page, tabFilter],
+  );
 
   useEffect(() => {
     fetchBookings(firstLoad);
@@ -127,7 +140,7 @@ function SeekerBookingsContent() {
     fetchQuestions();
   }, []);
 
-  useRealtime(["bookings"], () => fetchBookings(true));
+  useRealtime(["bookings", "feedbacks"], () => fetchBookings(true));
 
   const handleCancelSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,11 +155,15 @@ function SeekerBookingsContent() {
       const res = await fetch("/api/bookings/cancel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingId: cancelBooking.id, reason: cancelReason }),
+        body: JSON.stringify({
+          bookingId: cancelBooking.id,
+          reason: cancelReason,
+        }),
       });
 
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Failed to submit cancellation request");
+      if (!res.ok)
+        throw new Error(json.error || "Failed to submit cancellation request");
 
       toast.success("Cancellation request submitted successfully.");
       setCancelBooking(null);
@@ -204,7 +221,9 @@ function SeekerBookingsContent() {
           My Booked Sessions
         </h1>
         <p className="text-xs text-[#5a5e7a] leading-relaxed max-w-lg font-sans">
-          Browse through all active and past sessions. You can inspect questionnaire answers, request cancellations, or submit feedback for completed slots below.
+          Browse through all active and past sessions. You can inspect
+          questionnaire answers, request cancellations, or submit feedback for
+          completed slots below.
         </p>
       </div>
 
@@ -221,7 +240,11 @@ function SeekerBookingsContent() {
                   : "border-transparent text-[#5a5e7a] hover:text-[#1c1f4a] hover:border-[#e8dcc4]"
               }`}
             >
-              {tab === "all" ? "✦ All Bookings" : tab === "active" ? "◉ Active Sessions" : "✔ Past Sessions"}
+              {tab === "all"
+                ? "✦ All Bookings"
+                : tab === "active"
+                  ? "◉ Active Sessions"
+                  : "✔ Past Sessions"}
             </button>
           );
         })}
@@ -230,12 +253,15 @@ function SeekerBookingsContent() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 bg-white/40 border border-dashed border-[#e8dcc4] rounded-3xl">
           <Loader2 className="animate-spin text-[#b86a16] mb-3" size={28} />
-          <p className="text-xs text-[#5a5e7a]">Synchronizing bookings queue...</p>
+          <p className="text-xs text-[#5a5e7a]">
+            Synchronizing bookings queue...
+          </p>
         </div>
       ) : bookings.length === 0 ? (
         <div className="border border-dashed border-[#e8dcc4] bg-white/40 p-16 rounded-[2rem] text-center max-w-2xl mx-auto space-y-4">
           <p className="text-sm text-[#5a5e7a] font-medium leading-relaxed">
-            No sessions discovered in this filter. Explore our sessions page to register for a timing slot.
+            No sessions discovered in this filter. Explore our sessions page to
+            register for a timing slot.
           </p>
           <Button
             onClick={() => router.push("/offerings")}
@@ -247,17 +273,24 @@ function SeekerBookingsContent() {
       ) : (
         <div className="space-y-6">
           {bookings.map((booking) => {
-            const hasFeedback = booking.feedback !== null && booking.feedback !== undefined;
+            const hasFeedback =
+              booking.feedback !== null && booking.feedback !== undefined;
             const statusTheme =
               booking.status === "confirmed"
                 ? { bg: "bg-[#6b8f71]/10 text-[#6b8f71]", label: "Confirmed" }
                 : booking.status === "pending"
-                ? { bg: "bg-[#b86a16]/10 text-[#b86a16]", label: "Pending Review" }
-                : booking.status === "cancellation_pending"
-                ? { bg: "bg-red-50 text-red-600 border border-red-200/50", label: "Cancellation Request Pending" }
-                : booking.status === "cancelled"
-                ? { bg: "bg-gray-100 text-gray-400", label: "Cancelled" }
-                : { bg: "bg-blue-50 text-blue-600", label: "Completed" };
+                  ? {
+                      bg: "bg-[#b86a16]/10 text-[#b86a16]",
+                      label: "Pending Review",
+                    }
+                  : booking.status === "cancellation_pending"
+                    ? {
+                        bg: "bg-red-50 text-red-600 border border-red-200/50",
+                        label: "Cancellation Request Pending",
+                      }
+                    : booking.status === "cancelled"
+                      ? { bg: "bg-gray-100 text-gray-400", label: "Cancelled" }
+                      : { bg: "bg-blue-50 text-blue-600", label: "Completed" };
 
             return (
               <div
@@ -266,12 +299,16 @@ function SeekerBookingsContent() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#faf7f2] pb-4">
                   <div className="space-y-1">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide ${statusTheme.bg}`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide ${statusTheme.bg}`}
+                    >
                       {statusTheme.label}
                     </span>
-                    <h3 className="text-lg font-bold text-[#1c1f4a] font-display">{booking.subCategory.name}</h3>
+                    <h3 className="text-lg font-bold text-[#1c1f4a] font-display">
+                      {booking.subCategory.name}
+                    </h3>
                   </div>
-                  
+
                   {booking.slot ? (
                     <div className="text-xs text-[#5a5e7a] font-medium space-y-1">
                       <div className="flex items-center gap-1.5 font-bold">
@@ -280,7 +317,10 @@ function SeekerBookingsContent() {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5 text-[#b86a16]" />
-                        {formatTimeRange(booking.slot.startTime, booking.slot.endTime)}
+                        {formatTimeRange(
+                          booking.slot.startTime,
+                          booking.slot.endTime,
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -292,8 +332,12 @@ function SeekerBookingsContent() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-[#5a5e7a]">
                   <div className="space-y-1.5">
-                    <div className="font-bold text-[#1c1f4a]">Format specifics:</div>
-                    <div className="capitalize">{booking.selectedFormat || "To be Scheduled"}</div>
+                    <div className="font-bold text-[#1c1f4a]">
+                      Format specifics:
+                    </div>
+                    <div className="capitalize">
+                      {booking.selectedFormat || "To be Scheduled"}
+                    </div>
                     {booking.paymentReceiptUrl && (
                       <div className="pt-1.5">
                         <a
@@ -310,29 +354,42 @@ function SeekerBookingsContent() {
 
                   {booking.adminCancellationReason && (
                     <div className="bg-red-50/50 border border-red-100 p-3 rounded-xl">
-                      <span className="font-bold text-red-700 block mb-0.5">Cancellation Reason:</span>
-                      <span className="text-red-600">{booking.adminCancellationReason}</span>
+                      <span className="font-bold text-red-700 block mb-0.5">
+                        Cancellation Reason:
+                      </span>
+                      <span className="text-red-600">
+                        {booking.adminCancellationReason}
+                      </span>
                     </div>
                   )}
 
-                  {booking.userCancellationReason && booking.status === "cancellation_pending" && (
-                    <div className="bg-orange-50/30 border border-orange-100 p-3 rounded-xl">
-                      <span className="font-bold text-orange-700 block mb-0.5">Your Cancellation Reason:</span>
-                      <span className="text-[#5a5e7a]">{booking.userCancellationReason}</span>
-                    </div>
-                  )}
+                  {booking.userCancellationReason &&
+                    booking.status === "cancellation_pending" && (
+                      <div className="bg-orange-50/30 border border-orange-100 p-3 rounded-xl">
+                        <span className="font-bold text-orange-700 block mb-0.5">
+                          Your Cancellation Reason:
+                        </span>
+                        <span className="text-[#5a5e7a]">
+                          {booking.userCancellationReason}
+                        </span>
+                      </div>
+                    )}
                 </div>
 
                 {booking.status === "completed" && hasFeedback && (
-                  <div className="bg-[#faf7f2] border border-[#e8dcc4]/50 rounded-2xl p-4 space-y-2">
+                  <div className="bg-[#faf7f2] border border-[#e8dcc4]/50 rounded-2xl p-4 space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="text-[10px] uppercase font-bold text-[#b86a16] tracking-wider">Your Submitted Feedback</div>
+                      <div className="text-[10px] uppercase font-bold text-[#b86a16] tracking-wider">
+                        Your Submitted Feedback
+                      </div>
                       <div className="flex gap-0.5 text-xs text-[#b86a16]">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star
                             key={i}
                             className={`w-3.5 h-3.5 ${
-                              i < (booking.feedback?.rating || 0) ? "fill-[#b86a16]" : "opacity-30"
+                              i < (booking.feedback?.rating || 0)
+                                ? "fill-[#b86a16]"
+                                : "opacity-30"
                             }`}
                           />
                         ))}
@@ -341,6 +398,17 @@ function SeekerBookingsContent() {
                     <p className="text-xs text-[#5a5e7a] leading-relaxed italic">
                       &ldquo;{booking.feedback?.rawFeedback}&rdquo;
                     </p>
+                    {booking.feedback?.enhancedFeedback && (
+                      <div className="pt-3 border-t border-dashed border-[#e8dcc4]/60 space-y-1.5">
+                        <span className="inline-flex items-center gap-1 text-[10px] uppercase font-extrabold text-teal-700 tracking-wider">
+                          Featured on the landing page for improved readability
+                          :{" "}
+                        </span>
+                        <p className="text-xs text-teal-800 leading-relaxed font-medium italic bg-teal-50/40 p-2.5 rounded-xl border border-teal-100/50">
+                          &ldquo;{booking.feedback.enhancedFeedback}&rdquo;
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -352,7 +420,8 @@ function SeekerBookingsContent() {
                     <Eye className="w-3.5 h-3.5" /> View Form Responses
                   </Button>
 
-                  {(booking.status === "pending" || booking.status === "confirmed") && (
+                  {(booking.status === "pending" ||
+                    booking.status === "confirmed") && (
                     <Button
                       onClick={() => setCancelBooking(booking)}
                       className="bg-transparent hover:bg-red-50 text-red-600 border border-red-100 rounded-full h-8 px-4 text-[11px] font-bold cursor-pointer"
@@ -398,16 +467,24 @@ function SeekerBookingsContent() {
         </div>
       )}
 
-      <Dialog open={viewResponsesBooking !== null} onOpenChange={(open) => !open && setViewResponsesBooking(null)}>
+      <Dialog
+        open={viewResponsesBooking !== null}
+        onOpenChange={(open) => !open && setViewResponsesBooking(null)}
+      >
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
-            <DialogTitle className="text-white text-md font-bold font-display">Submitted Questionnaire Responses</DialogTitle>
+            <DialogTitle className="text-white text-md font-bold font-display">
+              Submitted Questionnaire Responses
+            </DialogTitle>
           </DialogHeader>
 
           {viewResponsesBooking && (
             <div className="space-y-4 mt-4 max-h-[350px] overflow-y-auto pr-1">
-              {Object.keys(viewResponsesBooking.formResponses || {}).length === 0 ? (
-                <p className="text-xs text-[#5a5e7a] italic text-center py-4">No questionnaire responses recorded.</p>
+              {Object.keys(viewResponsesBooking.formResponses || {}).length ===
+              0 ? (
+                <p className="text-xs text-[#5a5e7a] italic text-center py-4">
+                  No questionnaire responses recorded.
+                </p>
               ) : sortedQuestions.length > 0 ? (
                 sortedQuestions.map((q) => {
                   const ans = viewResponsesBooking.formResponses[q.id];
@@ -431,15 +508,24 @@ function SeekerBookingsContent() {
                   }
 
                   return (
-                    <div key={q.id} className="border-b border-[#e8dcc4]/30 pb-3 last:border-0 last:pb-0">
+                    <div
+                      key={q.id}
+                      className="border-b border-[#e8dcc4]/30 pb-3 last:border-0 last:pb-0"
+                    >
                       <Label className="text-xs font-bold text-[#1c1f4a] block mb-1">
                         {q.fieldLabel}:
                       </Label>
                       <div className="text-xs text-[#5a5e7a] leading-relaxed bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                        {displayAns || <span className="text-gray-300 italic">No response</span>}
+                        {displayAns || (
+                          <span className="text-gray-300 italic">
+                            No response
+                          </span>
+                        )}
                         {customVal && (
                           <div className="mt-1.5 pt-1.5 border-t border-dashed border-gray-200">
-                            <span className="font-bold text-[#b86a16] block text-[9px] uppercase tracking-wider mb-0.5">Custom Value:</span>
+                            <span className="font-bold text-[#b86a16] block text-[9px] uppercase tracking-wider mb-0.5">
+                              Custom Value:
+                            </span>
                             <span className="text-[#1c1f4a]">{customVal}</span>
                           </div>
                         )}
@@ -448,59 +534,82 @@ function SeekerBookingsContent() {
                   );
                 })
               ) : (
-                Object.entries(viewResponsesBooking.formResponses).map(([qId, ans]) => {
-                  let displayAns = "";
-                  let customVal = "";
+                Object.entries(viewResponsesBooking.formResponses).map(
+                  ([qId, ans]) => {
+                    let displayAns = "";
+                    let customVal = "";
 
-                  if (ans && typeof ans === "object") {
-                    const obj = ans as any;
-                    if (Array.isArray(obj.selected)) {
-                      displayAns = obj.selected.join(", ");
+                    if (ans && typeof ans === "object") {
+                      const obj = ans as any;
+                      if (Array.isArray(obj.selected)) {
+                        displayAns = obj.selected.join(", ");
+                      } else {
+                        displayAns = String(obj.selected || "");
+                      }
+                      customVal = obj.customValue || "";
+                    } else if (Array.isArray(ans)) {
+                      displayAns = ans.join(", ");
                     } else {
-                      displayAns = String(obj.selected || "");
+                      displayAns = String(ans || "");
                     }
-                    customVal = obj.customValue || "";
-                  } else if (Array.isArray(ans)) {
-                    displayAns = ans.join(", ");
-                  } else {
-                    displayAns = String(ans || "");
-                  }
 
-                  return (
-                    <div key={qId} className="border-b border-[#e8dcc4]/30 pb-3 last:border-0 last:pb-0">
-                      <Label className="text-xs font-bold text-[#1c1f4a] block mb-1">
-                        {allQuestions[qId] || `Question (${qId.substring(0, 8)})`}:
-                      </Label>
-                      <div className="text-xs text-[#5a5e7a] leading-relaxed bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                        {displayAns || <span className="text-gray-300 italic">No response</span>}
-                        {customVal && (
-                          <div className="mt-1.5 pt-1.5 border-t border-dashed border-gray-200">
-                            <span className="font-bold text-[#b86a16] block text-[9px] uppercase tracking-wider mb-0.5">Custom Value:</span>
-                            <span className="text-[#1c1f4a]">{customVal}</span>
-                          </div>
-                        )}
+                    return (
+                      <div
+                        key={qId}
+                        className="border-b border-[#e8dcc4]/30 pb-3 last:border-0 last:pb-0"
+                      >
+                        <Label className="text-xs font-bold text-[#1c1f4a] block mb-1">
+                          {allQuestions[qId] ||
+                            `Question (${qId.substring(0, 8)})`}
+                          :
+                        </Label>
+                        <div className="text-xs text-[#5a5e7a] leading-relaxed bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                          {displayAns || (
+                            <span className="text-gray-300 italic">
+                              No response
+                            </span>
+                          )}
+                          {customVal && (
+                            <div className="mt-1.5 pt-1.5 border-t border-dashed border-gray-200">
+                              <span className="font-bold text-[#b86a16] block text-[9px] uppercase tracking-wider mb-0.5">
+                                Custom Value:
+                              </span>
+                              <span className="text-[#1c1f4a]">
+                                {customVal}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })
+                    );
+                  },
+                )
               )}
             </div>
           )}
         </DialogContent>
       </Dialog>
 
-      <Dialog open={cancelBooking !== null} onOpenChange={(open) => !open && setCancelBooking(null)}>
+      <Dialog
+        open={cancelBooking !== null}
+        onOpenChange={(open) => !open && setCancelBooking(null)}
+      >
         <DialogContent className="sm:max-w-[420px]">
           <DialogHeader className="bg-red-600 text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
-            <DialogTitle className="text-white text-md font-bold font-display">Confirm Cancellation Request</DialogTitle>
+            <DialogTitle className="text-white text-md font-bold font-display">
+              Confirm Cancellation Request
+            </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleCancelSubmit} className="space-y-4 mt-2">
             <p className="text-xs text-[#5a5e7a] leading-relaxed">
-              Are you sure you want to request cancellation for this timing slot? The team will review and confirm your cancellation details.
+              Are you sure you want to request cancellation for this timing
+              slot? The team will review and confirm your cancellation details.
             </p>
             <div className="space-y-2">
-              <Label className="text-xs font-bold text-[#1c1f4a]">Reason for Cancellation <span className="text-red-500">*</span></Label>
+              <Label className="text-xs font-bold text-[#1c1f4a]">
+                Reason for Cancellation <span className="text-red-500">*</span>
+              </Label>
               <textarea
                 required
                 rows={3}
@@ -525,26 +634,37 @@ function SeekerBookingsContent() {
                 disabled={actionLoading}
                 className="bg-red-600 hover:bg-red-700 text-white rounded-full h-9 px-4 text-xs font-semibold cursor-pointer flex items-center gap-1.5"
               >
-                {actionLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Submit Request
+                {actionLoading && (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                )}{" "}
+                Submit Request
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={feedbackBooking !== null} onOpenChange={(open) => !open && setFeedbackBooking(null)}>
+      <Dialog
+        open={feedbackBooking !== null}
+        onOpenChange={(open) => !open && setFeedbackBooking(null)}
+      >
         <DialogContent className="sm:max-w-[440px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
-            <DialogTitle className="text-white text-md font-bold font-display">Submit Session Feedback</DialogTitle>
+            <DialogTitle className="text-white text-md font-bold font-display">
+              Submit Session Feedback
+            </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleFeedbackSubmit} className="space-y-4 mt-2">
             <p className="text-xs text-[#5a5e7a] leading-relaxed">
-              We would love to know about your session experience. Please rate and review your session with Sharath Kancherla.
+              We would love to know about your session experience. Please rate
+              and review your session with Sharath Kancherla.
             </p>
 
             <div className="space-y-1.5 text-center py-2 bg-[#faf7f2]/60 rounded-2xl border border-[#e8dcc4]/30">
-              <Label className="text-xs font-bold text-[#1c1f4a] block">Your Rating</Label>
+              <Label className="text-xs font-bold text-[#1c1f4a] block">
+                Your Rating
+              </Label>
               <div className="flex justify-center gap-2 mt-1">
                 {[1, 2, 3, 4, 5].map((star) => {
                   const active = feedbackRating >= star;
@@ -555,7 +675,9 @@ function SeekerBookingsContent() {
                       onClick={() => setFeedbackRating(star)}
                       className="text-2xl cursor-pointer hover:scale-110 transition-transform p-0.5"
                     >
-                      <Star className={`w-7 h-7 ${active ? "text-[#b86a16] fill-[#b86a16]" : "text-gray-300"}`} />
+                      <Star
+                        className={`w-7 h-7 ${active ? "text-[#b86a16] fill-[#b86a16]" : "text-gray-300"}`}
+                      />
                     </button>
                   );
                 })}
@@ -563,7 +685,9 @@ function SeekerBookingsContent() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold text-[#1c1f4a]">Feedback Comments <span className="text-red-500">*</span></Label>
+              <Label className="text-xs font-bold text-[#1c1f4a]">
+                Feedback Comments <span className="text-red-500">*</span>
+              </Label>
               <textarea
                 required
                 rows={4}
@@ -588,7 +712,10 @@ function SeekerBookingsContent() {
                 disabled={actionLoading}
                 className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full h-9 px-4 text-xs font-semibold cursor-pointer flex items-center gap-1.5"
               >
-                {actionLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Submit Feedback
+                {actionLoading && (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                )}{" "}
+                Submit Feedback
               </Button>
             </div>
           </form>
@@ -604,7 +731,9 @@ export default function SeekerBookingsPage() {
       fallback={
         <div className="flex flex-col items-center justify-center py-20">
           <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium font-sans">Loading bookings tracker...</p>
+          <p className="text-xs text-[#5a5e7a] font-medium font-sans">
+            Loading bookings tracker...
+          </p>
         </div>
       }
     >

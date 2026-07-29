@@ -9,14 +9,18 @@ export function formatDate(date: string | Date | null | undefined): string {
       // Expecting "yyyy-MM-dd"
       const parts = date.split("-");
       if (parts.length === 3) {
-        d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        d = new Date(
+          parseInt(parts[0]),
+          parseInt(parts[1]) - 1,
+          parseInt(parts[2]),
+        );
       } else {
         d = new Date(date);
       }
     } else {
       d = date;
     }
-    
+
     if (isNaN(d.getTime())) return "TBD";
     return format(d, "dd-MMM-yyyy");
   } catch {
@@ -42,9 +46,12 @@ export function formatTimeStr(time: string | null | undefined): string {
   return `${cleanTime} IST`;
 }
 
-export function formatTimeRange(start: string | null | undefined, end: string | null | undefined): string {
+export function formatTimeRange(
+  start: string | null | undefined,
+  end: string | null | undefined,
+): string {
   if (!start || !end) return "TBD";
-  
+
   const formatSingle = (t: string) => {
     const clean = t.trim();
     const match = clean.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
@@ -60,6 +67,6 @@ export function formatTimeRange(start: string | null | undefined, end: string | 
 
   const formattedStart = formatSingle(start);
   const formattedEnd = formatSingle(end);
-  
+
   return `${formattedStart} - ${formattedEnd} IST`;
 }

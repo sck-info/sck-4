@@ -92,6 +92,7 @@ export async function GET(req: Request) {
           id: feedbacks.id,
           rating: feedbacks.rating,
           rawFeedback: feedbacks.rawFeedback,
+          enhancedFeedback: feedbacks.enhancedFeedback,
         },
       })
       .from(bookings)

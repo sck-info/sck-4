@@ -70,7 +70,7 @@ export default function Testimonials() {
     fetchActiveFeedbacks();
   }, []);
 
-  useRealtime(["session_feedbacks"], fetchActiveFeedbacks);
+  useRealtime(["feedbacks"], fetchActiveFeedbacks);
 
   const nextSlide = () =>
     setCurrentIndex((prev) => (prev + 1) % items.length);

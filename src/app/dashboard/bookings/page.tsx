@@ -254,7 +254,7 @@ function BookingsDashboardContent() {
   }, [fetchBookings, firstLoad]);
 
   // Real-time synchronization
-  useRealtime(["bookings"], () => fetchBookings(true));
+  useRealtime(["bookings", "feedbacks"], () => fetchBookings(true));
 
   // Filter switch handlers
   const handleFilterChange = (statusVal: string) => {

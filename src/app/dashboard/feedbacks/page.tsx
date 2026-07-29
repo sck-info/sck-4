@@ -121,7 +121,7 @@ function FeedbacksDashboardContent() {
   }, [fetchFeedbacks]);
 
   // Real-time synchronization
-  useRealtime(["session_feedbacks"], fetchFeedbacks);
+  useRealtime(["feedbacks"], fetchFeedbacks);
 
   // Toggle Showcase status (isActive)
   const handleToggleShowcase = async (item: FeedbackRow) => {
