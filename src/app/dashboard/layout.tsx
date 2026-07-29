@@ -14,8 +14,13 @@ import {
   Images,
   Camera,
   Users,
-  UserCircle,
   MessageSquare,
+  MapPin,
+  Grid,
+  Sliders,
+  Calendar,
+  ClipboardList,
+  Star,
 } from "lucide-react";
 import {
   Sidebar,
@@ -43,14 +48,40 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
-const ADMIN_MENU_ITEMS = [
-  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { name: "About Slides", href: "/dashboard/about-slides", icon: Images },
-  { name: "Metrics", href: "/dashboard/metrics", icon: TrendingUp },
-  { name: "Gallery", href: "/dashboard/gallery", icon: Camera },
-  { name: "Contacts", href: "/dashboard/contacts", icon: Contact },
-  { name: "Queries", href: "/dashboard/queries", icon: MessageSquare },
-  { name: "Users", href: "/dashboard/users", icon: Users },
+const ADMIN_MENU_SECTIONS = [
+  {
+    title: "Operations",
+    items: [
+      { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+      { name: "Bookings Queue", href: "/dashboard/bookings", icon: ClipboardList },
+      { name: "Announce Slots", href: "/dashboard/slots", icon: Calendar },
+    ],
+  },
+  {
+    title: "Offerings Config",
+    items: [
+      { name: "Offerings", href: "/dashboard/offerings", icon: Grid },
+      { name: "Form Builder", href: "/dashboard/form-builder", icon: Sliders },
+      { name: "Locations & QRs", href: "/dashboard/locations", icon: MapPin },
+      { name: "Feedbacks & Reviews", href: "/dashboard/feedbacks", icon: Star },
+    ],
+  },
+  {
+    title: "Website Content",
+    items: [
+      { name: "About Slides", href: "/dashboard/about-slides", icon: Images },
+      { name: "Metrics", href: "/dashboard/metrics", icon: TrendingUp },
+      { name: "Gallery", href: "/dashboard/gallery", icon: Camera },
+      { name: "Contacts", href: "/dashboard/contacts", icon: Contact },
+      { name: "Queries", href: "/dashboard/queries", icon: MessageSquare },
+    ],
+  },
+  {
+    title: "Access Control",
+    items: [
+      { name: "Users", href: "/dashboard/users", icon: Users },
+    ],
+  },
 ];
 
 const USER_MENU_ITEMS = [
@@ -102,8 +133,6 @@ function AppSidebar({
   const currentAvatarUrl =
     slides[currentSlideIndex]?.imageUrl || "/images/sck-lifeskills.jpeg";
 
-  const menuItems = role === "ADMIN" ? ADMIN_MENU_ITEMS : USER_MENU_ITEMS;
-
   const isExpanded = state === "expanded";
 
   return (
@@ -141,37 +170,79 @@ function AppSidebar({
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="py-6 px-2">
-        <SidebarMenu>
-          {menuItems.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-            return (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive}
-                  tooltip={item.name}
-                  className={`h-10 px-3 rounded-xl transition-all text-xs ${
-                    isActive
-                      ? "bg-[#b86a16] hover:bg-[#b86a16] text-white font-semibold shadow-sm"
-                      : "text-white/70 hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  <Link
-                    href={item.href}
-                    className="flex items-center gap-2.5 w-full"
+      <SidebarContent className="py-4 px-2 overflow-y-auto scrollbar">
+        {role === "ADMIN" ? (
+          ADMIN_MENU_SECTIONS.map((section, idx) => (
+            <div key={section.title} className={idx > 0 ? "mt-4" : ""}>
+              {isExpanded && (
+                <div className="px-3 text-[10px] uppercase font-bold text-white/40 tracking-wider mb-2">
+                  {section.title}
+                </div>
+              )}
+              <SidebarMenu>
+                {section.items.map((item) => {
+                  const isActive = pathname === item.href;
+                  const Icon = item.icon;
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={item.name}
+                        className={`h-9 px-3 rounded-xl transition-all text-xs ${
+                          isActive
+                            ? "bg-[#b86a16] hover:bg-[#b86a16] text-white font-semibold shadow-sm"
+                            : "text-white/70 hover:bg-white/10 hover:text-white"
+                        }`}
+                      >
+                        <Link
+                          href={item.href}
+                          className="flex items-center gap-2.5 w-full"
+                        >
+                          <Icon className="w-4 h-4 shrink-0" />
+                          {isExpanded && (
+                            <span className="truncate">{item.name}</span>
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </div>
+          ))
+        ) : (
+          <SidebarMenu>
+            {USER_MENU_ITEMS.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    tooltip={item.name}
+                    className={`h-9 px-3 rounded-xl transition-all text-xs ${
+                      isActive
+                        ? "bg-[#b86a16] hover:bg-[#b86a16] text-white font-semibold shadow-sm"
+                        : "text-white/70 hover:bg-white/10 hover:text-white"
+                    }`}
                   >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    {isExpanded && (
-                      <span className="truncate">{item.name}</span>
-                    )}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
-        </SidebarMenu>
+                    <Link
+                      href={item.href}
+                      className="flex items-center gap-2.5 w-full"
+                    >
+                      <Icon className="w-4 h-4 shrink-0" />
+                      {isExpanded && (
+                        <span className="truncate">{item.name}</span>
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-white/10 p-2 shrink-0 overflow-hidden">

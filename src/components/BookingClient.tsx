@@ -73,6 +73,8 @@ export default function BookingClient({
   // Form states
   const [formResponses, setFormResponses] = useState<Record<string, any>>({});
   const [otherResponses, setOtherResponses] = useState<Record<string, string>>({});
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -214,6 +216,12 @@ export default function BookingClient({
       }
     }
 
+    // Payment receipt validation
+    if (paymentQr && !receiptFile) {
+      setErrorMsg("Please upload your transaction screenshot receipt to complete registration.");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -229,16 +237,20 @@ export default function BookingClient({
         }
       }
 
+      // Build FormData payload to support file upload
+      const formData = new FormData();
+      formData.append("subCategoryId", subCategory.id);
+      if (selectedSlot?.id) formData.append("slotId", selectedSlot.id);
+      if (selectedFormat) formData.append("selectedFormat", selectedFormat);
+      if (selectedLocationId) formData.append("selectedLocationId", selectedLocationId);
+      formData.append("formResponses", JSON.stringify(mappedResponses));
+      if (receiptFile) {
+        formData.append("receiptFile", receiptFile);
+      }
+
       const res = await fetch("/api/bookings/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          subCategoryId: subCategory.id,
-          slotId: selectedSlot?.id || null,
-          selectedFormat,
-          selectedLocationId: selectedLocationId || null,
-          formResponses: mappedResponses,
-        }),
+        body: formData,
       });
 
       const json = await res.json();
@@ -708,7 +720,51 @@ export default function BookingClient({
                 alt={paymentQr.name}
                 style={{ width: 180, height: 180, objectFit: "contain", borderRadius: 10, border: "1px solid #ddd", background: "white", display: "block", margin: "0 auto 12px" }}
               />
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--gold)" }}>{paymentQr.name}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--gold)", display: "block", marginBottom: 20 }}>{paymentQr.name}</span>
+
+              {/* Upload Screenshot File Field */}
+              <div style={{ textAlign: "left", borderTop: "1px solid rgba(232,150,46,0.15)", paddingTop: 16 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--indigo)", display: "block", marginBottom: 6 }}>
+                  Upload Payment Screenshot Receipt <span style={{ color: "var(--gold)" }}>*</span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setReceiptFile(file);
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setReceiptPreview(reader.result as string);
+                      };
+                      reader.readAsDataURL(file);
+                    } else {
+                      setReceiptPreview(null);
+                    }
+                  }}
+                  style={{
+                    width: "100%",
+                    fontSize: 13,
+                    color: "var(--text-mid)",
+                    background: "white",
+                    padding: "8px 12px",
+                    border: "1px solid rgba(28,31,74,0.15)",
+                    borderRadius: 8,
+                    outline: "none",
+                  }}
+                />
+                {receiptPreview && (
+                  <div style={{ marginTop: 12, textAlign: "center" }}>
+                    <p style={{ fontSize: 11, color: "var(--text-mid)", marginBottom: 6 }}>Screenshot Preview:</p>
+                    <img
+                      src={receiptPreview}
+                      alt="Receipt Preview"
+                      style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 8, border: "1px dashed rgba(28,31,74,0.2)" }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

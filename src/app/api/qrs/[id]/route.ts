@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { paymentQrs } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
+import { uploadImages } from "@/lib/cloudinaryUpload";
 
 export async function PATCH(
   req: Request,
@@ -15,8 +16,23 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const body = await req.json();
-    const { name, qrImageUrl } = body;
+    const contentType = req.headers.get("content-type") || "";
+    let name: string | undefined = undefined;
+    let qrImageUrl: string | undefined = undefined;
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      if (formData.has("name")) name = formData.get("name") as string;
+      const file = formData.get("file") as File | null;
+      if (file) {
+        const urls = await uploadImages([file], "qrs");
+        qrImageUrl = urls[0];
+      }
+    } else {
+      const body = await req.json();
+      name = body.name;
+      qrImageUrl = body.qrImageUrl;
+    }
 
     const updateFields: any = {};
     if (name !== undefined) updateFields.name = name;

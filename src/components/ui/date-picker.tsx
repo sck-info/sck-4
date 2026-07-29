@@ -24,11 +24,12 @@ interface DatePickerProps {
   onChange: (date: Date | undefined) => void
   disabled?: boolean
   placeholder?: string
+  disabledDates?: (date: Date) => boolean
 }
 
 const currentYear = new Date().getFullYear()
 
-export function DatePicker({ value, onChange, disabled, placeholder = "Pick a date" }: DatePickerProps) {
+export function DatePicker({ value, onChange, disabled, placeholder = "Pick a date", disabledDates }: DatePickerProps) {
   const [month, setMonth] = useState<number>(value ? value.getMonth() : new Date().getMonth())
   const [year, setYear] = useState<number>(value ? value.getFullYear() : currentYear)
 
@@ -71,7 +72,7 @@ export function DatePicker({ value, onChange, disabled, placeholder = "Pick a da
           {value ? format(value, "PPP") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-4" align="start">
+      <PopoverContent className="w-auto p-4" align="start" side="top">
         <div className="flex gap-2 mb-3">
           <Select value={months[month]} onValueChange={handleMonthChange}>
             <SelectTrigger className="flex-1 text-xs" size="sm">
@@ -103,7 +104,7 @@ export function DatePicker({ value, onChange, disabled, placeholder = "Pick a da
             setMonth(d.getMonth())
             setYear(d.getFullYear())
           }}
-          disabled={(d: Date) => d > new Date() || d < new Date("1900-01-01")}
+          disabled={disabledDates || ((d: Date) => d > new Date() || d < new Date("1900-01-01"))}
         />
       </PopoverContent>
     </Popover>

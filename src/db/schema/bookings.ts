@@ -29,6 +29,7 @@ export const bookings = pgTable("bookings", {
     .references(() => sessionLocations.id),
   status: bookingStatusEnum("status").default("pending").notNull(),
   formResponses: jsonb("form_responses"),
+  paymentReceiptUrl: text("payment_receipt_url"),
   userCancellationReason: text("user_cancellation_reason"),
   adminCancellationReason: text("admin_cancellation_reason"),
   createdAt: timestamp("created_at").defaultNow(),

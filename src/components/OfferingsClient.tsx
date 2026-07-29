@@ -26,6 +26,48 @@ type Category = {
   subCategories: SubCategory[];
 };
 
+const CATEGORY_STYLES: Record<string, { color: string; lightColor: string; icon: string; hash: string }> = {
+  "Alternative Therapies": {
+    color: "#6B8F71",
+    lightColor: "#EAF2EB",
+    icon: "✦",
+    hash: "therapy",
+  },
+  "Jyothishya Consultations": {
+    color: "#C4796A",
+    lightColor: "#FAF0EE",
+    icon: "◈",
+    hash: "consultations",
+  },
+  "Music Classes": {
+    color: "#4A6FA5",
+    lightColor: "#EDF2FA",
+    icon: "♪",
+    hash: "classes",
+  },
+  "Mind & Body Workshops": {
+    color: "#C9873A",
+    lightColor: "#FDF4E8",
+    icon: "◉",
+    hash: "workshops",
+  },
+  "Satsangs": {
+    color: "#7A5E9A",
+    lightColor: "#F5F0FA",
+    icon: "♫",
+    hash: "satsangs",
+  },
+};
+
+const getCategoryStyle = (name: string) => {
+  return CATEGORY_STYLES[name] || {
+    color: "#b86a16",
+    lightColor: "rgba(232,150,46,0.08)",
+    icon: "✦",
+    hash: name.toLowerCase().replace(/\s+/g, "-"),
+  };
+};
+
 export default function OfferingsClient({ initialData }: { initialData: Category[] }) {
   const [categories, setCategories] = useState<Category[]>(initialData);
   const [activeTab, setActiveTab] = useState(0);
@@ -35,7 +77,10 @@ export default function OfferingsClient({ initialData }: { initialData: Category
     const updateFromHash = () => {
       const hash = window.location.hash.replace("#", "");
       if (!hash) return;
-      const index = categories.findIndex((c) => c.id === hash);
+      const index = categories.findIndex((c) => {
+        const style = getCategoryStyle(c.name);
+        return style.hash === hash || c.id === hash || c.name === decodeURIComponent(hash);
+      });
       if (index !== -1) {
         setActiveTab(index);
       }
@@ -112,7 +157,6 @@ export default function OfferingsClient({ initialData }: { initialData: Category
               <br />
               <span style={{ fontStyle: "italic", color: "var(--gold)" }}>Programmes</span>
             </h2>
-
             {/* Scheduling Note Card */}
             <div
               style={{
@@ -149,7 +193,7 @@ export default function OfferingsClient({ initialData }: { initialData: Category
                   lineHeight: 1.1,
                 }}
               >
-                Booking & Confirmation
+                Payment & Coordination
               </h4>
 
               <p
@@ -162,7 +206,8 @@ export default function OfferingsClient({ initialData }: { initialData: Category
                   fontWeight: 300,
                 }}
               >
-                Slots can be reserved starting from tomorrow. For sessions requiring bookings, your slot status will be updated to confirmed once reviewed.
+                Pricing is available in each registration form. After payment, our team will contact you within{" "}
+                <span style={{ color: "var(--gold)", fontWeight: 600 }}>48–72 hours</span> to confirm and schedule your session.
               </p>
             </div>
           </div>
@@ -170,300 +215,315 @@ export default function OfferingsClient({ initialData }: { initialData: Category
 
         {/* Tab Buttons */}
         <div style={{ display: "flex", gap: 8, marginBottom: "2.5rem", flexWrap: "wrap" }}>
-          {categories.map((c, i) => (
-            <button
-              key={c.id}
-              onClick={() => {
-                setActiveTab(i);
-                window.history.replaceState(null, "", `#${c.id}`);
-              }}
-              style={{
-                padding: "10px 24px",
-                borderRadius: 100,
-                border: activeTab === i ? "1.5px solid var(--gold)" : "1.5px solid rgba(28,31,74,0.12)",
-                background: activeTab === i ? "rgba(232,150,46,0.08)" : "transparent",
-                color: activeTab === i ? "var(--gold)" : "var(--text-mid)",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: 14,
-                fontWeight: activeTab === i ? 600 : 400,
-                cursor: "pointer",
-                transition: "all 0.2s",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <span>✦</span>
-              {c.name}
-            </button>
-          ))}
+          {categories.map((c, i) => {
+            const style = getCategoryStyle(c.name);
+            return (
+              <button
+                key={c.id}
+                onClick={() => {
+                  setActiveTab(i);
+                  window.history.replaceState(null, "", `#${style.hash}`);
+                }}
+                style={{
+                  padding: "10px 24px",
+                  borderRadius: 100,
+                  border: activeTab === i ? `1.5px solid ${style.color}` : "1.5px solid rgba(28,31,74,0.12)",
+                  background: activeTab === i ? style.lightColor : "transparent",
+                  color: activeTab === i ? style.color : "var(--text-mid)",
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: 14,
+                  fontWeight: activeTab === i ? 600 : 400,
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <span>{style.icon}</span>
+                {c.name}
+              </button>
+            );
+          })}
         </div>
 
         {/* Selected Category Panels */}
-        <div
-          id={activeCategory.id}
-          style={{
-            background: "white",
-            borderRadius: 24,
-            overflow: "hidden",
-            border: "1px solid rgba(28,31,74,0.06)",
-            boxShadow: "0 4px 40px rgba(28,31,74,0.05)",
-            scrollMarginTop: "100px",
-          }}
-        >
-          {/* Header Banner */}
-          <div
-            style={{
-              background: "var(--indigo)",
-              padding: "clamp(2rem, 4vw, 2.5rem) clamp(2rem, 4vw, 3rem)",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: 24,
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: 11,
-                  color: "rgba(255,255,255,0.7)",
-                  letterSpacing: 2,
-                  textTransform: "uppercase",
-                  marginBottom: 8,
-                }}
-              >
-                {activeCategory.subCategories.length} offering
-                {activeCategory.subCategories.length > 1 ? "s" : ""} available
-              </div>
-              <h3
-                style={{
-                  fontFamily: "'Cormorant Garamond', serif",
-                  fontSize: "clamp(28px, 4vw, 40px)",
-                  fontWeight: 400,
-                  color: "white",
-                  lineHeight: 1.1,
-                  marginBottom: 12,
-                }}
-              >
-                {activeCategory.name}
-              </h3>
-              {activeCategory.description && (
-                <p
-                  style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: 15,
-                    color: "rgba(255,255,255,0.75)",
-                    maxWidth: 600,
-                    lineHeight: 1.7,
-                    fontWeight: 300,
-                  }}
-                >
-                  {activeCategory.description}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Sanskrit Text & Meaning Quote Block */}
-          {activeCategory.sanskritText && (
+        {activeCategory && (() => {
+          const activeStyle = getCategoryStyle(activeCategory.name);
+          return (
             <div
+              id={activeStyle.hash}
               style={{
-                padding: "1.2rem 2rem",
-                background: "rgba(232,150,46,0.03)",
-                borderBottom: "1px solid rgba(28,31,74,0.05)",
-                textAlign: "center",
+                background: "white",
+                borderRadius: 24,
+                overflow: "hidden",
+                border: "1px solid rgba(28,31,74,0.06)",
+                boxShadow: "0 4px 40px rgba(28,31,74,0.05)",
+                scrollMarginTop: "100px",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: "0.5rem" }}>
-                <div style={{ width: 45, height: 1, background: "rgba(232,150,46,0.2)" }} />
-                <span style={{ color: "var(--gold)", fontSize: 12 }}>✦</span>
-                <div style={{ width: 45, height: 1, background: "rgba(232,150,46,0.2)" }} />
-              </div>
-
-              <p
+              {/* Header Banner */}
+              <div
                 style={{
-                  fontFamily: "'Cormorant Garamond', serif",
-                  fontSize: "clamp(18px, 2vw, 22px)",
-                  color: "var(--gold)",
-                  fontWeight: 500,
-                  lineHeight: 1.7,
-                  margin: "0 0 0.35rem 0",
+                  background: activeStyle.color,
+                  padding: "clamp(2rem, 4vw, 2.5rem) clamp(2rem, 4vw, 3rem)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 24,
                 }}
               >
-                {activeCategory.sanskritText}
-              </p>
+                <div>
+                  <div
+                    style={{
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: 11,
+                      color: "rgba(255,255,255,0.7)",
+                      letterSpacing: 2,
+                      textTransform: "uppercase",
+                      marginBottom: 8,
+                    }}
+                  >
+                    {activeCategory.subCategories.length} offering
+                    {activeCategory.subCategories.length > 1 ? "s" : ""} available
+                  </div>
+                  <h3
+                    style={{
+                      fontFamily: "'Cormorant Garamond', serif",
+                      fontSize: "clamp(28px, 4vw, 40px)",
+                      fontWeight: 400,
+                      color: "white",
+                      lineHeight: 1.1,
+                      marginBottom: 12,
+                    }}
+                  >
+                    {activeStyle.icon} {activeCategory.name}
+                  </h3>
+                  {activeCategory.description && (
+                    <p
+                      style={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: 15,
+                        color: "rgba(255,255,255,0.75)",
+                        maxWidth: 600,
+                        lineHeight: 1.7,
+                        fontWeight: 300,
+                        margin: 0,
+                      }}
+                    >
+                      {activeCategory.description}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-              {activeCategory.sanskritMeaning && (
-                <p
-                  style={{
-                    fontFamily: "'Cormorant Garamond', serif",
-                    fontSize: "clamp(13px, 1.3vw, 15px)",
-                    color: "var(--text-mid)",
-                    fontStyle: "italic",
-                    lineHeight: 1.5,
-                    maxWidth: 760,
-                    margin: "0 auto",
-                  }}
-                >
-                  {activeCategory.sanskritMeaning}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Sub-Category Offerings List Grid */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-              gap: 1,
-              background: "rgba(28,31,74,0.06)",
-            }}
-          >
-            {activeCategory.subCategories.map((sub) => {
-              const tagsArray: string[] = Array.isArray(sub.tags) ? sub.tags : [];
-              const topTagsArray: string[] = Array.isArray(sub.topTags) ? sub.topTags : [];
-
-              return (
+              {/* Sanskrit Text & Meaning Quote Block */}
+              {activeCategory.sanskritText && (
                 <div
-                  key={sub.id}
                   style={{
-                    background: "white",
-                    padding: "clamp(1.5rem, 3vw, 2rem)",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    gap: 20,
-                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                    padding: "1.2rem 2rem",
+                    background: activeStyle.lightColor,
+                    borderBottom: `1px solid ${activeStyle.color}25`,
+                    textAlign: "center",
                   }}
                 >
-                  <div>
-                    {/* Tags Badge list */}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-                      {topTagsArray.map((tag) => (
-                        <span
-                          key={tag}
-                          style={{
-                            fontFamily: "'DM Sans', sans-serif",
-                            fontSize: 10,
-                            color: "white",
-                            background: "var(--gold)",
-                            padding: "3px 8px",
-                            borderRadius: 4,
-                            fontWeight: 600,
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: "0.5rem" }}>
+                    <div style={{ width: 45, height: 1, background: `${activeStyle.color}35` }} />
+                    <span style={{ color: activeStyle.color, fontSize: 12 }}>✦</span>
+                    <div style={{ width: 45, height: 1, background: `${activeStyle.color}35` }} />
+                  </div>
 
-                      <span
-                        style={{
-                          fontFamily: "'DM Sans', sans-serif",
-                          fontSize: 10,
-                          color: "var(--indigo)",
-                          background: "rgba(28,31,74,0.06)",
-                          padding: "3px 8px",
-                          borderRadius: 4,
-                          fontWeight: 500,
-                        }}
-                      >
-                        {sub.requiresBooking ? "Slot Booking Required" : "Direct Form Submission"}
-                      </span>
-                    </div>
+                  <p
+                    style={{
+                      fontFamily: "'Cormorant Garamond', serif",
+                      fontSize: "clamp(18px, 2vw, 22px)",
+                      color: activeStyle.color,
+                      fontWeight: 500,
+                      lineHeight: 1.7,
+                      margin: "0 0 0.35rem 0",
+                    }}
+                  >
+                    {activeCategory.sanskritText}
+                  </p>
 
-                    <h4
+                  {activeCategory.sanskritMeaning && (
+                    <p
                       style={{
                         fontFamily: "'Cormorant Garamond', serif",
-                        fontSize: "clamp(22px, 2.5vw, 26px)",
-                        fontWeight: 500,
-                        color: "var(--indigo)",
-                        margin: "0 0 10px 0",
-                        lineHeight: 1.2,
+                        fontSize: "clamp(13px, 1.3vw, 15px)",
+                        color: "var(--text-mid)",
+                        fontStyle: "italic",
+                        lineHeight: 1.5,
+                        maxWidth: 760,
+                        margin: "0 auto",
                       }}
                     >
-                      {sub.name}
-                    </h4>
+                      {activeCategory.sanskritMeaning}
+                    </p>
+                  )}
+                </div>
+              )}
 
-                    {sub.description && (
-                      <p
-                        style={{
-                          fontFamily: "'DM Sans', sans-serif",
-                          fontSize: 14,
-                          color: "var(--text-mid)",
-                          lineHeight: 1.6,
-                          fontWeight: 300,
-                          margin: 0,
-                        }}
-                      >
-                        {sub.description}
-                      </p>
-                    )}
-                  </div>
+              {/* Sub-Category Offerings List Grid */}
+              <div
+                className="offerings-grid"
+                style={{
+                  display: "grid",
+                  gap: 1,
+                  background: "rgba(28,31,74,0.06)",
+                }}
+              >
+                {activeCategory.subCategories.map((sub) => {
+                  const tagsArray: string[] = Array.isArray(sub.tags) ? sub.tags : [];
+                  const topTagsArray: string[] = Array.isArray(sub.topTags) ? sub.topTags : [];
 
-                  {/* Highlights benefits pill list */}
-                  <div>
-                    {tagsArray.length > 0 && (
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-                        {tagsArray.map((t) => (
-                          <span
-                            key={t}
-                            style={{
-                              fontFamily: "'DM Sans', sans-serif",
-                              fontSize: 11,
-                              color: "var(--indigo)",
-                              background: "rgba(28,31,74,0.04)",
-                              padding: "4px 10px",
-                              borderRadius: 100,
-                              fontWeight: 400,
-                            }}
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Booking Route Link Button */}
-                    <a
-                      href={`/offerings/${sub.id}/book`}
+                  return (
+                    <div
+                      key={sub.id}
                       style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 6,
-                        background: "var(--indigo)",
-                        color: "white",
-                        padding: "10px 20px",
-                        borderRadius: 100,
-                        fontSize: 13,
-                        fontWeight: 600,
-                        textDecoration: "none",
-                        width: "100%",
-                        boxSizing: "border-box",
+                        background: "white",
+                        padding: "clamp(1.5rem, 3vw, 2rem)",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        gap: 20,
                         transition: "background 0.2s",
-                        textAlign: "center",
                       }}
                       onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = "var(--gold)";
+                        (e.currentTarget as HTMLElement).style.background = activeStyle.lightColor;
                       }}
                       onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = "var(--indigo)";
+                        (e.currentTarget as HTMLElement).style.background = "white";
                       }}
                     >
-                      {sub.requiresBooking ? "View Available Slots" : "Register / Submit Form"}
-                      <ArrowUpRight size={16} />
-                    </a>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+                      <div>
+                        {/* Tags Badge list */}
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+                          {topTagsArray.map((tag) => (
+                            <span
+                              key={tag}
+                              style={{
+                                fontFamily: "'DM Sans', sans-serif",
+                                fontSize: 10,
+                                color: "white",
+                                background: activeStyle.color,
+                                padding: "3px 8px",
+                                borderRadius: 4,
+                                fontWeight: 600,
+                                textTransform: "uppercase",
+                                letterSpacing: 0.5,
+                              }}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+
+                          <span
+                            style={{
+                              fontFamily: "'DM Sans', sans-serif",
+                              fontSize: 10,
+                              color: "var(--indigo)",
+                              background: "rgba(28,31,74,0.06)",
+                              padding: "3px 8px",
+                              borderRadius: 4,
+                              fontWeight: 500,
+                            }}
+                          >
+                            {sub.requiresBooking ? "Slot Booking Required" : "Direct Form Submission"}
+                          </span>
+                        </div>
+
+                        <h4
+                          style={{
+                            fontFamily: "'Cormorant Garamond', serif",
+                            fontSize: "clamp(22px, 2.5vw, 26px)",
+                            fontWeight: 500,
+                            color: "var(--indigo)",
+                            margin: "0 0 10px 0",
+                            lineHeight: 1.2,
+                          }}
+                        >
+                          {sub.name}
+                        </h4>
+
+                        {sub.description && (
+                          <p
+                            style={{
+                              fontFamily: "'DM Sans', sans-serif",
+                              fontSize: 14,
+                              color: "var(--text-mid)",
+                              lineHeight: 1.6,
+                              fontWeight: 300,
+                              margin: 0,
+                            }}
+                          >
+                            {sub.description}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Highlights benefits pill list */}
+                      <div>
+                        {tagsArray.length > 0 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+                            {tagsArray.map((t) => (
+                              <span
+                                key={t}
+                                style={{
+                                  fontFamily: "'DM Sans', sans-serif",
+                                  fontSize: 11,
+                                  color: activeStyle.color,
+                                  background: activeStyle.lightColor,
+                                  padding: "4px 10px",
+                                  borderRadius: 100,
+                                  fontWeight: 500,
+                                }}
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Booking Route Link Button */}
+                        <a
+                          href={`/offerings/${sub.id}/book`}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 6,
+                            background: activeStyle.color,
+                            color: "white",
+                            padding: "10px 20px",
+                            borderRadius: 100,
+                            fontSize: 13,
+                            fontWeight: 600,
+                            textDecoration: "none",
+                            width: "100%",
+                            boxSizing: "border-box",
+                            transition: "transform 0.2s ease",
+                            textAlign: "center",
+                          }}
+                          onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                          }}
+                        >
+                          {sub.requiresBooking ? "View Available Slots" : "Register / Submit Form"}
+                          <ArrowUpRight size={16} />
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </section>
   );

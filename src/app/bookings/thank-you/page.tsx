@@ -116,7 +116,7 @@ function ThankYouContent() {
             General Form Submission Received
           </h4>
           <p style={{ fontSize: 14, color: "var(--text-mid)", lineHeight: 1.6, margin: 0 }}>
-            No specific slot timing was selected for this session. Our coordination team will review your form inputs and reach out to you within 48-72 hours to schedule a session date.
+            No specific slot timing was selected for this session. Our coordination team will review your form inputs and reach out to you within 12-24 hours to schedule a session date.
           </p>
         </div>
       )}

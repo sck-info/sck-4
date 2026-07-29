@@ -10,7 +10,8 @@
     "db:function": "npx tsx scripts/db-apply.ts triggers/universal_function.sql",
     "db:trigger": "npx tsx scripts/db-apply.ts triggers/universal_triggers.sql",
     "db:realtime": "npx tsx scripts/db-apply.ts triggers/realtime.sql",
-    "db:setup-all": "npm run db:function && npm run db:trigger && npm run db:realtime"
+    "db:setup-all": "npm run db:function && npm run db:trigger && npm run db:realtime",
+    "db:seed-offerings": "npx tsx src/db/seed-offerings.ts"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.19",

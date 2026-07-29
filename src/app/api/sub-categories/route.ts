@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { offeringSubCategories } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { asc, sql } from "drizzle-orm";
+import { asc, sql, eq } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
 export async function GET(req: Request) {
@@ -14,16 +14,23 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const { page, limit, offset } = parsePaginationParams(searchParams);
+    const categoryId = searchParams.get("categoryId");
+
+    const condition = categoryId
+      ? eq(offeringSubCategories.categoryId, categoryId)
+      : undefined;
 
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
-      .from(offeringSubCategories);
+      .from(offeringSubCategories)
+      .where(condition);
 
     const total = Number(countResult[0]?.count || 0);
 
     const data = await db
       .select()
       .from(offeringSubCategories)
+      .where(condition)
       .orderBy(asc(offeringSubCategories.sortOrder))
       .limit(limit)
       .offset(offset);

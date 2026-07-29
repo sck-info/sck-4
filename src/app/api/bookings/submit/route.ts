@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { bookings, offeringSlots, offeringSubCategories, users } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, and, gt } from "drizzle-orm";
+import { uploadImages } from "@/lib/cloudinaryUpload";
 
 const WHATSAPP_GATEWAY_URL = process.env.WHATSAPP_GATEWAY_URL || "http://localhost:3001";
 const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
@@ -34,8 +35,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { subCategoryId, slotId, selectedFormat, selectedLocationId, formResponses } = body;
+    const contentType = req.headers.get("content-type") || "";
+    let subCategoryId = "";
+    let slotId = null;
+    let selectedFormat = null;
+    let selectedLocationId = null;
+    let formResponses = null;
+    let paymentReceiptUrl = null;
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      subCategoryId = formData.get("subCategoryId") as string;
+      slotId = (formData.get("slotId") as string) || null;
+      selectedFormat = (formData.get("selectedFormat") as string) || null;
+      selectedLocationId = (formData.get("selectedLocationId") as string) || null;
+      formResponses = JSON.parse((formData.get("formResponses") as string) || "{}");
+
+      const file = formData.get("receiptFile") as File | null;
+      if (file) {
+        const urls = await uploadImages([file], "receipts");
+        paymentReceiptUrl = urls[0];
+      }
+    } else {
+      const body = await req.json();
+      subCategoryId = body.subCategoryId;
+      slotId = body.slotId;
+      selectedFormat = body.selectedFormat;
+      selectedLocationId = body.selectedLocationId;
+      formResponses = body.formResponses;
+    }
 
     if (!subCategoryId || !formResponses) {
       return NextResponse.json({ error: "Sub-category and form responses are required" }, { status: 400 });
@@ -88,6 +116,7 @@ export async function POST(req: Request) {
           selectedLocationId: selectedLocationId || null,
           status: "pending" as any,
           formResponses,
+          paymentReceiptUrl,
         })
         .returning();
 

@@ -5,6 +5,8 @@ import { auth } from "@/lib/auth";
 import { desc, sql } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
+import { uploadImages } from "@/lib/cloudinaryUpload";
+
 export async function GET(req: Request) {
   try {
     const session = await auth();
@@ -45,7 +47,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, qrImageUrl } = await req.json();
+    const contentType = req.headers.get("content-type") || "";
+    let name = "";
+    let qrImageUrl = "";
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      name = formData.get("name") as string;
+      const file = formData.get("file") as File | null;
+
+      if (!name || !file) {
+        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      }
+
+      const urls = await uploadImages([file], "qrs");
+      qrImageUrl = urls[0];
+    } else {
+      const body = await req.json();
+      name = body.name;
+      qrImageUrl = body.qrImageUrl;
+    }
 
     if (!name || !qrImageUrl) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });

@@ -42,6 +42,7 @@ export async function GET(req: Request) {
         formResponses: bookings.formResponses,
         userCancellationReason: bookings.userCancellationReason,
         adminCancellationReason: bookings.adminCancellationReason,
+        paymentReceiptUrl: bookings.paymentReceiptUrl,
         createdAt: bookings.createdAt,
         user: {
           id: users.id,
