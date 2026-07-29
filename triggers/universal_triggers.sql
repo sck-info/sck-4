@@ -64,3 +64,7 @@ ON bookings FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
 -- (17) Feedbacks Trigger
 CREATE OR REPLACE TRIGGER feedbacks_app_event AFTER INSERT OR UPDATE OR DELETE
 ON feedbacks FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
+
+-- (18) Scheduled Messages Trigger
+CREATE OR REPLACE TRIGGER scheduled_messages_app_event AFTER INSERT OR UPDATE OR DELETE
+ON scheduled_messages FOR EACH ROW EXECUTE FUNCTION notify_app_event ();

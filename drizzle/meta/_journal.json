@@ -71,6 +71,20 @@
       "when": 1785301445196,
       "tag": "0009_add_payment_receipt_url",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1785334871260,
+      "tag": "0010_add_scheduled_messages",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1785335395746,
+      "tag": "0011_simplify_scheduled_messages",
+      "breakpoints": true
     }
   ]
 }

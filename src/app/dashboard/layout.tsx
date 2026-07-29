@@ -79,6 +79,13 @@ const ADMIN_MENU_SECTIONS = [
     ],
   },
   {
+    title: "Communication",
+    items: [
+      { name: "Manual Broadcast", href: "/dashboard/communication/manual", icon: MessageSquare },
+      { name: "Scheduled Messages", href: "/dashboard/communication/scheduled", icon: Calendar },
+    ],
+  },
+  {
     title: "Access Control",
     items: [
       { name: "Users", href: "/dashboard/users", icon: Users },
