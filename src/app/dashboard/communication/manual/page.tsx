@@ -63,11 +63,14 @@ const compressImageClient = (file: File, maxWidth = 1200, maxQuality = 0.7): Pro
         const ctx = canvas.getContext("2d");
         ctx?.drawImage(img, 0, 0, width, height);
 
+        const targetType = "image/jpeg";
+        const newName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+
         canvas.toBlob(
           (blob) => {
             if (blob) {
-              const compressedFile = new File([blob], file.name, {
-                type: file.type,
+              const compressedFile = new File([blob], newName, {
+                type: targetType,
                 lastModified: Date.now(),
               });
               resolve(compressedFile);
@@ -75,7 +78,7 @@ const compressImageClient = (file: File, maxWidth = 1200, maxQuality = 0.7): Pro
               resolve(file);
             }
           },
-          file.type,
+          targetType,
           maxQuality
         );
       };
