@@ -115,17 +115,23 @@ export async function POST(req: Request) {
     // Call WhatsApp helper for each recipient
     console.log(`[Manual API] Dispatching message to ${phonesList.length} phones. Attachment size: ${attachment ? attachment.contentBase64?.length : 0} chars`);
     let successCount = 0;
+    const errorsList: string[] = [];
     for (const phone of phonesList) {
       try {
         const res = await sendWhatsApp(phone, message, attachment);
         console.log(`[Manual API] Dispatch successful for ${phone}. Gateway response:`, res);
         successCount++;
-      } catch (err) {
+      } catch (err: any) {
         console.error(`[Manual API] Failed to send to ${phone}:`, err);
+        errorsList.push(`${phone}: ${err.message || String(err)}`);
       }
     }
 
-    return NextResponse.json({ success: true, count: successCount });
+    return NextResponse.json({
+      success: successCount > 0,
+      count: successCount,
+      errors: errorsList.length > 0 ? errorsList : undefined,
+    });
   } catch (err: any) {
     console.error("Manual message API error:", err);
     return NextResponse.json(
