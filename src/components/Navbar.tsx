@@ -126,6 +126,32 @@ export default function Navbar() {
             </a>
           ))}
 
+          {/* Events & Updates Link */}
+          <a
+            href="/events-and-updates"
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 14,
+              fontWeight: 500,
+              color: scrolled || !isHome ? "var(--text-mid)" : "rgba(250,247,242,0.8)",
+              textDecoration: "none",
+              letterSpacing: 0.3,
+              transition: "color 0.2s",
+            }}
+            onMouseEnter={(e) =>
+              ((e.target as HTMLElement).style.color = scrolled || !isHome
+                ? "var(--indigo)"
+                : "var(--ivory)")
+            }
+            onMouseLeave={(e) =>
+              ((e.target as HTMLElement).style.color = scrolled || !isHome
+                ? "var(--text-mid)"
+                : "rgba(250,247,242,0.8)")
+            }
+          >
+            Events & Updates
+          </a>
+
           {/* Wall of Love Link */}
           <button
             onClick={() => {
@@ -344,6 +370,23 @@ export default function Navbar() {
           >
             Wall of Love
           </button>
+
+          {/* Events & Updates Link */}
+          <a
+            href="/events-and-updates"
+            onClick={() => setMenuOpen(false)}
+            style={{
+              color: "var(--text-dark)",
+              textDecoration: "none",
+              fontSize: 16,
+              fontWeight: 500,
+              padding: "10px 0",
+              borderBottom: "1px solid rgba(28,31,74,0.06)",
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            Events & Updates
+          </a>
 
           {/* Offerings Link */}
           <a

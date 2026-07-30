@@ -282,7 +282,7 @@ export default function ManualBroadcastPage() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-4 py-1">
+    <div className="w-full space-y-4 py-1">
       <div>
         <h1 className="text-xl font-bold text-[#1c1f4a] font-display">
           Manual WhatsApp Broadcast

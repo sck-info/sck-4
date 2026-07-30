@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ArrowLeft } from "lucide-react";
 import { useRealtime } from "@/hooks/useRealtime";
 
 type SubCategory = {
@@ -142,6 +142,18 @@ export default function OfferingsClient({
   return (
     <section style={{ padding: "clamp(3rem, 6vw, 6rem) 2rem" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        {/* Back button */}
+        <div style={{ marginBottom: "1.5rem" }}>
+          <a
+            href="/"
+            className="inline-flex items-center gap-2 text-xs font-bold text-[#b86a16] hover:text-[#1c1f4a] uppercase tracking-widest transition-all cursor-pointer group"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            Back to Home
+          </a>
+        </div>
+
         {/* Scheduled Note Header */}
         <div style={{ marginBottom: "clamp(2rem, 4vw, 3rem)" }}>
           <div

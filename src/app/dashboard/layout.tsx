@@ -23,6 +23,7 @@ import {
   ClipboardList,
   Star,
   AlertCircle,
+  Bell,
 } from "lucide-react";
 import {
   Sidebar,
@@ -86,6 +87,7 @@ const ADMIN_MENU_SECTIONS = [
       { name: "Gallery", href: "/dashboard/gallery", icon: Camera },
       { name: "Contacts", href: "/dashboard/contacts", icon: Contact },
       { name: "Queries", href: "/dashboard/queries", icon: MessageSquare },
+      { name: "Events & Updates", href: "/dashboard/events", icon: Bell },
     ],
   },
   {

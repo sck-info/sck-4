@@ -76,3 +76,7 @@ ON booking_drafts FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
 -- (20) User Query Replies Trigger
 CREATE OR REPLACE TRIGGER user_query_replies_app_event AFTER INSERT OR UPDATE OR DELETE
 ON user_query_replies FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
+
+-- (21) Events Trigger
+CREATE OR REPLACE TRIGGER events_app_event AFTER INSERT OR UPDATE OR DELETE
+ON events FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
