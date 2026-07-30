@@ -658,27 +658,25 @@ function OfferingsDashboardContent() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Sanskrit Phrase (Optional)</Label>
-                <Input
-                  value={catFormData.sanskritText}
-                  onChange={(e) => setCatFormData({ ...catFormData, sanskritText: e.target.value })}
-                  placeholder="e.g. प्राणस्य प्राणः"
-                  disabled={catFormLoading}
-                  className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Sanskrit Translation</Label>
-                <Input
-                  value={catFormData.sanskritMeaning}
-                  onChange={(e) => setCatFormData({ ...catFormData, sanskritMeaning: e.target.value })}
-                  placeholder="e.g. Breath of breath"
-                  disabled={catFormLoading}
-                  className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Sanskrit Phrase (Optional)</Label>
+              <Input
+                value={catFormData.sanskritText}
+                onChange={(e) => setCatFormData({ ...catFormData, sanskritText: e.target.value })}
+                placeholder="e.g. प्राणस्य प्राणः"
+                disabled={catFormLoading}
+                className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs w-full"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Sanskrit Translation</Label>
+              <Input
+                value={catFormData.sanskritMeaning}
+                onChange={(e) => setCatFormData({ ...catFormData, sanskritMeaning: e.target.value })}
+                placeholder="e.g. Breath of breath"
+                disabled={catFormLoading}
+                className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs w-full"
+              />
             </div>
 
             <div className="space-y-2">
@@ -767,27 +765,25 @@ function OfferingsDashboardContent() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Top Badges (Comma-separated)</Label>
-                <Input
-                  value={subFormData.topTagsRaw}
-                  onChange={(e) => setSubFormData({ ...subFormData, topTagsRaw: e.target.value })}
-                  placeholder="e.g. Popular, New"
-                  disabled={subFormLoading}
-                  className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Highlight Tags (Comma-separated)</Label>
-                <Input
-                  value={subFormData.tagsRaw}
-                  onChange={(e) => setSubFormData({ ...subFormData, tagsRaw: e.target.value })}
-                  placeholder="e.g. 60 Mins, Holistic"
-                  disabled={subFormLoading}
-                  className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Top Badges (Comma-separated)</Label>
+              <Input
+                value={subFormData.topTagsRaw}
+                onChange={(e) => setSubFormData({ ...subFormData, topTagsRaw: e.target.value })}
+                placeholder="e.g. Popular, New"
+                disabled={subFormLoading}
+                className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs w-full"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Highlight Tags (Comma-separated)</Label>
+              <Input
+                value={subFormData.tagsRaw}
+                onChange={(e) => setSubFormData({ ...subFormData, tagsRaw: e.target.value })}
+                placeholder="e.g. 60 Mins, Holistic"
+                disabled={subFormLoading}
+                className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs w-full"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

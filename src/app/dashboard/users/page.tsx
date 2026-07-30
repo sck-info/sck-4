@@ -77,6 +77,7 @@ type UserRow = {
   age: number | null;
   isActive: boolean;
   isPhoneVerified: boolean;
+  image: string | null;
   createdAt: string | null;
 };
 
@@ -206,9 +207,16 @@ function UsersPageContent() {
 
   const handleOpenEdit = (user: UserRow) => {
     setEditingUser(user);
+    let normalizedGender = "";
+    if (user.gender) {
+      const g = user.gender.toLowerCase();
+      if (g === "male") normalizedGender = "Male";
+      else if (g === "female") normalizedGender = "Female";
+      else if (g === "other") normalizedGender = "Other";
+    }
     setFormData({
       name: user.name,
-      gender: user.gender || "",
+      gender: normalizedGender,
       dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : undefined,
       age: user.age?.toString() || "",
     });
@@ -411,11 +419,15 @@ function UsersPageContent() {
                     <TableCell className="py-3 px-4">
                       <div className="flex items-center gap-2.5">
                         <div
-                          className={`w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0 ${
+                          className={`w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0 overflow-hidden ${
                             user.isActive ? "bg-[#6b8f71]" : "bg-[#c4796a]"
                           }`}
                         >
-                          {user.name[0]}
+                          {user.image ? (
+                            <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
+                          ) : (
+                            user.name[0]
+                          )}
                         </div>
                         <span className="text-sm font-medium text-[#1c1f4a]">
                           {user.name}
@@ -562,13 +574,13 @@ function UsersPageContent() {
                   }
                   disabled={formLoading}
                 >
-                  <SelectTrigger className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
+                  <SelectTrigger className="w-full bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="Male">Male</SelectItem>
+                    <SelectItem value="Female">Female</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

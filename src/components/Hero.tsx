@@ -119,7 +119,7 @@ export default function Hero() {
                 }}
               >
                 <a
-                  href="#sessions"
+                  href="/offerings"
                   style={{
                     background: "var(--light-gold)",
                     color: "var(--indigo)",

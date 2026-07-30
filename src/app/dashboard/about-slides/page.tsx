@@ -522,14 +522,14 @@ function AboutSlidesPageContent() {
 
       {/* Add / Edit Slide dialog modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-[480px] border border-[#e8dcc4] bg-white rounded-2xl overflow-hidden p-0 shadow-lg font-sans">
-          <DialogHeader className="bg-[#1c1f4a] text-white p-5">
+        <DialogContent className="sm:max-w-[480px] border border-[#e8dcc4] bg-white rounded-2xl overflow-hidden p-0 shadow-lg font-sans flex flex-col max-h-[90vh]">
+          <DialogHeader className="bg-[#1c1f4a] text-white p-5 shrink-0">
             <DialogTitle className="text-white text-sm font-bold">
               {editingId ? "Edit slideshow slide" : "Add slideshow slide"}
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
             {formError && (
               <div className="p-3 bg-[#faf0ee] border border-[#c4796a]/20 text-[#c4796a] text-xs font-semibold rounded-xl flex items-center gap-1.5">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -589,7 +589,7 @@ function AboutSlidesPageContent() {
                   onValueChange={(val) => setFormData({ ...formData, isActive: val === "true" })}
                   disabled={formLoading}
                 >
-                  <SelectTrigger className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
+                  <SelectTrigger className="w-full bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

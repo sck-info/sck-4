@@ -15,6 +15,8 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle,
+  Play,
+  Pause,
 } from "lucide-react";
 import {
   Table,
@@ -61,6 +63,12 @@ type SlotRow = {
   endTime: string;
   status: "available" | "booked" | "suspended";
   subCategoryName: string;
+  locations?: {
+    id: string;
+    name: string;
+    type: string;
+    url: string | null;
+  }[];
 };
 
 type SubCategoryRow = {
@@ -124,10 +132,24 @@ function SlotsDashboardContent() {
   const statusFilter = searchParams.get("status") || "all";
   const subCategoryFilter = searchParams.get("subCategory") || "all";
  
-  const defaultFrom = new Date();
-  defaultFrom.setMonth(defaultFrom.getMonth() - 1);
-  const defaultFromStr = defaultFrom.toISOString().split("T")[0];
-  const defaultToStr = new Date().toISOString().split("T")[0];
+  const formatLocalDate = (d: Date) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const getSlotDefaultRange = () => {
+    const from = new Date();
+    from.setDate(from.getDate() - 5);
+    const to = new Date();
+    to.setDate(to.getDate() + 25);
+    return { from, to };
+  };
+
+  const defaultRange = getSlotDefaultRange();
+  const defaultFromStr = formatLocalDate(defaultRange.from);
+  const defaultToStr = formatLocalDate(defaultRange.to);
  
   const startDateParam = searchParams.get("startDate") || defaultFromStr;
   const endDateParam = searchParams.get("endDate") || defaultToStr;
@@ -342,6 +364,31 @@ function SlotsDashboardContent() {
     }
   };
 
+  const handleToggleStatus = async (slot: SlotRow) => {
+    const newStatus = slot.status === "suspended" ? "available" : "suspended";
+    try {
+      const res = await fetch(`/api/slots/${slot.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to update slot status.");
+      }
+
+      toast.success(
+        newStatus === "suspended"
+          ? "Timings slot suspended successfully."
+          : "Timings slot opened again successfully."
+      );
+      fetchSlots();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update slot status.");
+    }
+  };
+
   const handleCheckboxChange = (locId: string, checked: boolean) => {
     setFormData((prev) => {
       let list = [...prev.selectedLocIds];
@@ -375,18 +422,14 @@ function SlotsDashboardContent() {
   const handleClearFilters = () => {
     setLocalStatus("all");
     setLocalSubCategory("all");
-    const dFrom = new Date();
-    dFrom.setMonth(dFrom.getMonth() - 1);
-    setDateRange({
-      from: dFrom,
-      to: new Date(),
-    });
+    const dRange = getSlotDefaultRange();
+    setDateRange(dRange);
 
     const params = new URLSearchParams(searchParams.toString());
     params.set("status", "all");
     params.set("subCategory", "all");
-    params.set("startDate", formatLocalDateYMD(dFrom));
-    params.set("endDate", formatLocalDateYMD(new Date()));
+    params.set("startDate", formatLocalDateYMD(dRange.from));
+    params.set("endDate", formatLocalDateYMD(dRange.to));
     params.set("page", "1");
     pushParams(params);
   };
@@ -547,8 +590,12 @@ function SlotsDashboardContent() {
                         {formatTime12h(slot.endTime)}
                       </span>
                     </TableCell>
-                    <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] font-medium max-w-[200px] truncate">
-                      Offline Locations / Video Rooms
+                    <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] font-medium max-w-[200px] truncate" title={slot.locations?.map(loc => `${loc.name} (${loc.type.toUpperCase()})`).join(", ")}>
+                      {slot.locations && slot.locations.length > 0 ? (
+                        slot.locations.map(loc => `${loc.name} (${loc.type.toUpperCase()})`).join(", ")
+                      ) : (
+                        <span className="italic text-gray-400">None selected</span>
+                      )}
                     </TableCell>
                     <TableCell className="py-3 px-4 text-xs">
                       <span
@@ -564,19 +611,39 @@ function SlotsDashboardContent() {
                       </span>
                     </TableCell>
                     <TableCell className="py-3 px-4 text-right">
-                      {slot.status !== "booked" ? (
-                        <button
-                          onClick={() => setDeleteSlot(slot)}
-                          className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
-                          title="Delete timings slot"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      ) : (
-                        <span className="text-xs text-[#5a5e7a] font-semibold italic select-none pr-2">
-                          Booked
-                        </span>
-                      )}
+                      <div className="inline-flex items-center gap-1.5 justify-end">
+                        {slot.status === "available" && (
+                          <button
+                            onClick={() => handleToggleStatus(slot)}
+                            className="p-1.5 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
+                            title="Suspend timings slot"
+                          >
+                            <Pause className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        {slot.status === "suspended" && (
+                          <button
+                            onClick={() => handleToggleStatus(slot)}
+                            className="p-1.5 hover:bg-[#6b8f71]/10 text-[#6b8f71] border border-transparent hover:border-[#6b8f71]/30 rounded-xl transition-all cursor-pointer"
+                            title="Open timing slot again"
+                          >
+                            <Play className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        {slot.status !== "booked" ? (
+                          <button
+                            onClick={() => setDeleteSlot(slot)}
+                            className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
+                            title="Delete timings slot"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        ) : (
+                          <span className="text-xs text-[#5a5e7a] font-semibold italic select-none pr-2">
+                            Booked
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -589,14 +656,14 @@ function SlotsDashboardContent() {
 
       {/* Announce Modal Dialog */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-lg border border-[#e8dcc4] bg-white rounded-2xl overflow-hidden p-0 shadow-lg font-sans">
-          <DialogHeader className="bg-[#1c1f4a] text-white p-5">
-            <DialogTitle className="text-white text-sm font-bold">
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-5 rounded-t-3xl flex flex-row items-center gap-2">
+            <DialogTitle className="text-white text-md font-bold">
               Announce Timings Slot
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleAnnounceSubmit} className="p-6 space-y-4">
+          <form onSubmit={handleAnnounceSubmit} className="space-y-4 pt-4">
             {formError && (
               <div className="p-3 bg-[#faf0ee] border border-[#c4796a]/20 text-[#c4796a] text-xs font-semibold rounded-xl flex items-center gap-1">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -615,7 +682,7 @@ function SlotsDashboardContent() {
                 }
                 disabled={formLoading}
               >
-                <SelectTrigger className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
+                <SelectTrigger className="w-full bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
                   <SelectValue placeholder="Select offering" />
                 </SelectTrigger>
                 <SelectContent>
@@ -651,7 +718,7 @@ function SlotsDashboardContent() {
                   }
                   disabled={formLoading}
                 >
-                  <SelectTrigger className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
+                  <SelectTrigger className="w-full bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="max-h-48">
@@ -679,7 +746,7 @@ function SlotsDashboardContent() {
                   }
                   disabled={formLoading}
                 >
-                  <SelectTrigger className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
+                  <SelectTrigger className="w-full bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="max-h-48">
@@ -733,7 +800,7 @@ function SlotsDashboardContent() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t border-[#e8dcc4]/50">
+            <div className="flex justify-end gap-2 pt-4 border-t border-[#e8dcc4]/50 -mx-6 px-6">
               <Button
                 type="button"
                 variant="outline"

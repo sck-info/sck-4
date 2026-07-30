@@ -55,6 +55,7 @@ export async function GET(req: Request) {
         age: users.age,
         isActive: users.isActive,
         isPhoneVerified: users.isPhoneVerified,
+        image: users.image,
         createdAt: users.createdAt,
       })
       .from(users)

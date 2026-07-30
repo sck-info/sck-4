@@ -581,7 +581,7 @@ function MetricsCrudPageContent() {
                   }
                   disabled={formLoading}
                 >
-                  <SelectTrigger className="bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
+                  <SelectTrigger className="w-full bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
