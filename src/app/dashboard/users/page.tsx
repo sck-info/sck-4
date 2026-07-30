@@ -7,6 +7,8 @@ import React, {
   useRef,
   Suspense,
 } from "react";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 import { useRealtime } from "@/hooks/useRealtime";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
@@ -72,6 +74,7 @@ type UserRow = {
   name: string;
   email: string;
   phone: string | null;
+  phoneCode: string | null;
   gender: string | null;
   dateOfBirth: string | null;
   age: number | null;
@@ -143,6 +146,9 @@ function UsersPageContent() {
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
+    phone: "",
+    phoneCode: "91",
     gender: "",
     dateOfBirth: undefined as Date | undefined,
     age: "",
@@ -214,8 +220,12 @@ function UsersPageContent() {
       else if (g === "female") normalizedGender = "Female";
       else if (g === "other") normalizedGender = "Other";
     }
+    const fullPhone = user.phone ? `+${user.phoneCode || "91"}${user.phone}` : "";
     setFormData({
       name: user.name,
+      email: user.email || "",
+      phone: fullPhone,
+      phoneCode: user.phoneCode || "91",
       gender: normalizedGender,
       dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : undefined,
       age: user.age?.toString() || "",
@@ -261,12 +271,25 @@ function UsersPageContent() {
     setFormLoading(true);
     setFormError("");
 
+    const getPhoneNumberParts = (intlPhone: string) => {
+      if (!intlPhone) return { phone: "", phoneCode: "" };
+      const cleaned = intlPhone.replace(/\D/g, "");
+      const code = "91";
+      const number = cleaned.startsWith(code) ? cleaned.slice(code.length) : cleaned;
+      return { phone: number, phoneCode: code };
+    };
+
+    const { phone: extractedPhone, phoneCode: extractedCode } = getPhoneNumberParts(formData.phone);
+
     try {
       const res = await fetch(`/api/users/${editingUser.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.name,
+          email: formData.email || undefined,
+          phone: extractedPhone || undefined,
+          phoneCode: extractedCode || undefined,
           gender: formData.gender || null,
           dateOfBirth: formData.dateOfBirth
             ? formData.dateOfBirth.toISOString().split("T")[0]
@@ -424,7 +447,11 @@ function UsersPageContent() {
                           }`}
                         >
                           {user.image ? (
-                            <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
+                            <img
+                              src={user.image}
+                              alt={user.name}
+                              className="w-full h-full object-cover"
+                            />
                           ) : (
                             user.name[0]
                           )}
@@ -557,6 +584,43 @@ function UsersPageContent() {
                 disabled={formLoading}
                 className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label
+                htmlFor="email"
+                className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wider"
+              >
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                required
+                disabled={formLoading}
+                className="bg-[#faf7f2]/40 border-[#e8dcc4] h-10 rounded-xl text-xs"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wider">
+                WhatsApp Number
+              </Label>
+              <div>
+                <PhoneInput
+                  international
+                  defaultCountry="IN"
+                  countries={["IN"]}
+                  value={formData.phone}
+                  onChange={(val) => setFormData({ ...formData, phone: val || "" })}
+                  disabled={formLoading}
+                  className="h-10 bg-[#faf7f2]/40 border border-[#e8dcc4] rounded-xl focus-within:ring-[#b86a16] [&_.PhoneInput]:h-full [&_.PhoneInputCountry]:ml-3 [&_.PhoneInputCountrySelect]:cursor-pointer [&_input]:bg-transparent [&_input]:border-0 [&_input]:outline-none [&_input]:h-full [&_input]:w-full [&_input]:text-xs [&_input]:pl-2 text-[#1c1f4a]"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

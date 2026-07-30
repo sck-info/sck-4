@@ -16,6 +16,7 @@ import {
   Save,
   Venus,
   Mars,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,7 +49,7 @@ export default function ProfilePage() {
   const [gender, setGender] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>();
   const [age, setAge] = useState("");
-  
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
@@ -61,7 +62,7 @@ export default function ProfilePage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [photoToDelete, setPhotoToDelete] = useState(false);
   const [photoMenuOpen, setPhotoMenuOpen] = useState(false);
-  
+
   // Cropping states
   const [cropOpen, setCropOpen] = useState(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -272,8 +273,12 @@ export default function ProfilePage() {
   return (
     <div className="w-full space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">Profile</h1>
-        <p className="text-xs text-[#5a5e7a] mt-1">Manage your profile information.</p>
+        <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
+          Profile
+        </h1>
+        <p className="text-xs text-[#5a5e7a] mt-1">
+          Manage your profile information.
+        </p>
       </div>
 
       <input
@@ -286,10 +291,11 @@ export default function ProfilePage() {
 
       <Card className="border-[#e8dcc4] bg-white rounded-xl shadow-xs">
         <CardHeader className="px-6 pt-6 pb-0">
-          <CardTitle className="text-sm font-bold text-[#1c1f4a]">Personal Information</CardTitle>
+          <CardTitle className="text-sm font-bold text-[#1c1f4a]">
+            Personal Information
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
-          
           {/* Avatar Upload Header */}
           <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-[#e8dcc4]/60 mb-2">
             <div className="relative w-24 h-24 flex-shrink-0 group">
@@ -306,11 +312,13 @@ export default function ProfilePage() {
                   </div>
                 )}
                 {/* Hover overlay */}
-                <div 
+                <div
                   onClick={() => setPhotoMenuOpen(true)}
                   className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
                 >
-                  <span className="text-[10px] font-bold tracking-wider uppercase">Change</span>
+                  <span className="text-[10px] font-bold tracking-wider uppercase">
+                    Change
+                  </span>
                 </div>
               </div>
               <button
@@ -323,8 +331,12 @@ export default function ProfilePage() {
             </div>
 
             <div className="text-center sm:text-left">
-              <h2 className="text-lg font-bold text-[#1c1f4a] font-display">{name || "User Name"}</h2>
-              <p className="text-xs text-[#5a5e7a] mt-1">{email || "Email Address"}</p>
+              <h2 className="text-lg font-bold text-[#1c1f4a] font-display">
+                {name || "User Name"}
+              </h2>
+              <p className="text-xs text-[#5a5e7a] mt-1">
+                {email || "Email Address"}
+              </p>
               <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1c1f4a]/5 text-[#1c1f4a] text-[10px] font-bold tracking-wider uppercase">
                 {session?.user?.role || "Client"}
               </div>
@@ -333,7 +345,9 @@ export default function ProfilePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
             <div className="space-y-2">
-              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">Full Name</Label>
+              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                Full Name
+              </Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <Input
@@ -345,7 +359,9 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">Email</Label>
+              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                Email
+              </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <Input
@@ -357,7 +373,9 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">WhatsApp Number</Label>
+              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                WhatsApp Number
+              </Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <Input
@@ -369,17 +387,23 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">Gender</Label>
+              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                Gender
+              </Label>
               <Select value={gender} onValueChange={setGender}>
                 <SelectTrigger className="h-11 bg-[#faf7f2]/50 border-[#e8dcc4] rounded-xl w-full">
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Male">
-                    <span className="flex items-center gap-2"><Mars className="w-3.5 h-3.5" /> Male</span>
+                    <span className="flex items-center gap-2">
+                      <Mars className="w-3.5 h-3.5" /> Male
+                    </span>
                   </SelectItem>
                   <SelectItem value="Female">
-                    <span className="flex items-center gap-2"><Venus className="w-3.5 h-3.5" /> Female</span>
+                    <span className="flex items-center gap-2">
+                      <Venus className="w-3.5 h-3.5" /> Female
+                    </span>
                   </SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
@@ -387,13 +411,16 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">Date of Birth</Label>
+              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                Date of Birth
+              </Label>
               <DatePicker
                 value={dateOfBirth}
                 onChange={(d) => {
                   setDateOfBirth(d);
                   if (d) {
-                    const calculated = new Date().getFullYear() - d.getFullYear();
+                    const calculated =
+                      new Date().getFullYear() - d.getFullYear();
                     setAge(calculated.toString());
                   }
                 }}
@@ -402,7 +429,9 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">Age</Label>
+              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                Age
+              </Label>
               <Input
                 type="text"
                 placeholder="Enter age"
@@ -410,7 +439,8 @@ export default function ProfilePage() {
                 onChange={(e) => {
                   setAge(e.target.value);
                   if (e.target.value) {
-                    const yr = new Date().getFullYear() - parseInt(e.target.value);
+                    const yr =
+                      new Date().getFullYear() - parseInt(e.target.value);
                     setDateOfBirth(new Date(yr, 0, 1));
                   }
                 }}
@@ -418,11 +448,30 @@ export default function ProfilePage() {
               />
               {age && (
                 <p className="text-[9px] text-[#9396ae] mt-1">
-                  Age provided. DOB is auto-calculated and may not be exact.
+                  Providing DOB auto-calculates Age. Providing Age estimates
+                  DOB, which may not be exact.{" "}
                 </p>
               )}
             </div>
           </div>
+
+          {session?.user?.role !== "ADMIN" && (
+            <div className="mb-4 p-3.5 bg-[#faf7f2]/80 border border-[#e8dcc4]/80 rounded-2xl flex items-start gap-2.5 shadow-xs">
+              <AlertCircle className="w-4 h-4 text-[#b86a16] shrink-0 mt-0.5" />
+              <p className="text-xs text-[#5a5e7a] leading-relaxed font-medium">
+                Email address and WhatsApp number cannot be edited directly. To
+                update your login credentials or notifications destination,
+                please{" "}
+                <a
+                  href="/contact"
+                  className="text-[#b86a16] font-bold hover:underline"
+                >
+                  contact admin
+                </a>
+                .
+              </p>
+            </div>
+          )}
 
           <div className="flex justify-end pt-4 border-t border-[#e8dcc4]/60">
             <Button
@@ -442,12 +491,16 @@ export default function ProfilePage() {
 
       <Card className="border-[#e8dcc4] bg-white rounded-xl shadow-xs">
         <CardHeader className="px-6 pt-6 pb-0">
-          <CardTitle className="text-sm font-bold text-[#1c1f4a]">Update Password</CardTitle>
+          <CardTitle className="text-sm font-bold text-[#1c1f4a]">
+            Update Password
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
             <div className="space-y-2">
-              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">Current Password</Label>
+              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                Current Password
+              </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <Input
@@ -463,13 +516,19 @@ export default function ProfilePage() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1c1f4a] transition-colors cursor-pointer"
                   tabIndex={-1}
                 >
-                  {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showCurrent ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">New Password</Label>
+              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                New Password
+              </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <Input
@@ -485,13 +544,19 @@ export default function ProfilePage() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1c1f4a] transition-colors cursor-pointer"
                   tabIndex={-1}
                 >
-                  {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showNew ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">Confirm New Password</Label>
+              <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
+                Confirm New Password
+              </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <Input
@@ -507,7 +572,11 @@ export default function ProfilePage() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1c1f4a] transition-colors cursor-pointer"
                   tabIndex={-1}
                 >
-                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showConfirm ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -532,7 +601,9 @@ export default function ProfilePage() {
       <Dialog open={photoMenuOpen} onOpenChange={setPhotoMenuOpen}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle className="text-[#1c1f4a] font-display">Profile Photo</DialogTitle>
+            <DialogTitle className="text-[#1c1f4a] font-display">
+              Profile Photo
+            </DialogTitle>
             <DialogDescription>
               Upload a new profile photo or remove your current one.
             </DialogDescription>
@@ -557,7 +628,9 @@ export default function ProfilePage() {
               <Button
                 type="button"
                 className="w-full bg-[#1c1f4a] hover:bg-[#b86a16] text-white rounded-xl h-11 font-semibold text-xs cursor-pointer transition-colors"
-                onClick={() => document.getElementById("profileUpload")?.click()}
+                onClick={() =>
+                  document.getElementById("profileUpload")?.click()
+                }
               >
                 Upload Photo
               </Button>
@@ -582,7 +655,9 @@ export default function ProfilePage() {
         onClose={() => {
           setCropOpen(false);
           setImageSrc(null);
-          const fileInput = document.getElementById("profileUpload") as HTMLInputElement;
+          const fileInput = document.getElementById(
+            "profileUpload",
+          ) as HTMLInputElement;
           if (fileInput) fileInput.value = "";
         }}
         imageSrc={imageSrc}

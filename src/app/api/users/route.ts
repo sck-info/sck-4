@@ -50,6 +50,7 @@ export async function GET(req: Request) {
         name: users.name,
         email: users.email,
         phone: users.phone,
+        phoneCode: users.phoneCode,
         gender: users.gender,
         dateOfBirth: users.dateOfBirth,
         age: users.age,
