@@ -80,3 +80,22 @@ ON user_query_replies FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
 -- (21) Events Trigger
 CREATE OR REPLACE TRIGGER events_app_event AFTER INSERT OR UPDATE OR DELETE
 ON events FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
+
+-- (22) Campaigns Triggers
+CREATE OR REPLACE TRIGGER campaigns_app_event AFTER INSERT OR UPDATE OR DELETE
+ON campaigns FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
+
+CREATE OR REPLACE TRIGGER campaign_sections_app_event AFTER INSERT OR UPDATE OR DELETE
+ON campaign_sections FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
+
+CREATE OR REPLACE TRIGGER campaign_questions_app_event AFTER INSERT OR UPDATE OR DELETE
+ON campaign_questions FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
+
+CREATE OR REPLACE TRIGGER campaign_contacts_app_event AFTER INSERT OR UPDATE OR DELETE
+ON campaign_contacts FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
+
+CREATE OR REPLACE TRIGGER campaign_responses_app_event AFTER INSERT OR UPDATE OR DELETE
+ON campaign_responses FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
+
+CREATE OR REPLACE TRIGGER campaign_answers_app_event AFTER INSERT OR UPDATE OR DELETE
+ON campaign_answers FOR EACH ROW EXECUTE FUNCTION notify_app_event ();

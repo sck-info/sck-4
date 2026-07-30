@@ -20,6 +20,7 @@ export * from "./scheduled_messages";
 export * from "./booking_drafts";
 export * from "./user_query_replies";
 export * from "./events";
+export * from "./campaigns";
 
 
 

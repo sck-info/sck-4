@@ -24,6 +24,7 @@ import {
   Star,
   AlertCircle,
   Bell,
+  Megaphone,
 } from "lucide-react";
 import {
   Sidebar,
@@ -102,6 +103,11 @@ const ADMIN_MENU_SECTIONS = [
         name: "Scheduled Messages",
         href: "/dashboard/communication/scheduled",
         icon: Calendar,
+      },
+      {
+        name: "Campaigns",
+        href: "/dashboard/campaigns",
+        icon: Megaphone,
       },
     ],
   },
