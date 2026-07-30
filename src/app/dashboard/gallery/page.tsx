@@ -5,6 +5,7 @@ import { useRealtime } from "@/hooks/useRealtime";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
 import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
+import { getJsonOrError } from "@/lib/utils";
 import {
   Camera,
   Plus,
@@ -15,6 +16,7 @@ import {
   AlertCircle,
   Upload,
   Search,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Table,
@@ -121,6 +123,7 @@ function GalleryCrudPageContent() {
   // Delete State
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [blockedDeleteReason, setBlockedDeleteReason] = useState<string | null>(null);
 
   // Form State
   const [modalOpen, setModalOpen] = useState(false);
@@ -228,15 +231,16 @@ function GalleryCrudPageContent() {
       const res = await fetch(`/api/gallery/${deletingId}`, {
         method: "DELETE",
       });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to delete item.");
-      }
+      const data = await getJsonOrError(res, "Failed to delete item.");
       toast.success("Gallery item deleted successfully!");
       setDeleteDialogOpen(false);
       fetchItems();
     } catch (err: any) {
-      toast.error(err.message || "Failed to delete item.");
+      if (err.message && err.message.includes("dependency_conflict")) {
+        setBlockedDeleteReason("This gallery item cannot be deleted because it is still referenced by other active records.");
+      } else {
+        toast.error(err.message || "Failed to delete item.");
+      }
     } finally {
       setDeletingId(null);
     }
@@ -255,10 +259,7 @@ function GalleryCrudPageContent() {
         body: bodyData,
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to update item display settings.");
-      }
+      const data = await getJsonOrError(res, "Failed to update item display settings.");
 
       toast.success(
         item.isActive
@@ -284,10 +285,7 @@ function GalleryCrudPageContent() {
         body: bodyData,
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to update marquee track settings.");
-      }
+      const data = await getJsonOrError(res, "Failed to update marquee track settings.");
 
       toast.success(
         item.showInScroll
@@ -335,10 +333,7 @@ function GalleryCrudPageContent() {
         body: bodyData,
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to save item");
-      }
+      const data = await getJsonOrError(res, "Failed to save item");
 
       toast.success(
         editingId
@@ -681,28 +676,54 @@ function GalleryCrudPageContent() {
 
       {/* Delete slide Alert dialogue */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#1c1f4a] font-bold">
-              Delete Gallery Item
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
-              Are you sure you want to permanently delete this gallery image from the database? This action is irreversible.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel className="border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50">
+        <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div className="space-y-2">
+              <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">Delete Gallery Item</AlertDialogTitle>
+              <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                Are you sure you want to permanently delete this gallery image from the database? This action is irreversible.
+              </AlertDialogDescription>
+            </div>
+          </div>
+          <AlertDialogFooter className="flex sm:flex-row gap-2 mt-6 justify-center w-full">
+            <AlertDialogCancel className="flex-1 border border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50 py-2 h-9">
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white text-xs font-semibold rounded-xl"
-            >
+            <AlertDialogAction onClick={handleConfirmDelete} className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl py-2 h-9">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* DEPENDENCY BLOCKED DIALOG */}
+      {blockedDeleteReason && (
+        <AlertDialog open={!!blockedDeleteReason} onOpenChange={(open) => !open && setBlockedDeleteReason(null)}>
+          <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="space-y-2">
+                <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">
+                  Deletion Blocked
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                  {blockedDeleteReason}
+                </AlertDialogDescription>
+              </div>
+            </div>
+            <AlertDialogFooter className="mt-6 flex justify-center w-full">
+              <AlertDialogCancel className="w-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white border-0 text-xs font-semibold rounded-xl py-2 h-9">
+                Close
+              </AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }

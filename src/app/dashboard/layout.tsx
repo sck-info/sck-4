@@ -55,8 +55,16 @@ const ADMIN_MENU_SECTIONS = [
     title: "Operations",
     items: [
       { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-      { name: "Bookings Queue", href: "/dashboard/bookings", icon: ClipboardList },
-      { name: "Abandoned Bookings", href: "/dashboard/bookings/abandoned", icon: AlertCircle },
+      {
+        name: "Bookings Queue",
+        href: "/dashboard/bookings",
+        icon: ClipboardList,
+      },
+      {
+        name: "Interested Pending Leads",
+        href: "/dashboard/bookings/abandoned",
+        icon: AlertCircle,
+      },
       { name: "Announce Slots", href: "/dashboard/slots", icon: Calendar },
     ],
   },
@@ -83,15 +91,21 @@ const ADMIN_MENU_SECTIONS = [
   {
     title: "Communication",
     items: [
-      { name: "Manual Broadcast", href: "/dashboard/communication/manual", icon: MessageSquare },
-      { name: "Scheduled Messages", href: "/dashboard/communication/scheduled", icon: Calendar },
+      {
+        name: "Manual Broadcast",
+        href: "/dashboard/communication/manual",
+        icon: MessageSquare,
+      },
+      {
+        name: "Scheduled Messages",
+        href: "/dashboard/communication/scheduled",
+        icon: Calendar,
+      },
     ],
   },
   {
     title: "Access Control",
-    items: [
-      { name: "Users", href: "/dashboard/users", icon: Users },
-    ],
+    items: [{ name: "Users", href: "/dashboard/users", icon: Users }],
   },
 ];
 
@@ -363,9 +377,15 @@ export default function DashboardLayout({
               >
                 <div className="w-7 h-7 rounded-full bg-[#b86a16] flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-xs overflow-hidden">
                   {profileImage ? (
-                    <img src={profileImage} alt={profileName} className="w-full h-full object-cover" />
+                    <img
+                      src={profileImage}
+                      alt={profileName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : profileName ? (
+                    profileName[0]
                   ) : (
-                    profileName ? profileName[0] : "U"
+                    "U"
                   )}
                 </div>
                 <div className="flex flex-col text-left min-w-0 max-w-[120px] sm:max-w-[180px]">

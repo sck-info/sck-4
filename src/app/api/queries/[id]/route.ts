@@ -1,11 +1,52 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { userQueries } from "@/db/schema";
+import { userQueries, userQueryReplies } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { eq } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 
 const WHATSAPP_GATEWAY_URL = process.env.WHATSAPP_GATEWAY_URL || "http://localhost:3001";
 const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
+
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    const existing = await db
+      .select()
+      .from(userQueries)
+      .where(eq(userQueries.id, id))
+      .limit(1);
+
+    if (existing.length === 0) {
+      return NextResponse.json({ error: "Query not found." }, { status: 404 });
+    }
+
+    const replies = await db
+      .select()
+      .from(userQueryReplies)
+      .where(eq(userQueryReplies.queryId, id))
+      .orderBy(asc(userQueryReplies.createdAt));
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...existing[0],
+        replies,
+      },
+    });
+  } catch (err) {
+    console.error("GET query detail error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
 
 export async function PATCH(
   req: Request,
@@ -59,17 +100,24 @@ export async function PATCH(
       );
     }
 
-    // Update query status & reply details in DB
-    const updated = await db
-      .update(userQueries)
-      .set({
-        status: "replied",
-        replyMessage,
-        repliedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(userQueries.id, id))
-      .returning();
+    // Update query status & reply details in DB in a transaction
+    const updated = await db.transaction(async (tx) => {
+      await tx.insert(userQueryReplies).values({
+        queryId: id,
+        message: replyMessage,
+      });
+
+      return tx
+        .update(userQueries)
+        .set({
+          status: "replied",
+          replyMessage,
+          repliedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(userQueries.id, id))
+        .returning();
+    });
 
     return NextResponse.json({
       success: true,

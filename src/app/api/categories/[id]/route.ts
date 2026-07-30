@@ -69,8 +69,17 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true, data: deletedCategory });
-  } catch (err) {
+  } catch (err: any) {
     console.error("DELETE category error:", err);
+    if (err.code === "23503" || (err.message && err.message.includes("foreign key constraint"))) {
+      return NextResponse.json(
+        { 
+          error: "dependency_conflict",
+          message: "This category cannot be deleted because it is still referenced by other active offerings." 
+        }, 
+        { status: 409 }
+      );
+    }
     return NextResponse.json({ error: "Failed to delete category" }, { status: 500 });
   }
 }

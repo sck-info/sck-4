@@ -236,7 +236,7 @@ function AbandonedBookingsContent() {
         setPagination(json.pagination);
       } catch (err) {
         console.error("Error loading leads queue:", err);
-        toast.error("Error loading abandoned bookings queue");
+        toast.error("Error loading interested pending leads queue");
       } finally {
         setLoading(false);
       }
@@ -427,7 +427,7 @@ function AbandonedBookingsContent() {
         subCategoryFilter !== "all"
           ? subCategoryFilter.replace(/[^a-zA-Z0-9]/g, "_")
           : "";
-      let filterParts = ["abandoned_bookings"];
+      let filterParts = ["interested_pending_leads"];
       if (catClean) filterParts.push(catClean);
       if (subCatClean) filterParts.push(subCatClean);
 
@@ -442,7 +442,7 @@ function AbandonedBookingsContent() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      toast.success("Abandoned bookings CSV leads downloaded successfully!");
+      toast.success("Interested pending leads CSV downloaded successfully!");
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Failed to export draft bookings list");
@@ -463,7 +463,7 @@ function AbandonedBookingsContent() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-[#1c1f4a] font-display">
-            Abandoned Bookings Leads
+            Interested Pending Leads
           </h1>
           <p className="text-[11px] text-[#5a5e7a] mt-0.5">
             View draft registrations where seekers entered form details or
@@ -607,7 +607,7 @@ function AbandonedBookingsContent() {
                     <TableCell colSpan={6} className="text-center py-12">
                       <Loader2 className="w-6 h-6 text-[#b86a16] animate-spin mx-auto" />
                       <p className="text-xs text-[#5a5e7a] mt-2">
-                        Loading abandoned bookings queue...
+                        Loading interested pending leads queue...
                       </p>
                     </TableCell>
                   </TableRow>
@@ -616,7 +616,7 @@ function AbandonedBookingsContent() {
                     <TableCell colSpan={6} className="text-center py-16">
                       <AlertTriangle className="w-8 h-8 text-[#b86a16]/60 mx-auto mb-2" />
                       <p className="text-xs font-bold text-[#1c1f4a]">
-                        No abandoned leads found.
+                        No interested pending leads found.
                       </p>
                       <p className="text-[10px] text-[#5a5e7a] mt-1">
                         Try resetting filters or checking back later.

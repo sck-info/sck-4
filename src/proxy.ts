@@ -52,7 +52,10 @@ export default auth(async (req) => {
   }
 
   if (role === "USER" && !isPhoneVerified && !pathname.startsWith("/verify-phone")) {
-    return NextResponse.redirect(new URL("/verify-phone", req.url));
+    const verifyUrl = new URL("/verify-phone", req.url);
+    const redirectParam = req.nextUrl.searchParams.get("redirect") || req.nextUrl.searchParams.get("callbackUrl") || requestedPath(req);
+    verifyUrl.searchParams.set("redirect", redirectParam);
+    return NextResponse.redirect(verifyUrl);
   }
 
   if (pathname.startsWith("/dashboard") && userId) {

@@ -5,6 +5,7 @@ import { useRealtime } from "@/hooks/useRealtime";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
 import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
+import { getJsonOrError } from "@/lib/utils";
 import {
   Tag,
   Plus,
@@ -15,6 +16,7 @@ import {
   ArrowUpDown,
   BookOpen,
   Search,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Table,
@@ -146,6 +148,7 @@ function OfferingsDashboardContent() {
   // Deletion States
   const [deleteCatId, setDeleteCatId] = useState<string | null>(null);
   const [deleteSubId, setDeleteSubId] = useState<string | null>(null);
+  const [blockedDeleteReason, setBlockedDeleteReason] = useState<string | null>(null);
 
   // Find active category
   const activeCategory = categories.find((c) => c.name === activeTabName) || categories[0];
@@ -283,7 +286,7 @@ function OfferingsDashboardContent() {
       return;
     }
     setCatFormLoading(true);
-    const method = editingCat ? "PUT" : "POST";
+    const method = editingCat ? "PATCH" : "POST";
     const url = editingCat ? `/api/categories/${editingCat.id}` : "/api/categories";
 
     try {
@@ -292,8 +295,7 @@ function OfferingsDashboardContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(catFormData),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to save category");
+      const data = await getJsonOrError(res, "Failed to save category");
 
       toast.success(editingCat ? "Category updated successfully" : "Category created successfully");
       setCatModalOpen(false);
@@ -309,13 +311,16 @@ function OfferingsDashboardContent() {
     if (!deleteCatId) return;
     try {
       const res = await fetch(`/api/categories/${deleteCatId}`, { method: "DELETE" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to delete category");
+      const data = await getJsonOrError(res, "Failed to delete category");
 
       toast.success("Category dropped from index");
       fetchCategories();
     } catch (err: any) {
-      toast.error(err.message || "Failed to delete category");
+      if (err.message && err.message.includes("dependency_conflict")) {
+        setBlockedDeleteReason("This category cannot be deleted because it is still referenced by other active offerings. Please remove or reassign those offerings first.");
+      } else {
+        toast.error(err.message || "Failed to delete category");
+      }
     } finally {
       setDeleteCatId(null);
     }
@@ -365,7 +370,7 @@ function OfferingsDashboardContent() {
       return;
     }
     setSubFormLoading(true);
-    const method = editingSub ? "PUT" : "POST";
+    const method = editingSub ? "PATCH" : "POST";
     const url = editingSub ? `/api/sub-categories/${editingSub.id}` : "/api/sub-categories";
 
     const payload = {
@@ -386,8 +391,7 @@ function OfferingsDashboardContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to save offering");
+      const data = await getJsonOrError(res, "Failed to save offering");
 
       toast.success(editingSub ? "Offering updated successfully" : "Offering created successfully");
       setSubModalOpen(false);
@@ -403,11 +407,15 @@ function OfferingsDashboardContent() {
     if (!deleteSubId) return;
     try {
       const res = await fetch(`/api/sub-categories/${deleteSubId}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete sub-category");
+      const data = await getJsonOrError(res, "Failed to delete sub-category");
       toast.success("Offering removed successfully");
       fetchSubCategories();
     } catch (err: any) {
-      toast.error(err.message || "An error occurred");
+      if (err.message && err.message.includes("dependency_conflict")) {
+        setBlockedDeleteReason("This sub-category offering cannot be deleted because it is still referenced by active booking queues or questionnaires. Please remove or reassign those bookings first.");
+      } else {
+        toast.error(err.message || "An error occurred");
+      }
     } finally {
       setDeleteSubId(null);
     }
@@ -863,18 +871,23 @@ function OfferingsDashboardContent() {
 
       {/* ALERT DIALOG: Delete Category */}
       <AlertDialog open={!!deleteCatId} onOpenChange={(open) => !open && setDeleteCatId(null)}>
-        <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#1c1f4a] font-bold">Delete Category Folder</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
-              Are you sure you want to permanently delete this category folder? All associated offering items and seeker booking queues under this category will no longer match this scope.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel className="border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50">
+        <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div className="space-y-2">
+              <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">Delete Category Folder</AlertDialogTitle>
+              <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                Are you sure you want to permanently delete this category folder? All associated offering items and seeker booking queues under this category will no longer match this scope.
+              </AlertDialogDescription>
+            </div>
+          </div>
+          <AlertDialogFooter className="flex sm:flex-row gap-2 mt-6 justify-center w-full">
+            <AlertDialogCancel className="flex-1 border border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50 py-2 h-9">
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDeleteCat} className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white text-xs font-semibold rounded-xl">
+            <AlertDialogAction onClick={handleConfirmDeleteCat} className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl py-2 h-9">
               Delete Category
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -883,23 +896,54 @@ function OfferingsDashboardContent() {
 
       {/* ALERT DIALOG: Delete Sub-Category */}
       <AlertDialog open={!!deleteSubId} onOpenChange={(open) => !open && setDeleteSubId(null)}>
-        <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#1c1f4a] font-bold">Delete Offering Program</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
-              Are you sure you want to permanently delete this sub-category offering? This action cannot be undone and will affect live booking options.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel className="border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50">
+        <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div className="space-y-2">
+              <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">Delete Offering Program</AlertDialogTitle>
+              <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                Are you sure you want to permanently delete this sub-category offering? This action cannot be undone and will affect live booking options.
+              </AlertDialogDescription>
+            </div>
+          </div>
+          <AlertDialogFooter className="flex sm:flex-row gap-2 mt-6 justify-center w-full">
+            <AlertDialogCancel className="flex-1 border border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50 py-2 h-9">
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDeleteSub} className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white text-xs font-semibold rounded-xl">
+            <AlertDialogAction onClick={handleConfirmDeleteSub} className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl py-2 h-9">
               Delete Offering
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* DEPENDENCY BLOCKED DIALOG */}
+      {blockedDeleteReason && (
+        <AlertDialog open={!!blockedDeleteReason} onOpenChange={(open) => !open && setBlockedDeleteReason(null)}>
+          <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="space-y-2">
+                <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">
+                  Deletion Blocked
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                  {blockedDeleteReason}
+                </AlertDialogDescription>
+              </div>
+            </div>
+            <AlertDialogFooter className="mt-6 flex justify-center w-full">
+              <AlertDialogCancel className="w-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white border-0 text-xs font-semibold rounded-xl py-2 h-9">
+                Close
+              </AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }

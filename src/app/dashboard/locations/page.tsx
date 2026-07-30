@@ -5,6 +5,7 @@ import { useRealtime } from "@/hooks/useRealtime";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
 import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
+import { getJsonOrError } from "@/lib/utils";
 import {
   MapPin,
   Plus,
@@ -13,6 +14,7 @@ import {
   Loader2,
   AlertCircle,
   Search,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Table,
@@ -127,6 +129,7 @@ function LocationsDashboardContent() {
 
   // Deletion States
   const [deleteLocId, setDeleteLocId] = useState<string | null>(null);
+  const [blockedDeleteReason, setBlockedDeleteReason] = useState<string | null>(null);
 
   // Fetch functions
   const fetchLocations = useCallback(async () => {
@@ -210,10 +213,7 @@ function LocationsDashboardContent() {
         body: JSON.stringify(locFormData),
       });
 
-      const result = await res.json();
-      if (!res.ok) {
-        throw new Error(result.error || "Failed to commit location update.");
-      }
+      const result = await getJsonOrError(res, "Failed to commit location update.");
 
       toast.success(
         editingLoc
@@ -235,16 +235,16 @@ function LocationsDashboardContent() {
       const res = await fetch(`/api/locations/${deleteLocId}`, {
         method: "DELETE",
       });
-      const result = await res.json();
-
-      if (!res.ok) {
-        throw new Error(result.error || "Failed to delete location.");
-      }
+      const result = await getJsonOrError(res, "Failed to delete location.");
 
       toast.success("Location dropped from directory");
       fetchLocations();
     } catch (err: any) {
-      toast.error(err.message || "Could not delete location");
+      if (err.message && err.message.includes("dependency_conflict")) {
+        setBlockedDeleteReason("This location cannot be deleted because it is still referenced by other active bookings or slots. Please remove or reassign those bookings first.");
+      } else {
+        toast.error(err.message || "Could not delete location");
+      }
     } finally {
       setDeleteLocId(null);
     }
@@ -513,34 +513,55 @@ function LocationsDashboardContent() {
       </Dialog>
 
       {/* Delete Confirmation Alert */}
-      <AlertDialog
-        open={!!deleteLocId}
-        onOpenChange={(open) => !open && setDeleteLocId(null)}
-      >
-        <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#1c1f4a] font-bold">
-              Delete Location Pin
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
-              Are you sure you want to permanently delete this location
-              representation? Existing session slots bound to this location may
-              fail to render location URLs properly.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel className="border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50">
+      <AlertDialog open={!!deleteLocId} onOpenChange={(open) => !open && setDeleteLocId(null)}>
+        <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div className="space-y-2">
+              <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">Delete Location Pin</AlertDialogTitle>
+              <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                Are you sure you want to permanently delete this location representation? Existing session slots bound to this location may fail to render location URLs properly.
+              </AlertDialogDescription>
+            </div>
+          </div>
+          <AlertDialogFooter className="flex sm:flex-row gap-2 mt-6 justify-center w-full">
+            <AlertDialogCancel className="flex-1 border border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50 py-2 h-9">
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDeleteLoc}
-              className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white text-xs font-semibold rounded-xl"
-            >
+            <AlertDialogAction onClick={handleConfirmDeleteLoc} className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl py-2 h-9">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* DEPENDENCY BLOCKED DIALOG */}
+      {blockedDeleteReason && (
+        <AlertDialog open={!!blockedDeleteReason} onOpenChange={(open) => !open && setBlockedDeleteReason(null)}>
+          <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="space-y-2">
+                <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">
+                  Deletion Blocked
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                  {blockedDeleteReason}
+                </AlertDialogDescription>
+              </div>
+            </div>
+            <AlertDialogFooter className="mt-6 flex justify-center w-full">
+              <AlertDialogCancel className="w-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white border-0 text-xs font-semibold rounded-xl py-2 h-9">
+                Close
+              </AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }

@@ -18,6 +18,7 @@ export * from "./bookings";
 export * from "./feedbacks";
 export * from "./scheduled_messages";
 export * from "./booking_drafts";
+export * from "./user_query_replies";
 
 
 

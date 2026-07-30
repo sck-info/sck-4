@@ -15,7 +15,7 @@ import { toast } from "sonner";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/dashboard";
+  const redirect = searchParams.get("redirect") || searchParams.get("callbackUrl") || "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,7 +63,7 @@ function LoginForm() {
         setError("Wrong password. Please try again.");
       } else {
         toast.success("Successfully logged in!");
-        window.location.href = "/dashboard";
+        window.location.href = redirect;
       }
     } catch (err) {
       console.error(err);
@@ -192,7 +192,7 @@ function LoginForm() {
             <div className="mt-6 text-center">
               <p className="text-xs text-[#5a5e7a]">
                 Don&apos;t have an account?{" "}
-                <Link href="/register" className="text-[#b86a16] hover:text-[#b86a16]/80 font-semibold transition-colors">
+                <Link href={`/register${redirect !== "/dashboard" ? `?redirect=${encodeURIComponent(redirect)}` : ""}`} className="text-[#b86a16] hover:text-[#b86a16]/80 font-semibold transition-colors">
                   Register here
                 </Link>
               </p>

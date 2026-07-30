@@ -169,13 +169,42 @@ export default function BookingClient({
   // Real-time slot validity check
   useEffect(() => {
     if (selectedSlot) {
-      const stillAvailable = slots.some((s) => s.id === selectedSlot.id);
-      if (!stillAvailable) {
+      const freshSlot = slots.find((s) => s.id === selectedSlot.id);
+      if (!freshSlot || freshSlot.status !== "available") {
         setSelectedSlot(null);
         setSelectedDate(null);
+        setSelectedFormat(null);
+        setSelectedLocationId("");
+      } else {
+        const timingChanged =
+          freshSlot.slotDate !== selectedSlot.slotDate ||
+          freshSlot.startTime !== selectedSlot.startTime ||
+          freshSlot.endTime !== selectedSlot.endTime;
+
+        const hasOnline = freshSlot.locations.some((l) => l.type === "online");
+        const hasOffline = freshSlot.locations.some((l) => l.type === "offline");
+
+        let formatNoLongerSupported = false;
+        if (selectedFormat === "online" && !hasOnline) formatNoLongerSupported = true;
+        if (selectedFormat === "offline" && !hasOffline) formatNoLongerSupported = true;
+
+        let locationNoLongerSupported = false;
+        if (selectedFormat === "offline" && selectedLocationId) {
+          const locExists = freshSlot.locations.some((l) => l.id === selectedLocationId);
+          if (!locExists) locationNoLongerSupported = true;
+        }
+
+        if (timingChanged || formatNoLongerSupported || locationNoLongerSupported) {
+          setSelectedSlot(null);
+          setSelectedDate(null);
+          setSelectedFormat(null);
+          setSelectedLocationId("");
+        } else {
+          setSelectedSlot(freshSlot);
+        }
       }
     }
-  }, [slots, selectedSlot]);
+  }, [slots, selectedSlot, selectedFormat, selectedLocationId]);
 
   // Real-time Update listeners
   useRealtime(["offering_slots"], loadSlots);

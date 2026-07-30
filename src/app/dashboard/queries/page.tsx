@@ -132,6 +132,8 @@ function QueriesPageContent() {
   // Reply state
   const [replyDialogOpen, setReplyDialogOpen] = useState(false);
   const [activeQuery, setActiveQuery] = useState<QueryRow | null>(null);
+  const [activeQueryReplies, setActiveQueryReplies] = useState<any[]>([]);
+  const [loadingReplies, setLoadingReplies] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [replyLoading, setReplyLoading] = useState(false);
 
@@ -189,10 +191,25 @@ function QueriesPageContent() {
     });
   };
 
-  const handleOpenReply = (query: QueryRow) => {
+  const handleOpenReply = async (query: QueryRow) => {
     setActiveQuery(query);
     setReplyText("");
+    setActiveQueryReplies([]);
     setReplyDialogOpen(true);
+    setLoadingReplies(true);
+    try {
+      const res = await fetch(`/api/queries/${query.id}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          setActiveQueryReplies(json.data.replies || []);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load conversation history:", err);
+    } finally {
+      setLoadingReplies(false);
+    }
   };
 
   const handleSendReply = async (e: React.FormEvent) => {
@@ -211,7 +228,16 @@ function QueriesPageContent() {
       if (!res.ok) throw new Error(result.error || "Failed to dispatch reply message.");
 
       toast.success("Reply successfully sent via WhatsApp!");
-      setReplyDialogOpen(false);
+      setReplyText("");
+      
+      // Refresh replies list
+      const freshRes = await fetch(`/api/queries/${activeQuery.id}`);
+      if (freshRes.ok) {
+        const freshJson = await freshRes.json();
+        if (freshJson.success && freshJson.data) {
+          setActiveQueryReplies(freshJson.data.replies || []);
+        }
+      }
       fetchQueries();
     } catch (err: any) {
       toast.error(err.message || "Could not send reply.");
@@ -433,6 +459,32 @@ function QueriesPageContent() {
                   "{activeQuery.message}"
                 </p>
               </div>
+
+              {/* Conversation History / Dispatched Replies */}
+              {activeQueryReplies.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-[10px] text-[#5a5e7a] block font-bold uppercase tracking-wider">Dispatched Replies ({activeQueryReplies.length})</span>
+                  <div className="max-h-[160px] overflow-y-auto space-y-2 pr-1 divide-y divide-[#e8dcc4]/20 border border-[#e8dcc4]/40 rounded-xl p-3 bg-[#faf7f2]/10">
+                    {activeQueryReplies.map((reply, index) => (
+                      <div key={reply.id} className={`text-xs space-y-1 ${index > 0 ? "pt-2" : ""}`}>
+                        <div className="flex justify-between items-center text-[9px] text-[#5a5e7a] font-semibold">
+                          <span className="text-[#b86a16]">ADMIN REPLY #{index + 1}</span>
+                          <span>{formatDate(reply.createdAt)}</span>
+                        </div>
+                        <p className="text-[#1c1f4a] font-medium leading-relaxed break-words whitespace-pre-wrap">
+                          {reply.message}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {loadingReplies && (
+                <div className="flex items-center justify-center py-4 gap-1.5 text-xs text-[#5a5e7a]">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#b86a16]" />
+                  <span>Loading dispatch log...</span>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="replyText" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">

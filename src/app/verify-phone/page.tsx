@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import {
@@ -23,8 +23,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-export default function VerifyPhonePage() {
+function VerifyPhoneContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || searchParams.get("callbackUrl") || "/dashboard";
   const { data: session, status, update } = useSession();
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,15 +35,15 @@ export default function VerifyPhonePage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/login");
+      router.push(`/login${redirect !== "/dashboard" ? `?redirect=${encodeURIComponent(redirect)}` : ""}`);
     }
-  }, [status, router]);
+  }, [status, router, redirect]);
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.isPhoneVerified) {
-      router.push("/dashboard");
+      router.push(redirect);
     }
-  }, [status, session, router]);
+  }, [status, session, router, redirect]);
 
   if (status === "loading" || !session?.user) {
     return (
@@ -111,7 +113,7 @@ export default function VerifyPhonePage() {
 
       await update({ isPhoneVerified: true });
 
-      window.location.href = "/";
+      window.location.href = redirect;
     } catch {
       setError("Failed to verify OTP. Please try again.");
     } finally {
@@ -211,5 +213,17 @@ export default function VerifyPhonePage() {
         </Card>
       </motion.div>
     </div>
+  );
+}
+
+export default function VerifyPhonePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#faf7f2]">
+        <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin" />
+      </div>
+    }>
+      <VerifyPhoneContent />
+    </Suspense>
   );
 }

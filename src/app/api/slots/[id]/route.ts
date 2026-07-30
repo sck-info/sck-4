@@ -16,7 +16,7 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await req.json();
-    const { status, locationIds } = body;
+    const { status, locationIds, subCategoryId, slotDate, startTime, endTime } = body;
 
     const updateFields: any = {};
     if (status !== undefined) {
@@ -26,6 +26,10 @@ export async function PATCH(
       }
       updateFields.status = status;
     }
+    if (subCategoryId !== undefined) updateFields.subCategoryId = subCategoryId;
+    if (slotDate !== undefined) updateFields.slotDate = slotDate;
+    if (startTime !== undefined) updateFields.startTime = startTime;
+    if (endTime !== undefined) updateFields.endTime = endTime;
 
     const updatedSlot = await db.transaction(async (tx) => {
       let slotRecord = null;
@@ -96,8 +100,17 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true, data: deletedSlot });
-  } catch (err) {
+  } catch (err: any) {
     console.error("DELETE slot error:", err);
+    if (err.code === "23503" || (err.message && err.message.includes("foreign key constraint"))) {
+      return NextResponse.json(
+        { 
+          error: "dependency_conflict",
+          message: "This slot cannot be deleted because it is already referenced by existing bookings." 
+        }, 
+        { status: 409 }
+      );
+    }
     return NextResponse.json({ error: "Failed to delete slot" }, { status: 500 });
   }
 }

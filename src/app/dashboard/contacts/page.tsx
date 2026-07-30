@@ -17,7 +17,9 @@ import {
   X,
   Loader2,
   AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
+import { getJsonOrError } from "@/lib/utils";
 import { FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -105,6 +107,7 @@ function ContactsCrudPageContent() {
   // Delete State
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [blockedDeleteReason, setBlockedDeleteReason] = useState<string | null>(null);
 
   // Form State
   const [modalOpen, setModalOpen] = useState(false);
@@ -193,14 +196,15 @@ function ContactsCrudPageContent() {
       const res = await fetch(`/api/contacts/${deletingId}`, {
         method: "DELETE",
       });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Failed to delete contact");
-      }
+      const data = await getJsonOrError(res, "Failed to delete contact");
       setContacts((prev) => prev.filter((c) => c.id !== deletingId));
       toast.success("Contact details deleted successfully!");
     } catch (err: any) {
-      toast.error(err.message || "Failed to delete contact.");
+      if (err.message && err.message.includes("dependency_conflict")) {
+        setBlockedDeleteReason("This contact detail set cannot be deleted because it is still referenced by other active records.");
+      } else {
+        toast.error(err.message || "Failed to delete contact.");
+      }
     } finally {
       setDeleteDialogOpen(false);
       setDeletingId(null);
@@ -225,9 +229,7 @@ function ContactsCrudPageContent() {
         }),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to activate contact set");
-      }
+      const data = await getJsonOrError(res, "Failed to activate contact set");
       toast.success("Contact details activated successfully!");
       fetchContacts();
     } catch (err: any) {
@@ -283,10 +285,7 @@ function ContactsCrudPageContent() {
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to save contact set");
-      }
+      const data = await getJsonOrError(res, "Failed to save contact set");
 
       toast.success(
         editingId
@@ -363,9 +362,6 @@ function ContactsCrudPageContent() {
               <TableHeader className="bg-[#1c1f4a]/5">
                 <TableRow className="border-b border-[#e8dcc4]">
                   <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
-                    Status
-                  </TableHead>
-                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
                     Email
                   </TableHead>
                   <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
@@ -376,6 +372,9 @@ function ContactsCrudPageContent() {
                   </TableHead>
                   <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
                     Social Channels
+                  </TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-[#1c1f4a]">
+                    Status
                   </TableHead>
                   <TableHead className="py-3 px-4 font-bold text-[#1c1f4a] text-right">
                     Actions
@@ -390,19 +389,6 @@ function ContactsCrudPageContent() {
                       contact.isActive ? "bg-[#eaf2eb]/30" : ""
                     }`}
                   >
-                    <TableCell className="py-3 px-4">
-                      <button
-                        onClick={() => handleToggleActive(contact)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
-                          contact.isActive
-                            ? "bg-[#6b8f71]/15 text-[#6b8f71]"
-                            : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
-                        }`}
-                      >
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        {contact.isActive ? "Active" : "Set Active"}
-                      </button>
-                    </TableCell>
                     <TableCell className="py-3 px-4 text-[#1c1f4a] font-medium">
                       {contact.email ? (
                         <span className="flex items-center gap-2">
@@ -483,21 +469,33 @@ function ContactsCrudPageContent() {
                           )}
                       </div>
                     </TableCell>
+                    <TableCell className="py-3 px-4 text-xs">
+                      <button
+                        onClick={() => handleToggleActive(contact)}
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
+                          contact.isActive
+                            ? "bg-[#6b8f71]/15 text-[#6b8f71]"
+                            : "bg-[#9396ae]/10 text-[#5a5e7a] hover:bg-[#b86a16]/10 hover:text-[#b86a16]"
+                        }`}
+                      >
+                        {contact.isActive ? "Active" : "Activate"}
+                      </button>
+                    </TableCell>
                     <TableCell className="py-3 px-4 text-right">
-                      <div className="inline-flex items-center gap-2">
+                      <div className="inline-flex gap-2">
                         <button
                           onClick={() => handleOpenEdit(contact)}
-                          className="p-2 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
+                          className="p-1.5 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
                           title="Edit"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleTriggerDelete(contact.id)}
-                          className="p-2 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
+                          className="p-1.5 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
                           title="Delete"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </TableCell>
@@ -703,29 +701,54 @@ function ContactsCrudPageContent() {
         </DialogContent>
       </Dialog>
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="w-[280px] max-w-[90vw] bg-white rounded-3xl border-0 shadow-xl p-6">
-          <AlertDialogHeader className="text-center flex flex-col items-center">
-            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">
-              Delete Contact Set
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              Are you sure you want to delete this contact set? This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
-            <AlertDialogCancel className="flex-1 border border-[#c4796a] text-[#c4796a] hover:bg-[#c4796a]/5 rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
-              No
+        <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div className="space-y-2">
+              <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">Delete Contact Set</AlertDialogTitle>
+              <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                Are you sure you want to delete this contact set? This action cannot be undone.
+              </AlertDialogDescription>
+            </div>
+          </div>
+          <AlertDialogFooter className="flex sm:flex-row gap-2 mt-6 justify-center w-full">
+            <AlertDialogCancel className="flex-1 border border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50 py-2 h-9">
+              Cancel
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="flex-1 bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer"
-            >
-              Yes
+            <AlertDialogAction onClick={handleConfirmDelete} className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl py-2 h-9">
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* DEPENDENCY BLOCKED DIALOG */}
+      {blockedDeleteReason && (
+        <AlertDialog open={!!blockedDeleteReason} onOpenChange={(open) => !open && setBlockedDeleteReason(null)}>
+          <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="space-y-2">
+                <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">
+                  Deletion Blocked
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                  {blockedDeleteReason}
+                </AlertDialogDescription>
+              </div>
+            </div>
+            <AlertDialogFooter className="mt-6 flex justify-center w-full">
+              <AlertDialogCancel className="w-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white border-0 text-xs font-semibold rounded-xl py-2 h-9">
+                Close
+              </AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }

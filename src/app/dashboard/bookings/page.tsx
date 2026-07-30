@@ -804,12 +804,31 @@ function BookingsDashboardContent() {
                 {sortedQuestions.length > 0 ? (
                   <div className="space-y-3.5">
                     {sortedQuestions.map((q) => {
-                      const answer = viewResponsesBooking.formResponses[q.questionId];
+                      const answer = viewResponsesBooking.formResponses[q.id];
+                      let displayVal = "";
+                      if (answer && typeof answer === "object" && !Array.isArray(answer)) {
+                        const selected = Array.isArray(answer.selected)
+                          ? answer.selected.join(", ")
+                          : String(answer.selected);
+                        const specify = answer.customValue
+                          ? ` (Specified: "${answer.customValue}")`
+                          : "";
+                        displayVal = `${selected}${specify}`;
+                      } else {
+                        displayVal = Array.isArray(answer)
+                          ? answer.join(", ")
+                          : String(answer || "");
+                      }
+
                       return (
                         <div key={q.id} className="p-3.5 bg-[#faf7f2]/30 border border-[#e8dcc4]/60 rounded-xl space-y-1">
                           <span className="text-xs font-semibold text-[#1c1f4a]">{q.fieldLabel}</span>
                           <p className="text-xs text-[#5a5e7a] leading-relaxed font-medium">
-                            {answer !== undefined ? String(answer) : <span className="text-gray-400 italic">Not answered</span>}
+                            {answer !== undefined ? (
+                              displayVal || <span className="text-gray-400 italic">Not answered</span>
+                            ) : (
+                              <span className="text-gray-400 italic">Not answered</span>
+                            )}
                           </p>
                         </div>
                       );

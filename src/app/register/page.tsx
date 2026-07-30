@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
@@ -43,8 +43,10 @@ import "react-phone-number-input/style.css";
 
 type Step = "details" | "otp";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || searchParams.get("callbackUrl") || "/";
 
   const [step, setStep] = useState<Step>("details");
   const [name, setName] = useState("");
@@ -166,11 +168,11 @@ export default function RegisterPage() {
 
       if (signInRes?.error) {
         setError("Auto-login failed. Please sign in manually.");
-        router.push("/login");
+        router.push(`/login${redirect !== "/" ? `?redirect=${encodeURIComponent(redirect)}` : ""}`);
         return;
       }
 
-      window.location.href = "/";
+      window.location.href = redirect;
     } catch {
       setError("Failed to verify OTP. Please try again.");
     } finally {
@@ -508,7 +510,7 @@ export default function RegisterPage() {
               <div className="mt-6 text-center">
                 <p className="text-xs text-[#5a5e7a]">
                   Already have an account?{" "}
-                  <Link href="/login" className="text-[#b86a16] hover:text-[#b86a16]/80 font-semibold transition-colors">
+                  <Link href={`/login${redirect !== "/" ? `?redirect=${encodeURIComponent(redirect)}` : ""}`} className="text-[#b86a16] hover:text-[#b86a16]/80 font-semibold transition-colors">
                     Sign in
                   </Link>
                 </p>
@@ -518,5 +520,17 @@ export default function RegisterPage() {
         </Card>
       </motion.div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#faf7f2]">
+        <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin" />
+      </div>
+    }>
+      <RegisterForm />
+    </Suspense>
   );
 }

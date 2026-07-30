@@ -171,7 +171,7 @@ export default function AdminDashboard() {
       color: "border-[#6b8f71]/30 text-[#6b8f71] bg-[#6b8f71]/5",
     },
     {
-      title: "ABANDONED LEADS",
+      title: "INTERESTED PENDING LEADS",
       value: stats.totalDrafts,
       description: "Dropped out before payment",
       icon: AlertTriangle,

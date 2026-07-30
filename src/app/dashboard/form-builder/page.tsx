@@ -5,6 +5,7 @@ import { useRealtime } from "@/hooks/useRealtime";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
 import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
+import { getJsonOrError } from "@/lib/utils";
 import {
   HelpCircle,
   Plus,
@@ -15,6 +16,7 @@ import {
   Settings,
   ArrowUpDown,
   BookOpen,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Table,
@@ -209,6 +211,7 @@ function FormBuilderDashboardContent() {
   });
   const [libFormLoading, setLibFormLoading] = useState(false);
   const [deleteLibId, setDeleteLibId] = useState<string | null>(null);
+  const [blockedDeleteReason, setBlockedDeleteReason] = useState<string | null>(null);
 
   // Link Question state
   const [linkModalOpen, setLinkModalOpen] = useState(false);
@@ -416,18 +419,21 @@ function FormBuilderDashboardContent() {
     }
   };
 
-  // Delete Library Question
   const handleConfirmDeleteLib = async () => {
     if (!deleteLibId) return;
     try {
       const res = await fetch(`/api/questions/${deleteLibId}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("Failed to delete question");
+      const data = await getJsonOrError(res, "Failed to delete question");
       toast.success("Question deleted successfully");
       fetchLibrary();
     } catch (err: any) {
-      toast.error(err.message || "An error occurred");
+      if (err.message && err.message.includes("dependency_conflict")) {
+        setBlockedDeleteReason("This question cannot be deleted because it is still linked to active offering forms. Please unlink this question from all offerings before deleting it permanently.");
+      } else {
+        toast.error(err.message || "An error occurred");
+      }
     } finally {
       setDeleteLibId(null);
     }
@@ -1305,62 +1311,80 @@ function FormBuilderDashboardContent() {
       </Dialog>
 
       {/* ALERT: Confirm Delete Library Question */}
-      <AlertDialog
-        open={deleteLibId !== null}
-        onOpenChange={(open) => !open && setDeleteLibId(null)}
-      >
-        <AlertDialogContent className="w-[300px] max-w-[90vw] bg-white rounded-3xl border-0 shadow-xl p-6">
-          <AlertDialogHeader className="text-center flex flex-col items-center">
-            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">
-              Delete Question
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              Are you sure? This will delete the question from the pool and
-              UNLINK it from ALL sub-category forms!
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
-            <AlertDialogCancel className="flex-1 border border-[#c4796a] text-[#c4796a] hover:bg-[#c4796a]/5 rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
-              No
+      <AlertDialog open={deleteLibId !== null} onOpenChange={(open) => !open && setDeleteLibId(null)}>
+        <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div className="space-y-2">
+              <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">Delete Question</AlertDialogTitle>
+              <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                Are you sure? This will delete the question from the pool and UNLINK it from ALL sub-category forms!
+              </AlertDialogDescription>
+            </div>
+          </div>
+          <AlertDialogFooter className="flex sm:flex-row gap-2 mt-6 justify-center w-full">
+            <AlertDialogCancel className="flex-1 border border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50 py-2 h-9">
+              Cancel
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDeleteLib}
-              className="flex-1 bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer"
-            >
-              Yes
+            <AlertDialogAction onClick={handleConfirmDeleteLib} className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl py-2 h-9">
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       {/* ALERT: Confirm Unlink Question */}
-      <AlertDialog
-        open={unlinkConfirmId !== null}
-        onOpenChange={(open) => !open && setUnlinkConfirmId(null)}
-      >
-        <AlertDialogContent className="w-[300px] max-w-[90vw] bg-white rounded-3xl border-0 shadow-xl p-6">
-          <AlertDialogHeader className="text-center flex flex-col items-center">
-            <AlertDialogTitle className="text-center text-base font-semibold text-gray-900">
-              Unlink Question
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-xs text-gray-600 mt-1">
-              Are you sure you want to remove this question from this offering
-              form? Responses already submitted by users will remain archived.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row gap-2 justify-center mt-4">
-            <AlertDialogCancel className="flex-1 border border-[#c4796a] text-[#c4796a] hover:bg-[#c4796a]/5 rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer">
-              No
+      <AlertDialog open={unlinkConfirmId !== null} onOpenChange={(open) => !open && setUnlinkConfirmId(null)}>
+        <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div className="space-y-2">
+              <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">Unlink Question</AlertDialogTitle>
+              <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                Are you sure you want to remove this question from this offering form? Responses already submitted by users will remain archived.
+              </AlertDialogDescription>
+            </div>
+          </div>
+          <AlertDialogFooter className="flex sm:flex-row gap-2 mt-6 justify-center w-full">
+            <AlertDialogCancel className="flex-1 border border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50 py-2 h-9">
+              Cancel
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmUnlink}
-              className="flex-1 bg-[#c4796a] hover:bg-[#c4796a]/90 text-white rounded-xl px-2 py-1.5 text-xs transition-colors cursor-pointer"
-            >
-              Yes
+            <AlertDialogAction onClick={handleConfirmUnlink} className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl py-2 h-9">
+              Unlink
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* DEPENDENCY BLOCKED DIALOG */}
+      {blockedDeleteReason && (
+        <AlertDialog open={!!blockedDeleteReason} onOpenChange={(open) => !open && setBlockedDeleteReason(null)}>
+          <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="space-y-2">
+                <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">
+                  Deletion Blocked
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                  {blockedDeleteReason}
+                </AlertDialogDescription>
+              </div>
+            </div>
+            <AlertDialogFooter className="mt-6 flex justify-center w-full">
+              <AlertDialogCancel className="w-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white border-0 text-xs font-semibold rounded-xl py-2 h-9">
+                Close
+              </AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }

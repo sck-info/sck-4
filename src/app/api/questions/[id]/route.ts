@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { formQuestions } from "@/db/schema";
+import { formQuestions, subCategoryQuestions } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
 
@@ -73,6 +73,23 @@ export async function DELETE(
 
     const { id } = await params;
 
+    // Check if the question is assigned to any subcategory form
+    const linkedAssignments = await db
+      .select({ id: subCategoryQuestions.id })
+      .from(subCategoryQuestions)
+      .where(eq(subCategoryQuestions.questionId, id))
+      .limit(1);
+
+    if (linkedAssignments.length > 0) {
+      return NextResponse.json(
+        { 
+          error: "dependency_conflict",
+          message: "This question cannot be deleted because it is still linked to active offering form questionnaires." 
+        }, 
+        { status: 409 }
+      );
+    }
+
     const [deletedQuestion] = await db
       .delete(formQuestions)
       .where(eq(formQuestions.id, id))
@@ -83,7 +100,7 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true, data: deletedQuestion });
-  } catch (err) {
+  } catch (err: any) {
     console.error("DELETE question error:", err);
     return NextResponse.json({ error: "Failed to delete question" }, { status: 500 });
   }

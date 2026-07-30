@@ -102,8 +102,17 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true, data: deletedQR });
-  } catch (err) {
+  } catch (err: any) {
     console.error("DELETE QR error:", err);
+    if (err.code === "23503" || (err.message && err.message.includes("foreign key constraint"))) {
+      return NextResponse.json(
+        { 
+          error: "dependency_conflict",
+          message: "This QR code cannot be deleted because it is still assigned to active sub-category offerings." 
+        }, 
+        { status: 409 }
+      );
+    }
     return NextResponse.json({ error: "Failed to delete QR code" }, { status: 500 });
   }
 }

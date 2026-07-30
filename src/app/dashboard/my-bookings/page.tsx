@@ -488,23 +488,24 @@ function SeekerBookingsContent() {
               ) : sortedQuestions.length > 0 ? (
                 sortedQuestions.map((q) => {
                   const ans = viewResponsesBooking.formResponses[q.id];
-                  if (ans === undefined) return null;
 
                   let displayAns = "";
                   let customVal = "";
 
-                  if (ans && typeof ans === "object") {
-                    const obj = ans as any;
-                    if (Array.isArray(obj.selected)) {
-                      displayAns = obj.selected.join(", ");
+                  if (ans !== undefined) {
+                    if (ans && typeof ans === "object") {
+                      const obj = ans as any;
+                      if (Array.isArray(obj.selected)) {
+                        displayAns = obj.selected.join(", ");
+                      } else {
+                        displayAns = String(obj.selected || "");
+                      }
+                      customVal = obj.customValue || "";
+                    } else if (Array.isArray(ans)) {
+                      displayAns = ans.join(", ");
                     } else {
-                      displayAns = String(obj.selected || "");
+                      displayAns = String(ans || "");
                     }
-                    customVal = obj.customValue || "";
-                  } else if (Array.isArray(ans)) {
-                    displayAns = ans.join(", ");
-                  } else {
-                    displayAns = String(ans || "");
                   }
 
                   return (

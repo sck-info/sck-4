@@ -5,6 +5,7 @@ import { useRealtime } from "@/hooks/useRealtime";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TablePaginationFooter from "@/components/dashboard/TablePaginationFooter";
 import { type PaginationMeta, DEFAULT_PAGE_LIMIT } from "@/lib/pagination";
+import { getJsonOrError } from "@/lib/utils";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { DateRange } from "react-day-picker";
 import {
@@ -17,6 +18,8 @@ import {
   CheckCircle,
   Play,
   Pause,
+  AlertTriangle,
+  Edit2,
 } from "lucide-react";
 import {
   Table,
@@ -208,6 +211,9 @@ function SlotsDashboardContent() {
 
   // Deletion slot states
   const [deleteSlot, setDeleteSlot] = useState<SlotRow | null>(null);
+  const [blockedDeleteReason, setBlockedDeleteReason] = useState<string | null>(null);
+  const [editingSlot, setEditingSlot] = useState<SlotRow | null>(null);
+  const [suspendConfirmSlot, setSuspendConfirmSlot] = useState<SlotRow | null>(null);
 
   // Fetch Slots
   const fetchSlots = useCallback(async () => {
@@ -277,12 +283,36 @@ function SlotsDashboardContent() {
 
   // Trigger forms
   const handleOpenAnnounce = () => {
+    setEditingSlot(null);
     setFormData({
       subCategoryId: subCategories[0]?.id || "",
       slotDate: undefined,
       startTime: "09:00",
       endTime: "10:00",
       selectedLocIds: [],
+    });
+    setFormError("");
+    setModalOpen(true);
+  };
+
+  const handleOpenEdit = (slot: SlotRow) => {
+    setEditingSlot(slot);
+
+    const cleanTime = (t: string) => {
+      if (!t) return "";
+      const parts = t.split(":");
+      if (parts.length >= 2) {
+        return `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}`;
+      }
+      return t;
+    };
+
+    setFormData({
+      subCategoryId: slot.subCategoryId,
+      slotDate: new Date(slot.slotDate),
+      startTime: cleanTime(slot.startTime),
+      endTime: cleanTime(slot.endTime),
+      selectedLocIds: slot.locations ? slot.locations.map((l) => l.id) : [],
     });
     setFormError("");
     setModalOpen(true);
@@ -315,8 +345,10 @@ function SlotsDashboardContent() {
     const formattedDate = `${formData.slotDate.getFullYear()}-${String(formData.slotDate.getMonth() + 1).padStart(2, "0")}-${String(formData.slotDate.getDate()).padStart(2, "0")}`;
 
     try {
-      const res = await fetch("/api/slots", {
-        method: "POST",
+      const url = editingSlot ? `/api/slots/${editingSlot.id}` : "/api/slots";
+      const method = editingSlot ? "PATCH" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           subCategoryId: formData.subCategoryId,
@@ -327,13 +359,11 @@ function SlotsDashboardContent() {
         }),
       });
 
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error || "An overlap conflict occurred.");
-      }
+      const json = await getJsonOrError(res, editingSlot ? "Failed to save slot changes." : "An overlap conflict occurred.");
 
-      toast.success("Timings slot announced successfully!");
+      toast.success(editingSlot ? "Timings slot updated successfully!" : "Timings slot announced successfully!");
       setModalOpen(false);
+      setEditingSlot(null);
       fetchSlots();
     } catch (err: any) {
       setFormError(err.message || "An unexpected database error occurred.");
@@ -349,16 +379,16 @@ function SlotsDashboardContent() {
       const res = await fetch(`/api/slots/${deleteSlot.id}`, {
         method: "DELETE",
       });
-      const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json.error || "Failed to delete slot.");
-      }
+      const json = await getJsonOrError(res, "Failed to delete slot.");
 
       toast.success("Timings slot deleted successfully.");
       fetchSlots();
     } catch (err: any) {
-      toast.error(err.message || "Failed to delete slot.");
+      if (err.message && err.message.includes("dependency_conflict")) {
+        setBlockedDeleteReason("This slot cannot be deleted because it is already referenced by existing bookings. Please reassign or cancel those bookings first.");
+      } else {
+        toast.error(err.message || "Failed to delete slot.");
+      }
     } finally {
       setDeleteSlot(null);
     }
@@ -372,11 +402,7 @@ function SlotsDashboardContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
-      const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json.error || "Failed to update slot status.");
-      }
+      const json = await getJsonOrError(res, "Failed to update slot status.");
 
       toast.success(
         newStatus === "suspended"
@@ -612,9 +638,18 @@ function SlotsDashboardContent() {
                     </TableCell>
                     <TableCell className="py-3 px-4 text-right">
                       <div className="inline-flex items-center gap-1.5 justify-end">
+                        {slot.status !== "booked" && (
+                          <button
+                            onClick={() => handleOpenEdit(slot)}
+                            className="p-1.5 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
+                            title="Edit timings slot"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                         {slot.status === "available" && (
                           <button
-                            onClick={() => handleToggleStatus(slot)}
+                            onClick={() => setSuspendConfirmSlot(slot)}
                             className="p-1.5 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer"
                             title="Suspend timings slot"
                           >
@@ -655,11 +690,14 @@ function SlotsDashboardContent() {
       )}
 
       {/* Announce Modal Dialog */}
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+      <Dialog open={modalOpen} onOpenChange={(open) => {
+        setModalOpen(open);
+        if (!open) setEditingSlot(null);
+      }}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-5 rounded-t-3xl flex flex-row items-center gap-2">
             <DialogTitle className="text-white text-md font-bold">
-              Announce Timings Slot
+              {editingSlot ? "Edit Timings Slot" : "Announce Timings Slot"}
             </DialogTitle>
           </DialogHeader>
 
@@ -817,6 +855,8 @@ function SlotsDashboardContent() {
               >
                 {formLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
+                ) : editingSlot ? (
+                  "Save Changes"
                 ) : (
                   "Publish Slot"
                 )}
@@ -827,34 +867,92 @@ function SlotsDashboardContent() {
       </Dialog>
 
       {/* Delete Slot AlertDialog */}
-      <AlertDialog
-        open={!!deleteSlot}
-        onOpenChange={(open) => !open && setDeleteSlot(null)}
-      >
-        <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#1c1f4a] font-bold">
-              Cancel Timings Slot
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
-              Are you sure you want to permanently delete this announced session
-              timing slot? Users will no longer be able to select or book this
-              session.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel className="border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50">
+      <AlertDialog open={!!deleteSlot} onOpenChange={(open) => !open && setDeleteSlot(null)}>
+        <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div className="space-y-2">
+              <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">Cancel Timings Slot</AlertDialogTitle>
+              <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                Are you sure you want to permanently delete this announced session timing slot? Users will no longer be able to select or book this session.
+              </AlertDialogDescription>
+            </div>
+          </div>
+          <AlertDialogFooter className="flex sm:flex-row gap-2 mt-6 justify-center w-full">
+            <AlertDialogCancel className="flex-1 border border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50 py-2 h-9">
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white text-xs font-semibold rounded-xl"
-            >
+            <AlertDialogAction onClick={handleConfirmDelete} className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl py-2 h-9">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* DEPENDENCY BLOCKED DIALOG */}
+      {blockedDeleteReason && (
+        <AlertDialog open={!!blockedDeleteReason} onOpenChange={(open) => !open && setBlockedDeleteReason(null)}>
+          <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="space-y-2">
+                <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">
+                  Deletion Blocked
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                  {blockedDeleteReason}
+                </AlertDialogDescription>
+              </div>
+            </div>
+            <AlertDialogFooter className="mt-6 flex justify-center w-full">
+              <AlertDialogCancel className="w-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white border-0 text-xs font-semibold rounded-xl py-2 h-9">
+                Close
+              </AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
+      {/* SUSPEND CONFIRMATION DIALOG */}
+      {suspendConfirmSlot && (
+        <AlertDialog open={!!suspendConfirmSlot} onOpenChange={(open) => !open && setSuspendConfirmSlot(null)}>
+          <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100">
+                <Pause className="w-5 h-5" />
+              </div>
+              <div className="space-y-2">
+                <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">
+                  Suspend Timings Slot
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                  Are you sure you want to suspend this session timing slot? Users will not be able to book this slot while it is suspended.
+                </AlertDialogDescription>
+              </div>
+            </div>
+            <AlertDialogFooter className="flex sm:flex-row gap-2 mt-6 justify-center w-full">
+              <AlertDialogCancel className="flex-1 border border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50 py-2 h-9">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (suspendConfirmSlot) {
+                    handleToggleStatus(suspendConfirmSlot);
+                    setSuspendConfirmSlot(null);
+                  }
+                }}
+                className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-xl py-2 h-9"
+              >
+                Suspend
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }
