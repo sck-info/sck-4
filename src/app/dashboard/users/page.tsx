@@ -200,6 +200,21 @@ function UsersPageContent() {
     pushParams(params);
   };
 
+  const formatDOB = (dateStr: string | null, age: number | null) => {
+    if (!dateStr) return age ? `${age}y` : "--";
+    try {
+      const formattedDate = new Date(dateStr).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "UTC",
+      });
+      return age ? `${formattedDate} (${age}y)` : formattedDate;
+    } catch {
+      return age ? `${age}y` : "--";
+    }
+  };
+
   const handleClearFilters = () => {
     setLocalSearch("");
     setLocalStatus("all");
@@ -487,7 +502,11 @@ function UsersPageContent() {
                       )}
                     </TableCell>
                     <TableCell className="py-3 px-4 text-[#5a5e7a]">
-                      {user.dateOfBirth || (user.age ? `${user.age}y` : "") || (
+                      {user.dateOfBirth ? (
+                        formatDOB(user.dateOfBirth, user.age)
+                      ) : user.age ? (
+                        `${user.age}y`
+                      ) : (
                         <span className="text-white/0 font-mono select-none">
                           --
                         </span>

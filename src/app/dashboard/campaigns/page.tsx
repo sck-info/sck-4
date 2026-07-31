@@ -689,7 +689,7 @@ function CampaignsContent() {
             Campaign Forms Control
           </h1>
           <p className="text-xs text-[#5a5e7a] mt-1">
-            Build and manage public campaigns, design dynamic sections, collect responses, and view real-time statistics.
+            Build and manage public campaigns, design dynamic sections, and collect responses.
           </p>
         </div>
         <Button
