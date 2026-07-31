@@ -190,6 +190,32 @@ export default function Navbar() {
             Wall of Love
           </button>
 
+          {/* SKY Link */}
+          <a
+            href="/sky"
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 14,
+              fontWeight: 500,
+              color: scrolled || !isHome ? "var(--text-mid)" : "rgba(250,247,242,0.8)",
+              textDecoration: "none",
+              letterSpacing: 0.3,
+              transition: "color 0.2s",
+            }}
+            onMouseEnter={(e) =>
+              ((e.target as HTMLElement).style.color = scrolled || !isHome
+                ? "var(--indigo)"
+                : "var(--ivory)")
+            }
+            onMouseLeave={(e) =>
+              ((e.target as HTMLElement).style.color = scrolled || !isHome
+                ? "var(--text-mid)"
+                : "rgba(250,247,242,0.8)")
+            }
+          >
+            SKY
+          </a>
+
           {/* Offerings Link */}
           <a
             href="/offerings"
