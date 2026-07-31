@@ -18,6 +18,10 @@ import {
 } from "lucide-react";
 
 export default function SKYPage() {
+  const happinessProgramUrl =
+    process.env.NEXT_PUBLIC_HAPPINESS_PROGRAM_URL ||
+    "https://www.artofliving.org/in-en/happiness-program";
+
   const benefits = [
     "Reduced feelings of stress",
     "Improved emotional well-being",
@@ -207,7 +211,7 @@ export default function SKYPage() {
               <div className="flex justify-center md:justify-end" style={{ gap: "1rem" }}>
                 <a
                   className="sky-hero-btn"
-                  href="https://www.artofliving.org/in-en/happiness-program"
+                  href={happinessProgramUrl}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -482,7 +486,7 @@ export default function SKYPage() {
               }}
             >
               <a
-                href="/events?type=event"
+                href={happinessProgramUrl}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -567,7 +571,7 @@ export default function SKYPage() {
               Experience the transformative potential of conscious breathing and discover greater calmness, clarity, and inner balance through Sudarshan Kriya Yoga. Whether you are seeking stress relief, emotional resilience, or personal growth, this timeless breathing practice offers a structured path toward holistic well-being.
             </p>
             <a
-              href="https://www.artofliving.org/in-en/happiness-program"
+              href={happinessProgramUrl}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
