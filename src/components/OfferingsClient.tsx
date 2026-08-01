@@ -140,10 +140,10 @@ export default function OfferingsClient({
   }
 
   return (
-    <section style={{ padding: "clamp(3rem, 6vw, 6rem) 2rem" }}>
+    <section style={{ padding: "0 2rem clamp(3rem, 6vw, 6rem) 2rem" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Back button */}
-        <div style={{ marginBottom: "1.5rem" }}>
+        <div style={{ marginBottom: "1.5rem", marginLeft: "-0.5rem" }}>
           <a
             href="/"
             className="inline-flex items-center gap-2 text-xs font-bold text-[#b86a16] hover:text-[#1c1f4a] uppercase tracking-widest transition-all cursor-pointer group"

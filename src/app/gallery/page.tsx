@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRealtime } from "@/hooks/useRealtime";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 type GalleryPhoto = {
   id: string;
@@ -231,6 +232,7 @@ export default function PublicGalleryPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <Footer />
     </div>
   );
 }

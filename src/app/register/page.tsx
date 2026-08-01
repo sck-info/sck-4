@@ -241,7 +241,7 @@ function RegisterForm() {
             <CardDescription className="text-sm text-[#5a5e7a]">
               {step === "details"
                 ? "Fill in your details to register."
-                : "Enter the OTP sent to your WhatsApp."}
+                : "Enter the OTP sent to your WhatsApp. (Note: It might take 1 to 3 minutes to receive the OTP)"}
             </CardDescription>
           </CardHeader>
 

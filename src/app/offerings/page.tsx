@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { db } from "@/lib/db";
 import { offeringCategories, offeringSubCategories } from "@/db/schema";
 import { eq, and, asc } from "drizzle-orm";
@@ -37,9 +38,10 @@ export default async function OfferingsPage() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: "100vh", background: "var(--ivory)", paddingTop: 72 }}>
+      <main style={{ minHeight: "100vh", background: "var(--ivory)", paddingTop: 96 }}>
         <OfferingsClient initialData={initialData} />
       </main>
+      <Footer />
     </>
   );
 }

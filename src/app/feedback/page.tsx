@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Star, Loader2, CheckCircle2, ArrowLeft, Calendar, Clock, AlertTriangle } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -325,15 +326,18 @@ function FeedbackSubmissionContent() {
 
 export default function FeedbackSubmissionPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf7f2] pt-20">
-          <Loader2 className="w-10 h-10 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium font-sans">Loading feedback page...</p>
-        </div>
-      }
-    >
-      <FeedbackSubmissionContent />
-    </Suspense>
+    <>
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf7f2] pt-20">
+            <Loader2 className="w-10 h-10 text-[#b86a16] animate-spin mb-4" />
+            <p className="text-xs text-[#5a5e7a] font-medium font-sans">Loading feedback page...</p>
+          </div>
+        }
+      >
+        <FeedbackSubmissionContent />
+      </Suspense>
+      <Footer />
+    </>
   );
 }
