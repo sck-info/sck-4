@@ -414,6 +414,23 @@ export default function Navbar() {
             Events & Updates
           </a>
 
+          {/* SKY Link */}
+          <a
+            href="/sky"
+            onClick={() => setMenuOpen(false)}
+            style={{
+              color: "var(--text-dark)",
+              textDecoration: "none",
+              fontSize: 16,
+              fontWeight: 500,
+              padding: "10px 0",
+              borderBottom: "1px solid rgba(28,31,74,0.06)",
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            SKY
+          </a>
+
           {/* Offerings Link */}
           <a
             href="/offerings"
