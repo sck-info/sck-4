@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { DateRange } from "react-day-picker";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -46,7 +47,8 @@ function EventsAndUpdatesContent() {
   const defaultEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
   // Retrieve parameters from URL
-  const typeParam = (searchParams.get("type") as "both" | "event" | "update") || "both";
+  const typeParam =
+    (searchParams.get("type") as "both" | "event" | "update") || "both";
   const startParam = searchParams.get("startDate") || "";
   const endParam = searchParams.get("endDate") || "";
 
@@ -55,8 +57,10 @@ function EventsAndUpdatesContent() {
     from: startParam ? new Date(startParam) : defaultStart,
     to: endParam ? new Date(endParam) : defaultEnd,
   });
-  
-  const [typeFilter, setTypeFilter] = useState<"both" | "event" | "update">(typeParam);
+
+  const [typeFilter, setTypeFilter] = useState<"both" | "event" | "update">(
+    typeParam,
+  );
 
   // Sync state if URL search parameters change directly
   useEffect(() => {
@@ -71,10 +75,12 @@ function EventsAndUpdatesContent() {
   const loadEvents = useCallback(async () => {
     try {
       setLoading(true);
-      const startStr = dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : "";
+      const startStr = dateRange?.from
+        ? format(dateRange.from, "yyyy-MM-dd")
+        : "";
       const endStr = dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : "";
       const res = await fetch(
-        `/api/events?startDate=${startStr}&endDate=${endStr}&type=${typeFilter}`
+        `/api/events?startDate=${startStr}&endDate=${endStr}&type=${typeFilter}`,
       );
       if (!res.ok) throw new Error("Failed to load events");
       const json = await res.json();
@@ -95,7 +101,10 @@ function EventsAndUpdatesContent() {
   useRealtime(["events"], loadEvents);
 
   // Update query params in URL
-  const updateUrlParams = (newType: "both" | "event" | "update", newRange: DateRange | undefined) => {
+  const updateUrlParams = (
+    newType: "both" | "event" | "update",
+    newRange: DateRange | undefined,
+  ) => {
     const params = new URLSearchParams();
     params.set("type", newType);
     if (newRange?.from) {
@@ -137,9 +146,9 @@ function EventsAndUpdatesContent() {
           fontFamily: "'DM Sans', sans-serif",
         }}
       >
-        <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 1.5rem" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           {/* Back button */}
-          <div style={{ marginBottom: "1.5rem", textAlign: "left" }}>
+          <div style={{ marginBottom: "1.5rem", marginLeft: "-0.5rem" }}>
             <a
               href="/"
               className="inline-flex items-center gap-2 text-xs font-bold text-[#b86a16] hover:text-[#1c1f4a] uppercase tracking-widest transition-all cursor-pointer group"
@@ -187,7 +196,8 @@ function EventsAndUpdatesContent() {
                 lineHeight: 1.5,
               }}
             >
-              Stay tuned with our latest updates, interactive workshops, offline meets, and spiritual sessions.
+              Stay tuned with our latest updates, interactive workshops, offline
+              meets, and spiritual sessions.
             </p>
           </div>
 
@@ -215,7 +225,9 @@ function EventsAndUpdatesContent() {
               }}
             >
               {/* Type Filters */}
-              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+              <div
+                style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}
+              >
                 <span
                   style={{
                     fontSize: "11px",
@@ -234,8 +246,10 @@ function EventsAndUpdatesContent() {
                     padding: "6px 14px",
                     borderRadius: "100px",
                     border: "1.5px solid",
-                    borderColor: typeFilter === "both" ? "#1c1f4a" : "rgba(28,31,74,0.1)",
-                    background: typeFilter === "both" ? "#1c1f4a" : "transparent",
+                    borderColor:
+                      typeFilter === "both" ? "#1c1f4a" : "rgba(28,31,74,0.1)",
+                    background:
+                      typeFilter === "both" ? "#1c1f4a" : "transparent",
                     color: typeFilter === "both" ? "#faf7f2" : "#5a5e7a",
                     fontSize: "12px",
                     fontWeight: 600,
@@ -251,8 +265,10 @@ function EventsAndUpdatesContent() {
                     padding: "6px 14px",
                     borderRadius: "100px",
                     border: "1.5px solid",
-                    borderColor: typeFilter === "event" ? "#b86a16" : "rgba(28,31,74,0.1)",
-                    background: typeFilter === "event" ? "#b86a16" : "transparent",
+                    borderColor:
+                      typeFilter === "event" ? "#b86a16" : "rgba(28,31,74,0.1)",
+                    background:
+                      typeFilter === "event" ? "#b86a16" : "transparent",
                     color: typeFilter === "event" ? "#faf7f2" : "#5a5e7a",
                     fontSize: "12px",
                     fontWeight: 600,
@@ -268,8 +284,12 @@ function EventsAndUpdatesContent() {
                     padding: "6px 14px",
                     borderRadius: "100px",
                     border: "1.5px solid",
-                    borderColor: typeFilter === "update" ? "#1c1f4a" : "rgba(28,31,74,0.1)",
-                    background: typeFilter === "update" ? "#1c1f4a" : "transparent",
+                    borderColor:
+                      typeFilter === "update"
+                        ? "#1c1f4a"
+                        : "rgba(28,31,74,0.1)",
+                    background:
+                      typeFilter === "update" ? "#1c1f4a" : "transparent",
                     color: typeFilter === "update" ? "#faf7f2" : "#5a5e7a",
                     fontSize: "12px",
                     fontWeight: 600,
@@ -302,7 +322,10 @@ function EventsAndUpdatesContent() {
                   Date range:
                 </span>
                 <div style={{ minWidth: "220px" }}>
-                  <DateRangePicker value={dateRange} onChange={handleDateRangeChange} />
+                  <DateRangePicker
+                    value={dateRange}
+                    onChange={handleDateRangeChange}
+                  />
                 </div>
               </div>
             </div>
@@ -312,9 +335,21 @@ function EventsAndUpdatesContent() {
           {loading ? (
             <div style={{ textAlign: "center", padding: "4rem 0" }}>
               <Loader2
-                style={{ width: "2.5rem", height: "2.5rem", color: "#b86a16", animation: "spin 1s linear infinite", margin: "0 auto" }}
+                style={{
+                  width: "2.5rem",
+                  height: "2.5rem",
+                  color: "#b86a16",
+                  animation: "spin 1s linear infinite",
+                  margin: "0 auto",
+                }}
               />
-              <p style={{ fontSize: "13px", color: "#5a5e7a", marginTop: "1rem" }}>
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "#5a5e7a",
+                  marginTop: "1rem",
+                }}
+              >
                 Fetching announcements...
               </p>
             </div>
@@ -329,12 +364,30 @@ function EventsAndUpdatesContent() {
                 boxShadow: "0 4px 20px rgba(28, 31, 74, 0.01)",
               }}
             >
-              <CalendarDays style={{ width: "3.5rem", height: "3.5rem", color: "rgba(184, 106, 22, 0.4)", margin: "0 auto 1rem" }} />
-              <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#1c1f4a" }}>
+              <CalendarDays
+                style={{
+                  width: "3.5rem",
+                  height: "3.5rem",
+                  color: "rgba(184, 106, 22, 0.4)",
+                  margin: "0 auto 1rem",
+                }}
+              />
+              <h3
+                style={{ fontSize: "16px", fontWeight: 700, color: "#1c1f4a" }}
+              >
                 No events or updates currently in range
               </h3>
-              <p style={{ fontSize: "13px", color: "#5a5e7a", marginTop: "0.5rem", maxWidth: 400, margin: "0.5rem auto 0" }}>
-                We don't have any announcements scheduled between selected dates. Adjust filters to check other periods.
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "#5a5e7a",
+                  marginTop: "0.5rem",
+                  maxWidth: 400,
+                  margin: "0.5rem auto 0",
+                }}
+              >
+                We don't have any announcements scheduled between selected
+                dates. Adjust filters to check other periods.
               </p>
               <button
                 onClick={handleReset}
@@ -355,7 +408,13 @@ function EventsAndUpdatesContent() {
               </button>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1.5rem",
+              }}
+            >
               {events.map((item) => {
                 const isEvent = item.type === "event";
                 const dateObj = new Date(item.eventDate);
@@ -399,7 +458,9 @@ function EventsAndUpdatesContent() {
                           fontWeight: 800,
                           textTransform: "uppercase",
                           letterSpacing: "0.75px",
-                          background: isEvent ? "rgba(184, 106, 22, 0.08)" : "rgba(28, 31, 74, 0.08)",
+                          background: isEvent
+                            ? "rgba(184, 106, 22, 0.08)"
+                            : "rgba(28, 31, 74, 0.08)",
                           color: isEvent ? "#b86a16" : "#1c1f4a",
                         }}
                       >
@@ -424,10 +485,14 @@ function EventsAndUpdatesContent() {
                           color: "#5a5e7a",
                         }}
                       >
-                        <Calendar style={{ width: 14, height: 14, color: isEvent ? "#b86a16" : "#1c1f4a" }} />
-                        <span>
-                          {format(dateObj, "eee, MMM dd, yyyy")}
-                        </span>
+                        <Calendar
+                          style={{
+                            width: 14,
+                            height: 14,
+                            color: isEvent ? "#b86a16" : "#1c1f4a",
+                          }}
+                        />
+                        <span>{format(dateObj, "eee, MMM dd, yyyy")}</span>
                       </div>
                     </div>
 
@@ -505,12 +570,30 @@ function EventsAndUpdatesContent() {
 
 export default function EventsAndUpdatesPage() {
   return (
-    <Suspense fallback={
-      <div style={{ display: "flex", justifyContent: "center", padding: "8rem 0" }}>
-        <Loader2 style={{ width: "2rem", height: "2rem", color: "#b86a16", animation: "spin 1s linear infinite" }} />
-      </div>
-    }>
-      <EventsAndUpdatesContent />
-    </Suspense>
+    <>
+      <Suspense
+        fallback={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "8rem 0",
+            }}
+          >
+            <Loader2
+              style={{
+                width: "2rem",
+                height: "2rem",
+                color: "#b86a16",
+                animation: "spin 1s linear infinite",
+              }}
+            />
+          </div>
+        }
+      >
+        <EventsAndUpdatesContent />
+      </Suspense>
+      <Footer />
+    </>
   );
 }

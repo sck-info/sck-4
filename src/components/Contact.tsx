@@ -3,6 +3,7 @@
 import { FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
 import { useState, useEffect, useCallback } from "react";
 import { useRealtime } from "@/hooks/useRealtime";
+import Footer from "@/components/Footer";
 
 export default function Contact() {
   const [liveContact, setLiveContact] = useState<{
@@ -487,38 +488,7 @@ export default function Contact() {
         </div>
       </section>
 
-      <footer
-        style={{
-          background: "#13163A",
-          padding: "2rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: 16,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span
-            style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: 16,
-              color: "rgba(250,247,242,0.6)",
-            }}
-          >
-            Sharath Chandra Kancherla — Holistic Lifestyle Coach
-          </span>
-        </div>
-        <p
-          style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 12,
-            color: "rgba(250,247,242,0.3)",
-          }}
-        >
-          © {new Date().getFullYear()} All rights reserved
-        </p>
-      </footer>
+      <Footer />
     </>
   );
 }

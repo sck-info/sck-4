@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
+import Footer from "@/components/Footer";
 
 export default function ContactPage() {
   const router = useRouter();
@@ -193,10 +194,7 @@ export default function ContactPage() {
           </form>
         </div>
       </div>
-
-      <footer className="text-center text-xs text-[#9396ae] z-10 pt-8">
-        © {new Date().getFullYear()} Sharath Chandra Kancherla. All rights reserved.
-      </footer>
+      <Footer />
     </div>
   );
 }

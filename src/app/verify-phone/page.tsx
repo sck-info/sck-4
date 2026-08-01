@@ -143,7 +143,7 @@ function VerifyPhoneContent() {
               Verify Your Phone
             </CardTitle>
             <CardDescription className="text-sm text-[#5a5e7a]">
-              Please verify your phone number to access your account.
+              Please enter the OTP sent to your WhatsApp. (Note: It might take 1 to 3 minutes to receive the OTP)
             </CardDescription>
           </CardHeader>
 
