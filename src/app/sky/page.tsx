@@ -1,4 +1,3 @@
-// SKYPage.jsx
 "use client";
 
 import React from "react";
@@ -19,6 +18,10 @@ import {
 } from "lucide-react";
 
 export default function SKYPage() {
+  const happinessProgramUrl =
+    process.env.NEXT_PUBLIC_HAPPINESS_PROGRAM_URL ||
+    "https://www.artofliving.org/in-en/happiness-program";
+
   const benefits = [
     "Reduced feelings of stress",
     "Improved emotional well-being",
@@ -53,6 +56,40 @@ export default function SKYPage() {
 
   return (
     <>
+      <style>{`
+        .sky-hero {
+          background-image: url('/Gurudev/Gurudev.png');
+        }
+        @media (max-width: 1160px) and (min-width: 767.6px) {
+          .sky-hero {
+            background-image: url('/Gurudev/hero.png') !important;
+          }
+        }
+        .sky-hero .sky-hero-subtitle {
+          text-shadow: 0 1px 8px rgba(255,255,255,0.7), 0 0 2px rgba(255,255,255,0.5);
+        }
+        @media (max-width: 767.5px) {
+          .sky-hero {
+            background-image: none !important;
+            height: auto !important;
+            min-height: unset !important;
+            padding: 140px 0 2rem 0 !important;
+          }
+          .sky-hero .sky-hero-title {
+            color: #1c1f4a !important;
+          }
+          .sky-hero .sky-hero-subtitle {
+            text-shadow: none !important;
+          }
+          .sky-hero .sky-hero-desc {
+            color: #5a5e7a !important;
+          }
+          .sky-hero .sky-hero-btn {
+            background: #1c1f4a !important;
+            color: #ffffff !important;
+          }
+        }
+      `}</style>
       <Navbar />
       <main
         style={{
@@ -63,6 +100,7 @@ export default function SKYPage() {
         }}
       >
         <div
+          className="sky-hero"
           style={{
             position: "relative",
             width: "100%",
@@ -72,12 +110,14 @@ export default function SKYPage() {
             justifyContent: "center",
             overflow: "hidden",
             color: "#faf7f2",
-            backgroundImage: "url('/Gurudev/Gurudev.png')",
             backgroundSize: "cover",
             backgroundPosition: "center",
+            paddingTop: "100px",
           }}
         >
+          {/* CHANGE: Added responsive grid layout instead of hardcoded 2 columns to fix small screens */}
           <div
+            className="grid grid-cols-1 md:grid-cols-2"
             style={{
               position: "relative",
               zIndex: 2,
@@ -85,8 +125,6 @@ export default function SKYPage() {
               width: "100%",
               margin: "0 auto",
               padding: "0 1.5rem",
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
               alignItems: "center",
               gap: "2rem",
               height: "100%",
@@ -105,10 +143,14 @@ export default function SKYPage() {
                 paddingLeft: "2rem",
               }}
             ></div>
-            <div></div>
+            
+            {/* CHANGE: Hidden on small screens to prevent layout shifting */}
+            <div className="hidden md:block"></div>
 
-            <div style={{ textAlign: "right", alignSelf: "center", zIndex: 3 }}>
+            {/* CHANGE: Added responsive text alignment for small screens */}
+            <div className="text-center md:text-right" style={{ alignSelf: "center", zIndex: 3 }}>
               <span
+                className="sky-hero-subtitle"
                 style={{
                   fontFamily: "'DM Sans', sans-serif",
                   fontSize: 12,
@@ -122,10 +164,26 @@ export default function SKYPage() {
               >
                 Discover Inner Peace Through the Power of Breath
               </span>
+
+              {/* Gurudev image shown on mobile when hero bg is hidden */}
+              <img
+                src="/Gurudev/hero1.jpg"
+                alt="Gurudev Sri Sri Ravi Shankar"
+                className="block md:hidden"
+                style={{
+                  width: "100%",
+                  maxWidth: 320,
+                  margin: "1rem auto",
+                  borderRadius: 16,
+                  objectFit: "cover",
+                }}
+              />
+              
+              {/* CHANGE: Added responsive text sizing */}
               <h1
+                className="sky-hero-title text-5xl md:text-[4.5rem]"
                 style={{
                   fontFamily: "'Cormorant Garamond', serif",
-                  fontSize: "4.5rem",
                   fontWeight: 600,
                   color: "#faf7f2",
                   margin: "0 0 1rem 0",
@@ -134,12 +192,14 @@ export default function SKYPage() {
               >
                 Sudarshan Kriya Yoga (SKY)
               </h1>
+              
+              {/* CHANGE: Added mx-auto for mobile centering */}
               <p
+                className="sky-hero-desc md:ml-auto mx-auto"
                 style={{
                   fontSize: "18px",
                   color: "#5a5e7a",
                   maxWidth: 500,
-                  marginLeft: "auto",
                   lineHeight: 1.6,
                   marginBottom: "2rem",
                 }}
@@ -147,9 +207,11 @@ export default function SKYPage() {
                 Sudarshan Kriya Yoga (SKY) is a powerful rhythmic breathing technique introduced by Sri Sri Ravi Shankar. It combines specific breathing patterns with yoga, meditation, and relaxation practices to help harmonize the body, mind, and emotions.
               </p>
 
-              <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+              {/* CHANGE: Added responsive flex alignment for the button container */}
+              <div className="flex justify-center md:justify-end" style={{ gap: "1rem" }}>
                 <a
-                  href="https://www.artofliving.org/in-en/happiness-program"
+                  className="sky-hero-btn"
+                  href={happinessProgramUrl}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -424,7 +486,7 @@ export default function SKYPage() {
               }}
             >
               <a
-                href="/events?type=event"
+                href={happinessProgramUrl}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -443,59 +505,10 @@ export default function SKYPage() {
           </div>
         </div>
 
-        {/* CHANGED: 1. Add a divider from the previous section */}
         <hr style={{ border: 0, height: "1px", background: "rgba(28, 31, 74, 0.1)", margin: "0" }} />
 
-        {/* CHANGED: 1. Give the chakra section its own premium section, Add 120-160px vertical padding, Subtle cream -> white radial gradient, Faint mandala pattern */}
-        {/* CHANGED: 3. Increase overall width (max-width: 1400px, margin: auto, padding: 80px 40px) */}
-        <div
-          style={{
-            position: "relative",
-            padding: "140px 40px",
-            background: "radial-gradient(circle at center, #ffffff 0%, #faf7f2 100%)",
-            maxWidth: "1400px",
-            margin: "0 auto",
-            overflow: "hidden"
-          }}
-        >
-          {/* Faint mandala pattern (3-5% opacity) */}
-          <div
-            style={{
-              position: "absolute",
-              top: 0, left: 0, right: 0, bottom: 0,
-              backgroundImage: "radial-gradient(circle, rgba(184, 106, 22, 0.04) 2px, transparent 2px)",
-              backgroundSize: "40px 40px",
-              zIndex: 0,
-              pointerEvents: "none"
-            }}
-          />
+        
 
-          {/* CHANGED: 2. Add a proper heading */}
-          <div style={{ textAlign: "center", position: "relative", zIndex: 1, marginBottom: "4rem" }}>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "3rem", fontWeight: 600, color: "#1c1f4a", marginBottom: "1rem" }}>
-              The Seven Chakras
-            </h2>
-            <p style={{ fontSize: "16px", color: "#5a5e7a", maxWidth: "600px", margin: "0 auto", lineHeight: 1.6 }}>
-              Explore the seven primary energy centers believed to influence physical vitality, emotional balance, mental clarity, and spiritual awareness.
-            </p>
-          </div>
-
-          <div style={{ position: "relative", zIndex: 1, marginBottom: "3rem" }}>
-            {/* CHANGED: 4. Make meditation figure much larger (560px) */}
-            <ChakraMeditation size={560} speed={1000} />
-          </div>
-
-          {/* CHANGED: 15. Add section ending */}
-          <div style={{ textAlign: "center", position: "relative", zIndex: 1, marginTop: "5rem" }}>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "24px", fontStyle: "italic", color: "#1c1f4a", lineHeight: 1.6 }}>
-              "When the breath flows freely,<br />
-              the mind becomes calm,<br />
-              and inner awareness naturally awakens."
-            </p>
-          </div>
-        </div>
-
-        {/* CHANGED: 15. Subtle divider before the next section */}
         <hr style={{ border: 0, height: "1px", background: "rgba(28, 31, 74, 0.1)", margin: "0", marginBottom: "4rem" }} />
 
         <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 1.5rem" }}>
@@ -558,7 +571,7 @@ export default function SKYPage() {
               Experience the transformative potential of conscious breathing and discover greater calmness, clarity, and inner balance through Sudarshan Kriya Yoga. Whether you are seeking stress relief, emotional resilience, or personal growth, this timeless breathing practice offers a structured path toward holistic well-being.
             </p>
             <a
-              href="https://www.artofliving.org/in-en/happiness-program"
+              href={happinessProgramUrl}
               style={{
                 display: "inline-flex",
                 alignItems: "center",

@@ -76,6 +76,42 @@ export default function NamasteIntro() {
             }}
             className="relative z-[10000] flex flex-col items-center text-center px-4"
           >
+            {/* Pulsing Spirit Aura */}
+            <div className="absolute -inset-20 flex items-center justify-center pointer-events-none z-[-1] overflow-visible">
+              <motion.div
+                animate={{
+                  scale: [1, 1.25, 0.9, 1.15, 1],
+                  opacity: [0.35, 0.55, 0.4, 0.6, 0.35],
+                  rotate: [0, 90, 180, 270, 360],
+                }}
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="absolute w-[280px] sm:w-[380px] h-[280px] sm:h-[380px] rounded-full blur-[64px]"
+                style={{
+                  background: "radial-gradient(circle, rgba(232,150,46,0.3) 0%, rgba(196,121,106,0.15) 50%, transparent 100%)",
+                }}
+              />
+              <motion.div
+                animate={{
+                  scale: [1.15, 0.9, 1.2, 1, 1.15],
+                  opacity: [0.4, 0.6, 0.35, 0.5, 0.4],
+                  rotate: [360, 270, 180, 90, 0],
+                }}
+                transition={{
+                  duration: 10,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="absolute w-[320px] sm:w-[420px] h-[320px] sm:h-[420px] rounded-full blur-[80px]"
+                style={{
+                  background: "radial-gradient(circle, rgba(28,31,74,0.4) 0%, rgba(184,106,22,0.2) 60%, transparent 100%)",
+                }}
+              />
+            </div>
+
             {/* Lotus SVG */}
             <motion.div
               initial={{ rotate: -8, opacity: 0 }}
