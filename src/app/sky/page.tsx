@@ -331,7 +331,7 @@ export default function SKYPage() {
           style={{
             maxWidth: 1100,
             margin: "0 auto",
-            padding: "5rem 1.5rem 2rem 1.5rem",
+            padding: "5rem 1.5rem 5rem 1.5rem",
           }}
         >
           <div style={{ textAlign: "center", marginBottom: "4rem" }}>
@@ -387,80 +387,6 @@ export default function SKYPage() {
               our system, the practice helps release deep-seated stress, clear
               mental clutter, and harmonize our emotions.
             </p>
-          </div>
-
-          {/* Sanskrit Breakdown Cards */}
-          <div
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
-            style={{ marginBottom: "5rem" }}
-          >
-            {[
-              {
-                title: "Su",
-                meaning: "Proper or Right",
-                desc: "Represents natural alignment, harmony, and correctness of existence.",
-                bg: "linear-gradient(135deg, #ffffff 0%, #fdf4e8 100%)",
-              },
-              {
-                title: "Darshan",
-                meaning: "Vision or Perception",
-                desc: "A clearer vision of oneself, our environment, and the grand design of life.",
-                bg: "linear-gradient(135deg, #ffffff 0%, #edf2fa 100%)",
-              },
-              {
-                title: "Kriya",
-                meaning: "Purifying Action",
-                desc: "A conscious breathing practice that purifies cells, body, mind, and spirit.",
-                bg: "linear-gradient(135deg, #ffffff 0%, #eaf2eb 100%)",
-              },
-            ].map((k, i) => (
-              <div
-                key={i}
-                className="hover:-translate-y-1 transition-all duration-300"
-                style={{
-                  background: k.bg,
-                  border: "1px solid rgba(28, 31, 74, 0.06)",
-                  borderRadius: "20px",
-                  padding: "2.5rem 2rem",
-                  boxShadow: "0 10px 30px rgba(28, 31, 74, 0.02)",
-                  textAlign: "center",
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: "'Cormorant Garamond', serif",
-                    fontSize: "2.5rem",
-                    fontWeight: 700,
-                    color: "#1c1f4a",
-                    marginBottom: "0.25rem",
-                  }}
-                >
-                  {k.title}
-                </div>
-                <div
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: 700,
-                    color: "#b86a16",
-                    textTransform: "uppercase",
-                    letterSpacing: "1px",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  {k.meaning}
-                </div>
-                <p
-                  style={{
-                    fontSize: "14px",
-                    color: "#5a5e7a",
-                    lineHeight: 1.6,
-                    margin: 0,
-                  }}
-                >
-                  {k.desc}
-                </p>
-              </div>
-            ))}
           </div>
         </section>
 
@@ -1498,16 +1424,16 @@ export default function SKYPage() {
         {/* Section 8: Bottom Call to Action */}
         <section
           style={{
-            maxWidth: 1000,
+            maxWidth: 1200,
             margin: "0 auto",
-            padding: "0 1.5rem 4rem 1.5rem",
+            padding: "0 2rem 6rem 2rem",
           }}
         >
           <div
             style={{
               background: "#1c1f4a",
               borderRadius: "32px",
-              padding: "4.5rem 3rem",
+              padding: "clamp(2rem, 5vw, 4.5rem) clamp(1.5rem, 4vw, 3rem)",
               textAlign: "center",
               position: "relative",
               overflow: "hidden",
@@ -1543,7 +1469,7 @@ export default function SKYPage() {
             <h2
               style={{
                 fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "2.5rem",
+                fontSize: "clamp(1.75rem, 5vw, 2.5rem)",
                 fontWeight: 600,
                 color: "#faf7f2",
                 marginBottom: "1.25rem",
@@ -1554,7 +1480,7 @@ export default function SKYPage() {
             </h2>
             <p
               style={{
-                fontSize: "16px",
+                fontSize: "clamp(14px, 2vw, 16px)",
                 color: "#faf7f2",
                 opacity: 0.85,
                 lineHeight: 1.7,
