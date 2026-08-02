@@ -681,7 +681,7 @@ function CampaignsContent() {
 
 
   return (
-    <div className="w-full space-y-6 max-w-6xl">
+    <div className="w-full space-y-6">
       {/* Page Title Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>

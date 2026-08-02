@@ -238,7 +238,7 @@ function FeedbacksPageContent() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 w-full">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">Feedbacks &amp; Testimonials Compiler</h1>

@@ -212,7 +212,7 @@ function SeekerBookingsContent() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto p-2">
+    <div className="space-y-6 w-full p-2">
       <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl p-6 md:p-8 space-y-2 shadow-sm">
         <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#b86a16]/10 text-[#b86a16]">
           <Sparkles className="w-3 h-3" /> Seeker Console

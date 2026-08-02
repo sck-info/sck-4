@@ -379,7 +379,7 @@ function EventsDashboardContent() {
   };
 
   return (
-    <div className="w-full space-y-6 max-w-6xl">
+    <div className="w-full space-y-6">
       <style>{`
         .rich-editor:empty:before {
           content: attr(data-placeholder);
