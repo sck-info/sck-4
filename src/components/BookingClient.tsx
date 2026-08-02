@@ -182,19 +182,29 @@ export default function BookingClient({
           freshSlot.endTime !== selectedSlot.endTime;
 
         const hasOnline = freshSlot.locations.some((l) => l.type === "online");
-        const hasOffline = freshSlot.locations.some((l) => l.type === "offline");
+        const hasOffline = freshSlot.locations.some(
+          (l) => l.type === "offline",
+        );
 
         let formatNoLongerSupported = false;
-        if (selectedFormat === "online" && !hasOnline) formatNoLongerSupported = true;
-        if (selectedFormat === "offline" && !hasOffline) formatNoLongerSupported = true;
+        if (selectedFormat === "online" && !hasOnline)
+          formatNoLongerSupported = true;
+        if (selectedFormat === "offline" && !hasOffline)
+          formatNoLongerSupported = true;
 
         let locationNoLongerSupported = false;
         if (selectedFormat === "offline" && selectedLocationId) {
-          const locExists = freshSlot.locations.some((l) => l.id === selectedLocationId);
+          const locExists = freshSlot.locations.some(
+            (l) => l.id === selectedLocationId,
+          );
           if (!locExists) locationNoLongerSupported = true;
         }
 
-        if (timingChanged || formatNoLongerSupported || locationNoLongerSupported) {
+        if (
+          timingChanged ||
+          formatNoLongerSupported ||
+          locationNoLongerSupported
+        ) {
           setSelectedSlot(null);
           setSelectedDate(null);
           setSelectedFormat(null);

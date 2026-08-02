@@ -146,7 +146,7 @@ function EventsAndUpdatesContent() {
           fontFamily: "'DM Sans', sans-serif",
         }}
       >
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1600, margin: "0 auto", padding: "0 2rem" }}>
           {/* Back button */}
           <div style={{ marginBottom: "1.5rem", marginLeft: "-0.5rem" }}>
             <a

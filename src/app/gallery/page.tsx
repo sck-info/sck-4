@@ -86,16 +86,20 @@ export default function PublicGalleryPage() {
     <div className="min-h-screen bg-[#faf7f2] pb-24 text-[#1c1f4a] selection:bg-[#b86a16]/20 font-sans">
       <Navbar />
       {/* Top Header Section */}
-      <header className="relative pt-32 pb-12 px-6 sm:px-12 border-b border-[#e8dcc4]/50 max-w-7xl mx-auto">
-        <div className="flex flex-col gap-6">
+      <header className="relative pt-24 pb-12 px-8 border-b border-[#e8dcc4]/50 max-w-[1600px] mx-auto">
+        {/* Back button */}
+        <div style={{ marginBottom: "1.5rem", marginLeft: "-0.5rem" }}>
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-xs font-bold text-[#b86a16] hover:text-[#1c1f4a] uppercase tracking-widest transition-colors cursor-pointer group"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             Back to Home
           </Link>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <span className="w-8 h-[1px] bg-[#b86a16]" />
@@ -111,11 +115,10 @@ export default function PublicGalleryPage() {
               A visual chronicle of therapeutic journeys, meditation satsangs, alternate healing sessions, and milestones from our community circles.
             </p>
           </div>
-        </div>
       </header>
 
       {/* Grid Container */}
-      <main className="max-w-7xl mx-auto px-6 sm:px-12 mt-12">
+      <main className="max-w-[1600px] mx-auto px-8 mt-12">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32">
             <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
@@ -130,7 +133,7 @@ export default function PublicGalleryPage() {
             </p>
           </div>
         ) : (
-          <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
+          <div className="columns-1 sm:columns-2 md:columns-3 xl:columns-4 gap-6">
             {photos.map((photo, originalIdx) => (
               <motion.div
                 key={photo.id}

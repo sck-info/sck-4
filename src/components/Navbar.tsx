@@ -98,7 +98,7 @@ export default function Navbar() {
     >
       <div
         style={{
-          maxWidth: 1200,
+          width: "100%",
           margin: "0 auto",
           display: "flex",
           alignItems: "center",
@@ -156,7 +156,7 @@ export default function Navbar() {
 
           {/*Gallery*/}
           <a
-            href={getHref("#Gallery")}
+            href="/gallery"
             style={navLinkStyle}
             onMouseEnter={(e) => handleLinkHover(e, true)}
             onMouseLeave={(e) => handleLinkHover(e, false)}
@@ -466,7 +466,7 @@ export default function Navbar() {
 
           {/* Gallery */}
           <a
-            href={getHref("#Gallery")}
+            href="/gallery"
             onClick={() => setMenuOpen(false)}
             style={{
               color: "var(--text-dark)",

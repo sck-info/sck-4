@@ -141,7 +141,7 @@ export default function OfferingsClient({
 
   return (
     <section style={{ padding: "0 2rem clamp(3rem, 6vw, 6rem) 2rem" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+      <div style={{ width: "100%", maxWidth: 1600, margin: "0 auto" }}>
         {/* Back button */}
         <div style={{ marginBottom: "1.5rem", marginLeft: "-0.5rem" }}>
           <a

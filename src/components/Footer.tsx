@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 export default function Footer() {
   const pathname = usePathname();
   const isHome = pathname === "/";
-  
+
   const getHref = (href: string) => {
     if (isHome) return href;
     if (href.startsWith("#")) return `/${href}`;
@@ -26,7 +26,7 @@ export default function Footer() {
     >
       <div
         style={{
-          maxWidth: 1200,
+          width: "100%",
           margin: "0 auto",
           display: "flex",
           flexDirection: "column",
@@ -65,7 +65,9 @@ export default function Footer() {
                 maxWidth: "320px",
               }}
             >
-              Holistic Lifestyle Coach & Healer. Empowering individuals to live stress-free, balanced, and purposeful lives through ancient wisdom and modern therapeutic sciences.
+              Holistic Lifestyle Coach & Healer. Empowering individuals to live
+              stress-free, balanced, and purposeful lives through ancient wisdom
+              and modern therapeutic sciences.
             </p>
           </div>
 
@@ -83,23 +85,77 @@ export default function Footer() {
             >
               Explore
             </h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              <Link href="/" style={{ fontSize: "14px", color: "rgba(250, 247, 242, 0.8)", textDecoration: "none" }} className="hover:text-white transition-colors">
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.75rem",
+              }}
+            >
+              <Link
+                href="/"
+                style={{
+                  fontSize: "14px",
+                  color: "rgba(250, 247, 242, 0.8)",
+                  textDecoration: "none",
+                }}
+                className="hover:text-white transition-colors"
+              >
                 Home
               </Link>
-              <Link href="/offerings" style={{ fontSize: "14px", color: "rgba(250, 247, 242, 0.8)", textDecoration: "none" }} className="hover:text-white transition-colors">
+              <Link
+                href="/offerings"
+                style={{
+                  fontSize: "14px",
+                  color: "rgba(250, 247, 242, 0.8)",
+                  textDecoration: "none",
+                }}
+                className="hover:text-white transition-colors"
+              >
                 Offerings
               </Link>
-              <Link href="/sky" style={{ fontSize: "14px", color: "rgba(250, 247, 242, 0.8)", textDecoration: "none" }} className="hover:text-white transition-colors">
+              <Link
+                href="/sky"
+                style={{
+                  fontSize: "14px",
+                  color: "rgba(250, 247, 242, 0.8)",
+                  textDecoration: "none",
+                }}
+                className="hover:text-white transition-colors"
+              >
                 Sudarshan Kriya Yoga (SKY)
               </Link>
-              <Link href="/gallery" style={{ fontSize: "14px", color: "rgba(250, 247, 242, 0.8)", textDecoration: "none" }} className="hover:text-white transition-colors">
+              <Link
+                href="/gallery"
+                style={{
+                  fontSize: "14px",
+                  color: "rgba(250, 247, 242, 0.8)",
+                  textDecoration: "none",
+                }}
+                className="hover:text-white transition-colors"
+              >
                 Wall of Transformation
               </Link>
-              <Link href="/events-and-updates" style={{ fontSize: "14px", color: "rgba(250, 247, 242, 0.8)", textDecoration: "none" }} className="hover:text-white transition-colors">
+              <Link
+                href="/events-and-updates"
+                style={{
+                  fontSize: "14px",
+                  color: "rgba(250, 247, 242, 0.8)",
+                  textDecoration: "none",
+                }}
+                className="hover:text-white transition-colors"
+              >
                 Events & Updates
               </Link>
-              <Link href="/contact" style={{ fontSize: "14px", color: "rgba(250, 247, 242, 0.8)", textDecoration: "none" }} className="hover:text-white transition-colors">
+              <Link
+                href="/contact"
+                style={{
+                  fontSize: "14px",
+                  color: "rgba(250, 247, 242, 0.8)",
+                  textDecoration: "none",
+                }}
+                className="hover:text-white transition-colors"
+              >
                 Contact
               </Link>
             </div>
@@ -107,7 +163,14 @@ export default function Footer() {
         </div>
 
         {/* Divider */}
-        <hr style={{ border: 0, height: "1px", background: "rgba(250, 247, 242, 0.1)", margin: 0 }} />
+        <hr
+          style={{
+            border: 0,
+            height: "1px",
+            background: "rgba(250, 247, 242, 0.1)",
+            margin: 0,
+          }}
+        />
 
         {/* Bottom Section */}
         <div
@@ -126,7 +189,8 @@ export default function Footer() {
               margin: 0,
             }}
           >
-            © {new Date().getFullYear()} Sharath Chandra Kancherla. All rights reserved.
+            © {new Date().getFullYear()} Sharath Chandra Kancherla. All rights
+            reserved.
           </p>
         </div>
       </div>

@@ -100,9 +100,10 @@ function ThankYouContent() {
   return (
     <div
       style={{
-        maxWidth: 600,
+        width: "100%",
+        maxWidth: 760,
         margin: "0 auto",
-        padding: "3rem 1.5rem",
+        padding: "4rem 2rem 5rem",
         textAlign: "center",
         fontFamily: "'DM Sans', sans-serif",
       }}
