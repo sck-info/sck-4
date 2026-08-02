@@ -103,6 +103,14 @@ const formatTime12h = (time24: string) => {
   return `${hour12}:${m} ${ampm}`;
 };
 
+const calculateEndTime = (startTime: string, durationMinutes: number): string => {
+  const [hrs, mins] = startTime.split(":").map(Number);
+  const totalMinutes = hrs * 60 + mins + durationMinutes;
+  const newHrs = Math.floor(totalMinutes / 60) % 24;
+  const newMins = totalMinutes % 60;
+  return `${String(newHrs).padStart(2, "0")}:${String(newMins).padStart(2, "0")}`;
+};
+
 // Generate options for time selects
 const TIME_OPTIONS = Array.from({ length: 96 }, (_, i) => {
   const hour = Math.floor(i / 4);
@@ -203,11 +211,23 @@ function SlotsDashboardContent() {
   const [formError, setFormError] = useState("");
   const [formData, setFormData] = useState({
     subCategoryId: "",
+    repeatType: "once" as "once" | "daily" | "weekly",
     slotDate: undefined as Date | undefined,
-    startTime: "09:00",
-    endTime: "10:00",
+    startDate: undefined as Date | undefined,
+    endDate: undefined as Date | undefined,
+    daysOfWeek: [] as number[],
     selectedLocIds: [] as string[],
   });
+
+  const [timingsList, setTimingsList] = useState<{ startTime: string; endTime: string; duration: number }[]>([]);
+  const [currStartTime, setCurrStartTime] = useState("09:00");
+  const [currDuration, setCurrDuration] = useState("60");
+
+  const [conflictResult, setConflictResult] = useState<{
+    createdCount: number;
+    skippedCount: number;
+    duplicates: { date: string; startTime: string; endTime: string; subCategoryName: string }[];
+  } | null>(null);
 
   // Deletion slot states
   const [deleteSlot, setDeleteSlot] = useState<SlotRow | null>(null);
@@ -286,11 +306,18 @@ function SlotsDashboardContent() {
     setEditingSlot(null);
     setFormData({
       subCategoryId: subCategories[0]?.id || "",
+      repeatType: "once",
       slotDate: undefined,
-      startTime: "09:00",
-      endTime: "10:00",
+      startDate: undefined,
+      endDate: undefined,
+      daysOfWeek: [],
       selectedLocIds: [],
     });
+    setTimingsList([
+      { startTime: "09:00", endTime: "10:00", duration: 60 }
+    ]);
+    setCurrStartTime("09:00");
+    setCurrDuration("60");
     setFormError("");
     setModalOpen(true);
   };
@@ -309,11 +336,29 @@ function SlotsDashboardContent() {
 
     setFormData({
       subCategoryId: slot.subCategoryId,
+      repeatType: "once",
       slotDate: new Date(slot.slotDate),
-      startTime: cleanTime(slot.startTime),
-      endTime: cleanTime(slot.endTime),
+      startDate: undefined,
+      endDate: undefined,
+      daysOfWeek: [],
       selectedLocIds: slot.locations ? slot.locations.map((l) => l.id) : [],
     });
+
+    const parseTimeToMin = (tStr: string) => {
+      const [h, m] = tStr.split(":").map(Number);
+      return h * 60 + m;
+    };
+    const diff = parseTimeToMin(slot.endTime) - parseTimeToMin(slot.startTime);
+
+    setTimingsList([
+      {
+        startTime: cleanTime(slot.startTime),
+        endTime: cleanTime(slot.endTime),
+        duration: diff > 0 ? diff : 60,
+      }
+    ]);
+    setCurrStartTime(cleanTime(slot.startTime));
+    setCurrDuration(String(diff > 0 ? diff : 60));
     setFormError("");
     setModalOpen(true);
   };
@@ -327,41 +372,72 @@ function SlotsDashboardContent() {
       setFormError("Please select a sub-category offering.");
       return;
     }
-    if (!formData.slotDate) {
-      setFormError("Please select a date for the slot.");
-      return;
-    }
     if (formData.selectedLocIds.length === 0) {
       setFormError("Please select at least one format location.");
       return;
     }
-    if (formData.startTime >= formData.endTime) {
-      setFormError("End time must be greater than start time.");
+    if (formData.repeatType === "once" && !formData.slotDate) {
+      setFormError("Please select a date for the slot.");
+      return;
+    }
+    if ((formData.repeatType === "daily" || formData.repeatType === "weekly") && (!formData.startDate || !formData.endDate)) {
+      setFormError("Please select a start and end date range.");
+      return;
+    }
+    if (formData.repeatType === "weekly" && formData.daysOfWeek.length === 0) {
+      setFormError("Please select at least one weekday.");
+      return;
+    }
+    if (timingsList.length === 0) {
+      setFormError("Please add at least one timings slot.");
       return;
     }
 
     setFormLoading(true);
 
-    const formattedDate = `${formData.slotDate.getFullYear()}-${String(formData.slotDate.getMonth() + 1).padStart(2, "0")}-${String(formData.slotDate.getDate()).padStart(2, "0")}`;
+    const formattedDate = formData.slotDate ? `${formData.slotDate.getFullYear()}-${String(formData.slotDate.getMonth() + 1).padStart(2, "0")}-${String(formData.slotDate.getDate()).padStart(2, "0")}` : undefined;
+    const formattedStart = formData.startDate ? `${formData.startDate.getFullYear()}-${String(formData.startDate.getMonth() + 1).padStart(2, "0")}-${String(formData.startDate.getDate()).padStart(2, "0")}` : undefined;
+    const formattedEnd = formData.endDate ? `${formData.endDate.getFullYear()}-${String(formData.endDate.getMonth() + 1).padStart(2, "0")}-${String(formData.endDate.getDate()).padStart(2, "0")}` : undefined;
 
     try {
       const url = editingSlot ? `/api/slots/${editingSlot.id}` : "/api/slots";
       const method = editingSlot ? "PATCH" : "POST";
+      const payload = editingSlot
+        ? {
+            subCategoryId: formData.subCategoryId,
+            slotDate: formattedDate,
+            startTime: timingsList[0]?.startTime,
+            endTime: timingsList[0]?.endTime,
+            locationIds: formData.selectedLocIds,
+          }
+        : {
+            subCategoryId: formData.subCategoryId,
+            locationIds: formData.selectedLocIds,
+            repeatType: formData.repeatType,
+            slotDate: formattedDate,
+            startDate: formattedStart,
+            endDate: formattedEnd,
+            daysOfWeek: formData.daysOfWeek,
+            timings: timingsList.map((t) => ({ startTime: t.startTime, endTime: t.endTime })),
+          };
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          subCategoryId: formData.subCategoryId,
-          slotDate: formattedDate,
-          startTime: formData.startTime,
-          endTime: formData.endTime,
-          locationIds: formData.selectedLocIds,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      const json = await getJsonOrError(res, editingSlot ? "Failed to save slot changes." : "An overlap conflict occurred.");
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to submit timings slot.");
+      }
 
-      toast.success(editingSlot ? "Timings slot updated successfully!" : "Timings slot announced successfully!");
+      if (!editingSlot && json.skippedCount > 0) {
+        setConflictResult(json);
+      } else {
+        toast.success(editingSlot ? "Timings slot updated successfully!" : "Timings slot announced successfully!");
+      }
+
       setModalOpen(false);
       setEditingSlot(null);
       fetchSlots();
@@ -424,6 +500,32 @@ function SlotsDashboardContent() {
         list = list.filter((id) => id !== locId);
       }
       return { ...prev, selectedLocIds: list };
+    });
+  };
+
+  const disableBeforeTomorrow = (d: Date) => {
+    const tomorrow = new Date();
+    tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return d < tomorrow;
+  };
+
+  const disableBeforeStartDate = (d: Date) => {
+    if (!formData.startDate) {
+      return disableBeforeTomorrow(d);
+    }
+    const start = new Date(formData.startDate);
+    start.setHours(0, 0, 0, 0);
+    return d <= start;
+  };
+
+  const handleStartDateChange = (d: Date | undefined) => {
+    setFormData((prev) => {
+      const nextData = { ...prev, startDate: d };
+      if (d && prev.endDate && prev.endDate <= d) {
+        nextData.endDate = undefined;
+      }
+      return nextData;
     });
   };
 
@@ -694,7 +796,7 @@ function SlotsDashboardContent() {
         setModalOpen(open);
         if (!open) setEditingSlot(null);
       }}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] [&>button]:text-white/80 hover:[&>button]:bg-white/10 hover:[&>button]:text-white [&>button]:z-50">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-5 rounded-t-3xl flex flex-row items-center gap-2">
             <DialogTitle className="text-white text-md font-bold">
               {editingSlot ? "Edit Timings Slot" : "Announce Timings Slot"}
@@ -702,12 +804,6 @@ function SlotsDashboardContent() {
           </DialogHeader>
 
           <form onSubmit={handleAnnounceSubmit} className="space-y-4 pt-4">
-            {formError && (
-              <div className="p-3 bg-[#faf0ee] border border-[#c4796a]/20 text-[#c4796a] text-xs font-semibold rounded-xl flex items-center gap-1">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{formError}</span>
-              </div>
-            )}
 
             <div className="space-y-1">
               <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
@@ -733,75 +829,287 @@ function SlotsDashboardContent() {
               </Select>
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
-                Slot Date
-              </Label>
-              <DatePicker
-                value={formData.slotDate}
-                onChange={(d) => setFormData({ ...formData, slotDate: d })}
-                disabled={formLoading}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            {/* Recurrence Repeat Selector (New Announcement Only) */}
+            {!editingSlot && (
               <div className="space-y-1">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
-                  Start Time
+                  Repeat Pattern
                 </Label>
                 <Select
-                  value={formData.startTime}
-                  onValueChange={(val) =>
-                    setFormData({ ...formData, startTime: val })
+                  value={formData.repeatType}
+                  onValueChange={(val: "once" | "daily" | "weekly") =>
+                    setFormData({ ...formData, repeatType: val })
                   }
                   disabled={formLoading}
                 >
                   <SelectTrigger className="w-full bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="max-h-48">
-                    {TIME_OPTIONS.map((opt) => (
-                      <SelectItem
-                        key={opt.value}
-                        value={opt.value}
-                        className="text-xs"
-                      >
-                        {opt.label}
-                      </SelectItem>
-                    ))}
+                  <SelectContent>
+                    <SelectItem value="once">One-time</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+            )}
 
+            {/* Date Inputs based on Repeat Pattern */}
+            {(editingSlot || formData.repeatType === "once") ? (
               <div className="space-y-1">
-                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
-                  End Time
+                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
+                  Slot Date
                 </Label>
-                <Select
-                  value={formData.endTime}
-                  onValueChange={(val) =>
-                    setFormData({ ...formData, endTime: val })
-                  }
+                <DatePicker
+                  value={formData.slotDate}
+                  onChange={(d) => setFormData({ ...formData, slotDate: d })}
                   disabled={formLoading}
-                >
-                  <SelectTrigger className="w-full bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-48">
-                    {TIME_OPTIONS.map((opt) => (
-                      <SelectItem
-                        key={opt.value}
-                        value={opt.value}
-                        className="text-xs"
-                      >
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  disabledDates={disableBeforeTomorrow}
+                />
               </div>
-            </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
+                    Start Date
+                  </Label>
+                  <DatePicker
+                    value={formData.startDate}
+                    onChange={handleStartDateChange}
+                    disabled={formLoading}
+                    disabledDates={disableBeforeTomorrow}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
+                    End Date
+                  </Label>
+                  <DatePicker
+                    value={formData.endDate}
+                    onChange={(d) => setFormData({ ...formData, endDate: d })}
+                    disabled={formLoading}
+                    disabledDates={disableBeforeStartDate}
+                  />
+                </div>
+              </div>
+            )}
 
+            {/* Weekday Selection for Weekly Recurrence */}
+            {!editingSlot && formData.repeatType === "weekly" && (
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
+                  Days of the Week
+                </Label>
+                <div className="grid grid-cols-4 gap-2 p-3 bg-[#faf7f2]/30 border border-[#e8dcc4] rounded-xl">
+                  {[
+                    { label: "Sun", val: 0 },
+                    { label: "Mon", val: 1 },
+                    { label: "Tue", val: 2 },
+                    { label: "Wed", val: 3 },
+                    { label: "Thu", val: 4 },
+                    { label: "Fri", val: 5 },
+                    { label: "Sat", val: 6 },
+                  ].map((day) => (
+                    <label key={day.val} className="flex items-center gap-1.5 text-xs text-[#1c1f4a] font-medium cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.daysOfWeek.includes(day.val)}
+                        onChange={(e) => {
+                          const updated = e.target.checked
+                            ? [...formData.daysOfWeek, day.val]
+                            : formData.daysOfWeek.filter((d) => d !== day.val);
+                          setFormData({ ...formData, daysOfWeek: updated });
+                        }}
+                        disabled={formLoading}
+                        className="rounded border-[#e8dcc4] text-[#b86a16] focus:ring-[#b86a16] cursor-pointer"
+                      />
+                      <span>{day.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Timings List & Picker */}
+            {editingSlot ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                    Start Time
+                  </Label>
+                  <Select
+                    value={timingsList[0]?.startTime || "09:00"}
+                    onValueChange={(val) => {
+                      const updated = [...timingsList];
+                      if (updated[0]) {
+                        updated[0].startTime = val;
+                        updated[0].endTime = calculateEndTime(val, updated[0].duration);
+                      }
+                      setTimingsList(updated);
+                    }}
+                    disabled={formLoading}
+                  >
+                    <SelectTrigger className="w-full bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-48">
+                      {TIME_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
+                    Duration
+                  </Label>
+                  <Select
+                    value={String(timingsList[0]?.duration || 60)}
+                    onValueChange={(val) => {
+                      const updated = [...timingsList];
+                      const dur = parseInt(val);
+                      if (updated[0]) {
+                        updated[0].duration = dur;
+                        updated[0].endTime = calculateEndTime(updated[0].startTime, dur);
+                      }
+                      setTimingsList(updated);
+                    }}
+                    disabled={formLoading}
+                  >
+                    <SelectTrigger className="w-full bg-[#faf7f2]/40 border border-[#e8dcc4] h-10 rounded-xl text-xs text-[#1c1f4a]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="15">15 mins</SelectItem>
+                      <SelectItem value="30">30 mins</SelectItem>
+                      <SelectItem value="45">45 mins</SelectItem>
+                      <SelectItem value="60">1 hr</SelectItem>
+                      <SelectItem value="75">1 hr 15 mins</SelectItem>
+                      <SelectItem value="90">1 hr 30 mins</SelectItem>
+                      <SelectItem value="105">1 hr 45 mins</SelectItem>
+                      <SelectItem value="120">2 hrs</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 border-t border-b border-[#e8dcc4]/50 py-3">
+                <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
+                  Timings List
+                </Label>
+
+                {/* Render timings list */}
+                <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                  {timingsList.map((t, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between bg-[#faf7f2]/60 border border-[#e8dcc4]/60 p-2.5 rounded-xl text-xs font-medium text-[#1c1f4a]"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-[#b86a16]" />
+                        <span>
+                          {formatTime12h(t.startTime)} - {formatTime12h(t.endTime)}
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-bold uppercase">
+                          ({t.duration >= 60 ? `${Math.floor(t.duration / 60)}h ${t.duration % 60}m`.replace(" 0m", "") : `${t.duration} mins`})
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTimingsList(timingsList.filter((_, i) => i !== idx));
+                        }}
+                        disabled={formLoading}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {timingsList.length === 0 && (
+                    <p className="text-xs text-[#5a5e7a] italic">No timings slots announced yet.</p>
+                  )}
+                </div>
+
+                {/* Add timings form inline */}
+                <div className="flex gap-2 items-end pt-1">
+                  <div className="flex-1 space-y-1">
+                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                      Start Time
+                    </Label>
+                    <Select value={currStartTime} onValueChange={setCurrStartTime} disabled={formLoading}>
+                      <SelectTrigger className="w-full bg-[#faf7f2]/40 border border-[#e8dcc4] h-9 rounded-xl text-xs text-[#1c1f4a]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-48">
+                        {TIME_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex-1 space-y-1">
+                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                      Duration
+                    </Label>
+                    <Select value={currDuration} onValueChange={setCurrDuration} disabled={formLoading}>
+                      <SelectTrigger className="w-full bg-[#faf7f2]/40 border border-[#e8dcc4] h-9 rounded-xl text-xs text-[#1c1f4a]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="15">15 mins</SelectItem>
+                        <SelectItem value="30">30 mins</SelectItem>
+                        <SelectItem value="45">45 mins</SelectItem>
+                        <SelectItem value="60">1 hr</SelectItem>
+                        <SelectItem value="75">1 hr 15 mins</SelectItem>
+                        <SelectItem value="90">1 hr 30 mins</SelectItem>
+                        <SelectItem value="105">1 hr 45 mins</SelectItem>
+                        <SelectItem value="120">2 hrs</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      const durationMin = parseInt(currDuration);
+                      const computedEndTime = calculateEndTime(currStartTime, durationMin);
+                      
+                      // Check for overlaps in the timingsList
+                      const overlaps = timingsList.some((t) => {
+                        return currStartTime < t.endTime && computedEndTime > t.startTime;
+                      });
+
+                      if (overlaps) {
+                        toast.error("This timing slot overlaps with an already added timing in the list.");
+                        return;
+                      }
+
+                      setTimingsList([
+                        ...timingsList,
+                        {
+                          startTime: currStartTime,
+                          endTime: computedEndTime,
+                          duration: durationMin,
+                        },
+                      ]);
+                    }}
+                    disabled={formLoading}
+                    className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-xl h-9 px-3.5 text-xs font-semibold"
+                  >
+                    Add
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Select Formats & Locations */}
             <div className="space-y-2">
               <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
                 Select Formats &amp; Locations
@@ -837,6 +1145,12 @@ function SlotsDashboardContent() {
                 )}
               </div>
             </div>
+            {formError && (
+              <div className="p-3 bg-[#faf0ee] border border-[#c4796a]/20 text-[#c4796a] text-xs font-semibold rounded-xl flex items-center gap-1">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{formError}</span>
+              </div>
+            )}
 
             <div className="flex justify-end gap-2 pt-4 border-t border-[#e8dcc4]/50 -mx-6 px-6">
               <Button
@@ -863,6 +1177,60 @@ function SlotsDashboardContent() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Duplicate / Clash Result Dialog */}
+      <Dialog open={!!conflictResult} onOpenChange={(open) => !open && setConflictResult(null)}>
+        <DialogContent className="sm:max-w-[550px] rounded-3xl [&>button]:text-white/80 hover:[&>button]:bg-white/10 hover:[&>button]:text-white [&>button]:z-50">
+          <DialogHeader className="bg-[#b86a16] text-white -mx-6 -mt-6 px-6 py-5 rounded-t-3xl">
+            <DialogTitle className="text-white text-md font-bold flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 shrink-0" />
+              Timing Slots Conflicted
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-4 font-sans">
+            <div className="p-3.5 bg-[#faf7f2] border border-[#e8dcc4] rounded-2xl">
+              <p className="text-xs text-[#1c1f4a] font-medium leading-relaxed">
+                Successfully announced <span className="font-extrabold text-[#b86a16]">{conflictResult?.createdCount}</span> slot(s).
+                Skipped <span className="font-extrabold text-[#c4796a]">{conflictResult?.skippedCount}</span> slot(s) because they overlap with existing sessions.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
+                Skipped Overlapping Slots
+              </Label>
+              <div className="max-h-60 overflow-y-auto border border-[#e8dcc4]/60 rounded-2xl divide-y divide-[#e8dcc4]/30 bg-white shadow-sm">
+                {conflictResult?.duplicates.map((dup, idx) => (
+                  <div key={idx} className="p-3 text-xs flex justify-between items-center gap-3">
+                    <div className="space-y-1">
+                      <div className="font-bold text-[#1c1f4a]">
+                        {formatDate(dup.date)}
+                      </div>
+                      <div className="text-[11px] text-[#5a5e7a] flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-[#b86a16]" />
+                        {formatTime12h(dup.startTime)} - {formatTime12h(dup.endTime)}
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#b86a16]/10 text-[#b86a16] shrink-0">
+                      {dup.subCategoryName}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-[#e8dcc4]/50 -mx-6 px-6">
+              <Button
+                onClick={() => setConflictResult(null)}
+                className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-xl text-xs font-semibold px-5"
+              >
+                Acknowledge
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

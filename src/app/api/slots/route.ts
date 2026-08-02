@@ -101,63 +101,160 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { subCategoryId, slotDate, startTime, endTime, locationIds } = body;
+    const {
+      subCategoryId,
+      locationIds,
+      repeatType = "once",
+      slotDate,
+      startDate,
+      endDate,
+      daysOfWeek = [],
+      timings,
+    } = body;
 
-    if (!subCategoryId || !slotDate || !startTime || !endTime) {
-      return NextResponse.json({ error: "Missing required slot fields" }, { status: 400 });
+    if (!subCategoryId) {
+      return NextResponse.json({ error: "Missing offering sub-category" }, { status: 400 });
     }
 
-    if (startTime >= endTime) {
-      return NextResponse.json({ error: "End time must be greater than start time" }, { status: 400 });
+    // Fallback for single slot inputs to maintain backward compatibility
+    let finalTimings = timings;
+    if (!finalTimings && body.startTime && body.endTime) {
+      finalTimings = [{ startTime: body.startTime, endTime: body.endTime }];
     }
 
-    // Double Booking Check: Query if there is an overlapping slot on the same date irrespective of subcategory
-    const clashingSlots = await db
-      .select()
-      .from(offeringSlots)
-      .where(
-        and(
-          eq(offeringSlots.slotDate, slotDate),
-          sql`${offeringSlots.status} != 'suspended'`,
-          sql`${offeringSlots.startTime} < ${endTime}::time`,
-          sql`${offeringSlots.endTime} > ${startTime}::time`
-        )
-      );
-
-    if (clashingSlots.length > 0) {
-      return NextResponse.json(
-        { error: "A slot already exists on the same date and overlapping time interval!" },
-        { status: 400 }
-      );
+    if (!finalTimings || !Array.isArray(finalTimings) || finalTimings.length === 0) {
+      return NextResponse.json({ error: "Please specify at least one timings slot" }, { status: 400 });
     }
 
-    const newSlotResult = await db.transaction(async (tx) => {
-      const [newSlot] = await tx
-        .insert(offeringSlots)
-        .values({
-          subCategoryId,
-          slotDate,
-          startTime,
-          endTime,
-          status: "available",
-        })
-        .returning();
+    // Validate times
+    for (const t of finalTimings) {
+      if (!t.startTime || !t.endTime) {
+        return NextResponse.json({ error: "Timings must specify start and end times" }, { status: 400 });
+      }
+      if (t.startTime >= t.endTime) {
+        return NextResponse.json({ error: "End time must be greater than start time" }, { status: 400 });
+      }
+    }
 
-      if (Array.isArray(locationIds) && locationIds.length > 0) {
-        for (const locId of locationIds) {
-          await tx.insert(slotLocationsMap).values({
-            slotId: newSlot.id,
-            locationId: locId,
-          });
-        }
+    // Calculate the array of local target dates based on repeat selection
+    let dates: string[] = [];
+    if (repeatType === "once") {
+      const targetDate = slotDate || body.slotDate;
+      if (!targetDate) {
+        return NextResponse.json({ error: "Missing slotDate for one-time slot" }, { status: 400 });
+      }
+      dates = [targetDate];
+    } else if (repeatType === "daily" || repeatType === "weekly") {
+      if (!startDate || !endDate) {
+        return NextResponse.json({ error: "Missing startDate or endDate for repeating slots" }, { status: 400 });
       }
 
-      return newSlot;
+      const parseLocalDate = (dateStr: string) => {
+        const [y, m, d] = dateStr.split("-").map(Number);
+        return new Date(y, m - 1, d);
+      };
+
+      const start = parseLocalDate(startDate);
+      const end = parseLocalDate(endDate);
+      if (start > end) {
+        return NextResponse.json({ error: "Start date must be on or before end date" }, { status: 400 });
+      }
+
+      let current = new Date(start);
+      while (current <= end) {
+        const yyyy = current.getFullYear();
+        const mm = String(current.getMonth() + 1).padStart(2, "0");
+        const dd = String(current.getDate()).padStart(2, "0");
+        const dateStr = `${yyyy}-${mm}-${dd}`;
+
+        if (repeatType === "daily") {
+          dates.push(dateStr);
+        } else if (repeatType === "weekly") {
+          const dayOfWeek = current.getDay(); // 0 = Sunday
+          if (daysOfWeek.includes(dayOfWeek)) {
+            dates.push(dateStr);
+          }
+        }
+        current.setDate(current.getDate() + 1);
+      }
+    } else {
+      return NextResponse.json({ error: "Invalid repeatType value" }, { status: 400 });
+    }
+
+    if (dates.length === 0) {
+      return NextResponse.json({ error: "No target dates found for the specified range and weekday selections" }, { status: 400 });
+    }
+
+    const duplicates: { date: string; startTime: string; endTime: string; subCategoryName: string }[] = [];
+    let createdCount = 0;
+
+    // Perform validation and insert inside a transaction
+    await db.transaction(async (tx) => {
+      for (const date of dates) {
+        for (const timing of finalTimings) {
+          // Check for clashing overlapping slots on this date
+          const clashing = await tx
+            .select({
+              id: offeringSlots.id,
+              subCategoryId: offeringSlots.subCategoryId,
+              slotDate: offeringSlots.slotDate,
+              startTime: offeringSlots.startTime,
+              endTime: offeringSlots.endTime,
+              subCategoryName: offeringSubCategories.name,
+            })
+            .from(offeringSlots)
+            .innerJoin(offeringSubCategories, eq(offeringSlots.subCategoryId, offeringSubCategories.id))
+            .where(
+              and(
+                eq(offeringSlots.slotDate, date),
+                sql`${offeringSlots.status} != 'suspended'`,
+                sql`${offeringSlots.startTime} < ${timing.endTime}::time`,
+                sql`${offeringSlots.endTime} > ${timing.startTime}::time`
+              )
+            );
+
+          if (clashing.length > 0) {
+            duplicates.push({
+              date,
+              startTime: timing.startTime,
+              endTime: timing.endTime,
+              subCategoryName: clashing[0].subCategoryName,
+            });
+          } else {
+            // Insert single slot timing
+            const [newSlot] = await tx
+              .insert(offeringSlots)
+              .values({
+                subCategoryId,
+                slotDate: date,
+                startTime: timing.startTime,
+                endTime: timing.endTime,
+                status: "available",
+              })
+              .returning();
+
+            if (Array.isArray(locationIds) && locationIds.length > 0) {
+              for (const locId of locationIds) {
+                await tx.insert(slotLocationsMap).values({
+                  slotId: newSlot.id,
+                  locationId: locId,
+                });
+              }
+            }
+            createdCount++;
+          }
+        }
+      }
     });
 
-    return NextResponse.json({ success: true, data: newSlotResult });
+    return NextResponse.json({
+      success: true,
+      createdCount,
+      skippedCount: duplicates.length,
+      duplicates,
+    });
   } catch (err) {
     console.error("POST slots error:", err);
-    return NextResponse.json({ error: "Failed to create slot" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create slots" }, { status: 500 });
   }
 }
