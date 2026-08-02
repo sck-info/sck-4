@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { bookingDrafts, users, offeringSubCategories, offeringCategories, offeringSlots, sessionLocations } from "@/db/schema";
+import { bookingDrafts, users, offeringSubCategories, offeringCategories, offeringSlots, sessionLocations, roles } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { eq, and, sql, desc, or, ilike } from "drizzle-orm";
+import { eq, and, sql, desc, or, ilike, ne } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
 
 export async function GET(req: Request) {
@@ -46,13 +46,13 @@ export async function GET(req: Request) {
 
     const condition = conditions.length > 0 ? and(...conditions) : undefined;
 
-    // Get total count
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(bookingDrafts)
       .innerJoin(users, eq(bookingDrafts.userId, users.id))
+      .innerJoin(roles, eq(users.roleId, roles.id))
       .innerJoin(offeringSubCategories, eq(bookingDrafts.subCategoryId, offeringSubCategories.id))
-      .where(condition);
+      .where(and(condition, ne(roles.roleName, "ADMIN")));
 
     const total = Number(countResult[0]?.count || 0);
 
@@ -90,11 +90,12 @@ export async function GET(req: Request) {
       })
       .from(bookingDrafts)
       .innerJoin(users, eq(bookingDrafts.userId, users.id))
+      .innerJoin(roles, eq(users.roleId, roles.id))
       .innerJoin(offeringSubCategories, eq(bookingDrafts.subCategoryId, offeringSubCategories.id))
       .innerJoin(offeringCategories, eq(offeringSubCategories.categoryId, offeringCategories.id))
       .leftJoin(offeringSlots, eq(bookingDrafts.slotId, offeringSlots.id))
       .leftJoin(sessionLocations, eq(bookingDrafts.selectedLocationId, sessionLocations.id))
-      .where(condition)
+      .where(and(condition, ne(roles.roleName, "ADMIN")))
       .orderBy(desc(bookingDrafts.updatedAt));
 
     if (!isExport) {

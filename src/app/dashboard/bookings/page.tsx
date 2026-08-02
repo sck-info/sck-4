@@ -28,6 +28,7 @@ import {
   ChevronRight,
   Download,
   Search,
+  CalendarPlus,
 } from "lucide-react";
 import {
   Table,
@@ -65,6 +66,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { formatDate, formatTimeRange } from "@/lib/format";
+import { getGoogleCalendarUrl } from "@/lib/calendar";
 
 type BookingRow = {
   id: string;
@@ -708,6 +710,19 @@ function BookingsDashboardContent() {
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
+
+                        {/* Add to Google Calendar (only if confirmed and scheduled timing slot exists) */}
+                        {booking.status === "confirmed" && booking.slotDate && (
+                          <a
+                            href={getGoogleCalendarUrl(booking, true)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 hover:bg-[#b86a16]/10 text-[#b86a16] border border-transparent hover:border-[#b86a16]/30 rounded-xl transition-all cursor-pointer inline-flex items-center"
+                            title="Add to Google Calendar"
+                          >
+                            <CalendarPlus className="w-3.5 h-3.5" />
+                          </a>
+                        )}
 
                         {/* Status updates */}
                         {booking.status === "pending" && (

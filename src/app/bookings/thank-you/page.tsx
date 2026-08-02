@@ -2,7 +2,8 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, Calendar, Clock, Home, ListTodo } from "lucide-react";
+import { Loader2, Calendar, Clock, Home, ListTodo, Share2 } from "lucide-react";
+import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import { formatDate, formatTimeRange } from "@/lib/format";
 
@@ -13,6 +14,34 @@ function ThankYouContent() {
 
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const handleShare = async () => {
+    const subId = booking?.subCategory?.id || booking?.subCategoryId;
+    if (!subId) {
+      toast.error("Unable to generate sharing link.");
+      return;
+    }
+    const shareUrl = `${window.location.origin}/offerings/${subId}/book`;
+    const shareText = `Register for the same ${booking?.subCategory?.name || "offering"} session here!`;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title: "Session Registration",
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Registration link copied to clipboard!");
+      } catch (err) {
+        console.error("Error copying link:", err);
+      }
+    }
+  };
 
   useEffect(() => {
     if (!bookingId) {
@@ -272,6 +301,34 @@ function ThankYouContent() {
           <Home size={16} />
           Go Home
         </a>
+
+        <button
+          onClick={handleShare}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            border: "1.5px solid var(--gold)",
+            color: "var(--gold)",
+            background: "transparent",
+            padding: "10px 20px",
+            borderRadius: 100,
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "all 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background =
+              "rgba(184,106,22,0.03)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "transparent";
+          }}
+        >
+          <Share2 size={16} />
+          Share Session Link
+        </button>
 
         <a
           href="/dashboard"

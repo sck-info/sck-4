@@ -23,7 +23,9 @@ export async function GET(req: Request) {
         id: bookings.id,
         userId: bookings.userId,
         status: bookings.status,
+        subCategoryId: bookings.subCategoryId,
         subCategory: {
+          id: offeringSubCategories.id,
           name: offeringSubCategories.name,
         },
         slot: {

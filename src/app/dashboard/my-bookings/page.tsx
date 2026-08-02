@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  CalendarPlus,
 } from "lucide-react";
 import {
   Dialog,
@@ -25,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { formatDate, formatTimeRange } from "@/lib/format";
+import { getGoogleCalendarUrl } from "@/lib/calendar";
 
 function SeekerBookingsContent() {
   const router = useRouter();
@@ -437,6 +439,16 @@ function SeekerBookingsContent() {
                     >
                       <MessageSquare className="w-3.5 h-3.5" /> Submit Review
                     </Button>
+                  )}
+                  {booking.status === "confirmed" && booking.slot && (
+                    <a
+                      href={getGoogleCalendarUrl(booking, false)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-transparent hover:bg-[#b86a16]/5 text-[#b86a16] border border-[#b86a16]/20 rounded-full h-8 px-4 text-[11px] font-bold cursor-pointer flex items-center gap-1.5 transition-all no-underline"
+                    >
+                      <CalendarPlus className="w-3.5 h-3.5" /> Add to Calendar
+                    </a>
                   )}
                 </div>
               </div>

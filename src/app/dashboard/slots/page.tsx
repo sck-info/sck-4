@@ -78,6 +78,7 @@ type SubCategoryRow = {
   id: string;
   name: string;
   requiresBooking: boolean;
+  isActive: boolean;
 };
 
 type LocationRow = {
@@ -305,7 +306,7 @@ function SlotsDashboardContent() {
   const handleOpenAnnounce = () => {
     setEditingSlot(null);
     setFormData({
-      subCategoryId: subCategories[0]?.id || "",
+      subCategoryId: subCategories.find((s) => s.isActive)?.id || subCategories[0]?.id || "",
       repeatType: "once",
       slotDate: undefined,
       startDate: undefined,
@@ -820,7 +821,7 @@ function SlotsDashboardContent() {
                   <SelectValue placeholder="Select offering" />
                 </SelectTrigger>
                 <SelectContent>
-                  {subCategories.map((sub) => (
+                  {subCategories.filter((sub) => sub.isActive).map((sub) => (
                     <SelectItem key={sub.id} value={sub.id}>
                       {sub.name}
                     </SelectItem>

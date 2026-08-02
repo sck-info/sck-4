@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { bookings, users, offeringSubCategories, offeringSlots, feedbacks, offeringCategories } from "@/db/schema";
+import { bookings, users, offeringSubCategories, offeringSlots, feedbacks, offeringCategories, sessionLocations } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, and, sql, desc, inArray, or, ilike } from "drizzle-orm";
 import { parsePaginationParams, createPaginationMeta } from "@/lib/pagination";
@@ -118,6 +118,12 @@ export async function GET(req: Request) {
           rawFeedback: feedbacks.rawFeedback,
           enhancedFeedback: feedbacks.enhancedFeedback,
         },
+        location: {
+          id: sessionLocations.id,
+          name: sessionLocations.name,
+          type: sessionLocations.type,
+          url: sessionLocations.url,
+        },
       })
       .from(bookings)
       .innerJoin(users, eq(bookings.userId, users.id))
@@ -125,6 +131,7 @@ export async function GET(req: Request) {
       .innerJoin(offeringCategories, eq(offeringSubCategories.categoryId, offeringCategories.id))
       .leftJoin(offeringSlots, eq(bookings.slotId, offeringSlots.id))
       .leftJoin(feedbacks, eq(bookings.id, feedbacks.bookingId))
+      .leftJoin(sessionLocations, eq(bookings.selectedLocationId, sessionLocations.id))
       .where(condition)
       .orderBy(desc(bookings.createdAt));
 
