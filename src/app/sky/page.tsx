@@ -132,6 +132,7 @@ export default function SKYPage() {
         @media (max-width: 1160px) and (min-width: 767.6px) {
           .sky-hero {
             background-image: url('/Gurudev/hero.png') !important;
+            padding-bottom: 4rem !important;
           }
         }
         .sky-hero .sky-hero-subtitle {
@@ -173,15 +174,15 @@ export default function SKYPage() {
           style={{
             position: "relative",
             width: "100%",
-            height: "100vh",
+            minHeight: "100vh",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            overflow: "hidden",
             color: "#faf7f2",
             backgroundSize: "cover",
             backgroundPosition: "center",
             paddingTop: "100px",
+            paddingBottom: "3rem",
           }}
         >
           {/* Back button container centered with hero content */}
