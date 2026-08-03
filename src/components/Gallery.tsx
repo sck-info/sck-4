@@ -131,7 +131,7 @@ export default function Gallery() {
       </div>
 
       {/* Scrolling / Centered Card track */}
-      <div style={{ position: "relative" }}>
+      <div style={{ position: "relative", overflow: "hidden" }}>
         {dbPhotos.length === 0 ? (
           <div
             style={{

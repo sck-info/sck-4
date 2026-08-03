@@ -16,8 +16,9 @@ import {
   sessionLocations,
   paymentQrs,
   formQuestions,
+  roles,
 } from "@/db/schema";
-import { sql, eq } from "drizzle-orm";
+import { sql, eq, ne } from "drizzle-orm";
 
 export async function GET() {
   const session = await auth();
@@ -34,7 +35,12 @@ export async function GET() {
     const pendingQueriesCount = await db.select({ count: sql<number>`count(*)` }).from(userQueries).where(eq(userQueries.status, "pending"));
     const usersCount = await db.select({ count: sql<number>`count(*)` }).from(users);
     const bookingsCount = await db.select({ count: sql<number>`count(*)` }).from(bookings);
-    const draftsCount = await db.select({ count: sql<number>`count(*)` }).from(bookingDrafts);
+    const draftsCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(bookingDrafts)
+      .innerJoin(users, eq(bookingDrafts.userId, users.id))
+      .innerJoin(roles, eq(users.roleId, roles.id))
+      .where(ne(roles.roleName, "ADMIN"));
     const slotsCount = await db.select({ count: sql<number>`count(*)` }).from(offeringSlots);
 
     // Additional Stats

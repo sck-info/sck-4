@@ -313,7 +313,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="space-y-8 max-w-6xl">
+    <div className="space-y-8 w-full">
       {/* Header */}
       <div className="border-b border-[#e8dcc4] pb-5">
         <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">

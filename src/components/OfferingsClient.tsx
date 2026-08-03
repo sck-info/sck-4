@@ -212,7 +212,7 @@ export default function OfferingsClient({
                 borderRadius: 14,
                 padding: "1rem 1.2rem",
                 maxWidth: 350,
-                flexShrink: 0,
+                width: "100%",
               }}
             >
               <div

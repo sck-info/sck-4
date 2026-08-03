@@ -102,7 +102,7 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto p-2">
+    <div className="space-y-6 w-full p-2">
       {/* Header section card */}
       <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
         <div className="space-y-2">

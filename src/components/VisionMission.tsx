@@ -25,7 +25,7 @@ export default function VisionMission() {
       <HangingLotus align="right" />
       <HangingLotus align="left" />
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
+      <div style={{ maxWidth: 1600, margin: "0 auto", position: "relative" }}>
         {/* Section heading */}
         <div
           style={{
@@ -84,7 +84,7 @@ export default function VisionMission() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
             gap: 24,
           }}
         >
