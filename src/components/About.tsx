@@ -449,10 +449,6 @@ export default function About() {
                   width: "100%",
                   height: "100%",
                   overflow: "hidden",
-                  // position: "relative",
-                  maxWidth: "580px",
-                  // width: "100%",
-                  // margin: "0 auto",
                 }}
               >
                 <AnimatePresence mode="wait">

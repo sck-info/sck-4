@@ -358,24 +358,35 @@ export function PublicCampaignClient({ code, initialBundle, initialMessage }: Pr
             />
           )}
 
-          {q.questionType === "DATE" && (
-            <div className="w-full relative [&>button]:w-full [&>button]:h-10 [&>button]:rounded-xl [&>button]:border-[#e8dcc4] [&>button]:justify-start">
-              <DatePicker
-                value={value ? new Date(String(value)) : undefined}
-                onChange={(date) => {
-                  if (!date) {
-                    setAnswer(q.id, "");
-                  } else {
-                    const yyyy = date.getFullYear();
-                    const mm = String(date.getMonth() + 1).padStart(2, "0");
-                    const dd = String(date.getDate()).padStart(2, "0");
-                    setAnswer(q.id, `${yyyy}-${mm}-${dd}`);
-                  }
-                }}
-                placeholder="Pick a date"
-              />
-            </div>
-          )}
+          {q.questionType === "DATE" && (() => {
+            const isDob = /dob|birth|born/i.test(q.prompt || "");
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const disabledDates = isDob
+              ? (d: Date) => d > today || d < new Date("1900-01-01")
+              : (d: Date) => d <= today;
+
+            return (
+              <div className="w-full relative [&>button]:w-full [&>button]:h-10 [&>button]:rounded-xl [&>button]:border-[#e8dcc4] [&>button]:justify-start">
+                <DatePicker
+                  value={value ? new Date(String(value)) : undefined}
+                  onChange={(date) => {
+                    if (!date) {
+                      setAnswer(q.id, "");
+                    } else {
+                      const yyyy = date.getFullYear();
+                      const mm = String(date.getMonth() + 1).padStart(2, "0");
+                      const dd = String(date.getDate()).padStart(2, "0");
+                      setAnswer(q.id, `${yyyy}-${mm}-${dd}`);
+                    }
+                  }}
+                  disabledDates={disabledDates}
+                  placeholder={isDob ? "Select Date of Birth..." : "Select future date..."}
+                />
+              </div>
+            );
+          })()}
 
           {q.questionType === "NUMBER" && (
             <Input

@@ -719,9 +719,9 @@ function SlotsDashboardContent() {
                         {formatTime12h(slot.endTime)}
                       </span>
                     </TableCell>
-                    <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] font-medium max-w-[200px] truncate" title={slot.locations?.map(loc => `${loc.name} (${loc.type.toUpperCase()})`).join(", ")}>
+                    <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] font-medium max-w-[200px] truncate" title={slot.locations?.map(loc => `${loc.name} (${(loc.type || "").toUpperCase()})`).join(", ")}>
                       {slot.locations && slot.locations.length > 0 ? (
-                        slot.locations.map(loc => `${loc.name} (${loc.type.toUpperCase()})`).join(", ")
+                        slot.locations.map(loc => `${loc.name} (${(loc.type || "").toUpperCase()})`).join(", ")
                       ) : (
                         <span className="italic text-gray-400">None selected</span>
                       )}

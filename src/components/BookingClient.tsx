@@ -1209,6 +1209,15 @@ export default function BookingClient({
                           val && !isNaN(Date.parse(val))
                             ? new Date(val)
                             : undefined;
+
+                        const isDob = /dob|birth|born/i.test(q.fieldLabel || "");
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+
+                        const disabledDates = isDob
+                          ? (d: Date) => d > today || d < new Date("1900-01-01")
+                          : (d: Date) => d <= today;
+
                         return (
                           <DatePicker
                             value={parsedDate}
@@ -1218,7 +1227,10 @@ export default function BookingClient({
                                 d ? format(d, "yyyy-MM-dd") : "",
                               )
                             }
-                            placeholder="Select date..."
+                            disabledDates={disabledDates}
+                            placeholder={
+                              isDob ? "Select Date of Birth..." : "Select future date..."
+                            }
                           />
                         );
                       })()}

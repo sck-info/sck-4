@@ -59,13 +59,14 @@ export async function GET() {
       .from(bookings)
       .groupBy(bookings.status);
 
-    // 3. Service Format Distribution
+    // 3. Service Format Distribution (Online vs Offline only)
     const bookingsByFormat = await db
       .select({
         format: bookings.selectedFormat,
         count: sql<number>`count(*)`
       })
       .from(bookings)
+      .where(sql`${bookings.selectedFormat} is not null`)
       .groupBy(bookings.selectedFormat);
 
     // 4. Slots Status Breakdown
@@ -125,27 +126,29 @@ export async function GET() {
         totalPaymentQrs: Number(paymentQrsCount[0]?.count || 0),
         totalQuestions: Number(questionsCount[0]?.count || 0),
         bookingsByStatus: bookingsByStatus.map((row) => ({
-          status: row.status,
+          status: row.status || "unknown",
           count: Number(row.count),
         })),
-        bookingsByFormat: bookingsByFormat.map((row) => ({
-          format: row.format,
-          count: Number(row.count),
-        })),
+        bookingsByFormat: bookingsByFormat
+          .filter((row) => row.format)
+          .map((row) => ({
+            format: row.format as string,
+            count: Number(row.count),
+          })),
         slotsByStatus: slotsByStatus.map((row) => ({
-          status: row.status,
+          status: row.status || "unknown",
           count: Number(row.count),
         })),
         averageRating: Math.round(Number(avgRatingRes[0]?.avg || 0) * 10) / 10,
         recentBookings: recentBookingsList.map((row) => ({
           id: row.id,
-          seekerName: row.seekerName,
-          seekerEmail: row.seekerEmail,
-          status: row.status,
+          seekerName: row.seekerName || "Unknown",
+          seekerEmail: row.seekerEmail || "",
+          status: row.status || "unknown",
           createdAt: row.createdAt,
         })),
         bookingsBySubCategory: bookingsBySubCategoryList.map((row) => ({
-          name: row.subCategoryName.toUpperCase(),
+          name: (row.subCategoryName || "Unknown").toUpperCase(),
           Bookings: Number(row.count),
         })),
       }

@@ -524,23 +524,6 @@ export default function Navbar() {
             </svg>
           </button>
 
-          {/* Offerings */}
-          <a
-            href="/offerings"
-            onClick={() => setMenuOpen(false)}
-            style={{
-              color: "var(--text-dark)",
-              textDecoration: "none",
-              fontSize: 16,
-              fontWeight: 500,
-              padding: "10px 0",
-              borderBottom: "1px solid rgba(28,31,74,0.06)",
-              fontFamily: "'DM Sans', sans-serif",
-            }}
-          >
-            Offerings
-          </a>
-
           {mobileDropdownOpen && (
             <div
               style={{
@@ -596,6 +579,23 @@ export default function Navbar() {
               )}
             </div>
           )}
+
+          {/* Offerings */}
+          <a
+            href="/offerings"
+            onClick={() => setMenuOpen(false)}
+            style={{
+              color: "var(--text-dark)",
+              textDecoration: "none",
+              fontSize: 16,
+              fontWeight: 500,
+              padding: "10px 0",
+              borderBottom: "1px solid rgba(28,31,74,0.06)",
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            Offerings
+          </a>
 
           {/* Dynamic Login / Dashboard Link */}
           {session ? (

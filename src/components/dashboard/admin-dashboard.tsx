@@ -222,18 +222,20 @@ export default function AdminDashboard() {
   ];
 
   // Pie chart data
-  const pieData = stats.bookingsByStatus.map((item) => ({
-    name: item.status.replace("_", " ").toUpperCase(),
+  const pieData = (stats.bookingsByStatus || []).map((item) => ({
+    name: (item.status || "unknown").replace(/_/g, " ").toUpperCase(),
     value: item.count,
-    color: STATUS_COLORS[item.status] || "#9396ae",
+    color: (item.status && STATUS_COLORS[item.status]) || "#9396ae",
   }));
 
-  // Bar chart data
-  const barData = stats.bookingsByFormat.map((item) => ({
-    name: item.format.toUpperCase(),
-    Bookings: item.count,
-    color: FORMAT_COLORS[item.format] || "#b86a16",
-  }));
+  // Bar chart data (Online vs Offline format preference only)
+  const barData = (stats.bookingsByFormat || [])
+    .filter((item) => item.format && (item.format.toLowerCase() === "online" || item.format.toLowerCase() === "offline"))
+    .map((item) => ({
+      name: item.format.toUpperCase(),
+      Bookings: item.count,
+      color: FORMAT_COLORS[item.format.toLowerCase()] || "#b86a16",
+    }));
 
   // Slots utilization
   const totalSlotsCount = stats.totalSlots;

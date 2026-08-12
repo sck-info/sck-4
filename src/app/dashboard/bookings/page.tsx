@@ -671,7 +671,7 @@ function BookingsDashboardContent() {
                     <TableCell className="py-3 px-4">
                       <div className="space-y-1">
                         <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide uppercase bg-[#faf7f2] border border-[#e8dcc4] text-[#1c1f4a]">
-                          {booking.selectedFormat || "Unspecified"}
+                          {booking.selectedFormat || "Direct Submission"}
                         </span>
                       </div>
                     </TableCell>

@@ -231,7 +231,7 @@ export default function UserDashboard() {
                   <div className="text-xs text-[#5a5e7a] flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5 text-[#b86a16] shrink-0" />
                     <span className="capitalize">
-                      {booking.selectedFormat} (
+                      {booking.selectedFormat || "Direct Submission"} (
                       {booking.paymentReceiptUrl ? "Paid" : "Receipt Pending"})
                     </span>
                   </div>
