@@ -1,3 +1,4 @@
+ALTER TYPE "public"."slot_status" ADD VALUE IF NOT EXISTS 'expired';--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "offering_inquiries" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
