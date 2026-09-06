@@ -33,7 +33,7 @@ export function formatTimeStr(time: string | null | undefined): string {
   const cleanTime = time.trim();
   const match = cleanTime.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
   if (match) {
-    let hour = parseInt(match[1]);
+    const hour = parseInt(match[1]);
     const minute = match[2];
     const ampm = hour >= 12 ? "PM" : "AM";
     const displayHour = hour % 12 === 0 ? 12 : hour % 12;
@@ -56,7 +56,7 @@ export function formatTimeRange(
     const clean = t.trim();
     const match = clean.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
     if (match) {
-      let hour = parseInt(match[1]);
+      const hour = parseInt(match[1]);
       const minute = match[2];
       const ampm = hour >= 12 ? "PM" : "AM";
       const displayHour = hour % 12 === 0 ? 12 : hour % 12;
@@ -69,4 +69,18 @@ export function formatTimeRange(
   const formattedEnd = formatSingle(end);
 
   return `${formattedStart} - ${formattedEnd} IST`;
+}
+
+export function getTodayIST(date: Date = new Date()): string {
+  const formatter = new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const parts = formatter.formatToParts(date);
+  const yyyy = parts.find((p) => p.type === "year")?.value;
+  const mm = parts.find((p) => p.type === "month")?.value;
+  const dd = parts.find((p) => p.type === "day")?.value;
+  return `${yyyy}-${mm}-${dd}`;
 }

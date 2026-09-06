@@ -19,6 +19,7 @@ const ADMIN_ROUTES = [
   "/dashboard/payment-qrs",
   "/dashboard/feedbacks",
   "/dashboard/campaigns",
+  "/dashboard/offering-inquiries",
 ];
 
 function requestedPath(req: { nextUrl: { pathname: string; search: string } }) {

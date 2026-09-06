@@ -11,6 +11,7 @@ export default function VisionMission() {
         padding: "clamp(5rem, 10vw, 8rem) 2rem",
         position: "relative",
         overflow: "hidden",
+        scrollMarginTop: "80px",
       }}
     >
       <div

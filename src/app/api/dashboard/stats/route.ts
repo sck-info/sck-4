@@ -18,7 +18,8 @@ import {
   formQuestions,
   roles,
 } from "@/db/schema";
-import { sql, eq, ne } from "drizzle-orm";
+import { sql, eq, ne, and, gt } from "drizzle-orm";
+import { getTodayIST } from "@/lib/format";
 
 export async function GET() {
   const session = await auth();
@@ -27,6 +28,8 @@ export async function GET() {
   }
 
   try {
+    const todayIST = getTodayIST();
+
     // 1. General counts
     const aboutCount = await db.select({ count: sql<number>`count(*)` }).from(aboutSlides);
     const metricsCount = await db.select({ count: sql<number>`count(*)` }).from(metrics);
@@ -42,6 +45,24 @@ export async function GET() {
       .innerJoin(roles, eq(users.roleId, roles.id))
       .where(ne(roles.roleName, "ADMIN"));
     const slotsCount = await db.select({ count: sql<number>`count(*)` }).from(offeringSlots);
+
+    // Upcoming slots counts (strictly greater than today in IST)
+    const upcomingAvailableSlotsRes = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(offeringSlots)
+      .where(
+        and(
+          eq(offeringSlots.status, "available"),
+          gt(offeringSlots.slotDate, todayIST)
+        )
+      );
+    const upcomingTotalSlotsRes = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(offeringSlots)
+      .where(gt(offeringSlots.slotDate, todayIST));
+
+    const upcomingAvailableSlots = Number(upcomingAvailableSlotsRes[0]?.count || 0);
+    const upcomingTotalSlots = Number(upcomingTotalSlotsRes[0]?.count || 0);
 
     // Additional Stats
     const categoriesCount = await db.select({ count: sql<number>`count(*)` }).from(offeringCategories);
@@ -120,6 +141,8 @@ export async function GET() {
         totalBookings: Number(bookingsCount[0]?.count || 0),
         totalDrafts: Number(draftsCount[0]?.count || 0),
         totalSlots: Number(slotsCount[0]?.count || 0),
+        upcomingAvailableSlots,
+        upcomingTotalSlots,
         totalCategories: Number(categoriesCount[0]?.count || 0),
         totalOfferings: Number(offeringsCount[0]?.count || 0),
         totalLocations: Number(locationsCount[0]?.count || 0),

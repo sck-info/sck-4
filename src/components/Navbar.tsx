@@ -49,11 +49,28 @@ export default function Navbar() {
   const scrollToSection = (id: string) => {
     if (isHome) {
       const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+        window.history.pushState(null, "", `#${id}`);
+      }
     } else {
       window.location.href = `/#${id}`;
     }
   };
+
+  // Smooth scroll to hash on page load or navigation
+  useEffect(() => {
+    if (isHome && typeof window !== "undefined" && window.location.hash) {
+      const hashId = window.location.hash.replace("#", "");
+      if (hashId) {
+        const timer = setTimeout(() => {
+          const el = document.getElementById(hashId);
+          if (el) el.scrollIntoView({ behavior: "smooth" });
+        }, 300);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isHome]);
 
   const navLinkStyle = {
     fontFamily: "'DM Sans', sans-serif",
@@ -108,6 +125,13 @@ export default function Navbar() {
       >
         <a
           href={getHref("#")}
+          onClick={(e) => {
+            if (isHome) {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+              window.history.pushState(null, "", "/");
+            }
+          }}
           style={{
             textDecoration: "none",
             display: "flex",
@@ -137,6 +161,12 @@ export default function Navbar() {
           {/* About */}
           <a
             href={getHref("#about")}
+            onClick={(e) => {
+              if (isHome) {
+                e.preventDefault();
+                scrollToSection("about");
+              }
+            }}
             style={navLinkStyle}
             onMouseEnter={(e) => handleLinkHover(e, true)}
             onMouseLeave={(e) => handleLinkHover(e, false)}
@@ -147,6 +177,12 @@ export default function Navbar() {
           {/* Vision */}
           <a
             href={getHref("#vision")}
+            onClick={(e) => {
+              if (isHome) {
+                e.preventDefault();
+                scrollToSection("vision");
+              }
+            }}
             style={navLinkStyle}
             onMouseEnter={(e) => handleLinkHover(e, true)}
             onMouseLeave={(e) => handleLinkHover(e, false)}
@@ -433,7 +469,13 @@ export default function Navbar() {
           {/* About */}
           <a
             href={getHref("#about")}
-            onClick={() => setMenuOpen(false)}
+            onClick={(e) => {
+              setMenuOpen(false);
+              if (isHome) {
+                e.preventDefault();
+                scrollToSection("about");
+              }
+            }}
             style={{
               color: "var(--text-dark)",
               textDecoration: "none",
@@ -450,7 +492,13 @@ export default function Navbar() {
           {/* Vision */}
           <a
             href={getHref("#vision")}
-            onClick={() => setMenuOpen(false)}
+            onClick={(e) => {
+              setMenuOpen(false);
+              if (isHome) {
+                e.preventDefault();
+                scrollToSection("vision");
+              }
+            }}
             style={{
               color: "var(--text-dark)",
               textDecoration: "none",

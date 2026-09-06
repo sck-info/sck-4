@@ -408,6 +408,7 @@ export default function About() {
       style={{
         background: "var(--ivory)",
         padding: "1.5rem 2rem",
+        scrollMarginTop: "80px",
       }}
     >
       <div style={{ maxWidth: 1600, margin: "0 auto" }}>

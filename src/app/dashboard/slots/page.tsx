@@ -64,7 +64,7 @@ type SlotRow = {
   slotDate: string;
   startTime: string;
   endTime: string;
-  status: "available" | "booked" | "suspended";
+  status: "available" | "booked" | "suspended" | "expired";
   subCategoryName: string;
   locations?: {
     id: string;
@@ -472,7 +472,10 @@ function SlotsDashboardContent() {
   };
 
   const handleToggleStatus = async (slot: SlotRow) => {
-    const newStatus = slot.status === "suspended" ? "available" : "suspended";
+    const newStatus =
+      slot.status === "suspended" || slot.status === "expired"
+        ? "available"
+        : "suspended";
     try {
       const res = await fetch(`/api/slots/${slot.id}`, {
         method: "PATCH",
@@ -618,6 +621,7 @@ function SlotsDashboardContent() {
               <SelectItem value="available">Available Only</SelectItem>
               <SelectItem value="booked">Booked Only</SelectItem>
               <SelectItem value="suspended">Suspended Only</SelectItem>
+              <SelectItem value="expired">Expired Only</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -733,7 +737,9 @@ function SlotsDashboardContent() {
                             ? "bg-[#6b8f71]/15 text-[#6b8f71]"
                             : slot.status === "suspended"
                               ? "bg-[#c4796a]/15 text-[#c4796a]"
-                              : "bg-[#b86a16]/10 text-[#b86a16]"
+                              : slot.status === "expired"
+                                ? "bg-[#9396ae]/20 text-[#5a5e7a]"
+                                : "bg-[#b86a16]/10 text-[#b86a16]"
                         }`}
                       >
                         {slot.status}
@@ -759,7 +765,7 @@ function SlotsDashboardContent() {
                             <Pause className="w-3.5 h-3.5" />
                           </button>
                         )}
-                        {slot.status === "suspended" && (
+                        {(slot.status === "suspended" || slot.status === "expired") && (
                           <button
                             onClick={() => handleToggleStatus(slot)}
                             className="p-1.5 hover:bg-[#6b8f71]/10 text-[#6b8f71] border border-transparent hover:border-[#6b8f71]/30 rounded-xl transition-all cursor-pointer"

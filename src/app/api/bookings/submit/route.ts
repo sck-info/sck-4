@@ -4,7 +4,7 @@ import { bookings, offeringSlots, offeringSubCategories, users, bookingDrafts } 
 import { auth } from "@/lib/auth";
 import { eq, and, gt } from "drizzle-orm";
 import { uploadImages } from "@/lib/cloudinaryUpload";
-import { formatDate } from "@/lib/format";
+import { formatDate, getTodayIST } from "@/lib/format";
 
 const WHATSAPP_GATEWAY_URL = process.env.WHATSAPP_GATEWAY_URL || "http://localhost:3001";
 const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
@@ -86,7 +86,7 @@ export async function POST(req: Request) {
     // If slotId is provided, perform checks
     let slotRecord = null;
     if (slotId) {
-      const todayStr = new Date().toISOString().split("T")[0];
+      const todayStr = getTodayIST();
       const slotList = await db
         .select()
         .from(offeringSlots)

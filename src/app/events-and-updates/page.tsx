@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackToTop from "@/components/BackToTop";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { DateRange } from "react-day-picker";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -593,6 +594,7 @@ export default function EventsAndUpdatesPage() {
       >
         <EventsAndUpdatesContent />
       </Suspense>
+      <BackToTop />
       <Footer />
     </>
   );

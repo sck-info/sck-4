@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRealtime } from "@/hooks/useRealtime";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackToTop from "@/components/BackToTop";
 
 type GalleryPhoto = {
   id: string;
@@ -83,10 +84,10 @@ export default function PublicGalleryPage() {
 
 
   return (
-    <div className="min-h-screen bg-[#faf7f2] pb-24 text-[#1c1f4a] selection:bg-[#b86a16]/20 font-sans">
+    <div className="min-h-screen bg-[#faf7f2] flex flex-col text-[#1c1f4a] selection:bg-[#b86a16]/20 font-sans">
       <Navbar />
       {/* Top Header Section */}
-      <header className="relative pt-24 pb-12 px-8 border-b border-[#e8dcc4]/50 max-w-[1600px] mx-auto">
+      <header className="relative pt-24 pb-12 px-8 border-b border-[#e8dcc4]/50 max-w-[1600px] mx-auto w-full">
         {/* Back button */}
         <div style={{ marginBottom: "1.5rem", marginLeft: "-0.5rem" }}>
           <Link
@@ -118,7 +119,7 @@ export default function PublicGalleryPage() {
       </header>
 
       {/* Grid Container */}
-      <main className="max-w-[1600px] mx-auto px-8 mt-12">
+      <main className="max-w-[1600px] mx-auto px-8 mt-12 pb-24 sm:pb-32 flex-1 w-full">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32">
             <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
@@ -235,6 +236,7 @@ export default function PublicGalleryPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <BackToTop />
       <Footer />
     </div>
   );

@@ -72,16 +72,12 @@ export default function Testimonials() {
 
   useRealtime(["feedbacks", "users"], fetchActiveFeedbacks);
 
-  const nextSlide = () =>
-    setCurrentIndex((prev) => (prev + 1) % items.length);
+  const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % items.length);
 
   const prevSlide = () =>
-    setCurrentIndex(
-      (prev) => (prev - 1 + items.length) % items.length,
-    );
+    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
 
-  const prevIndex =
-    (currentIndex - 1 + items.length) % items.length;
+  const prevIndex = (currentIndex - 1 + items.length) % items.length;
 
   const nextIndex = (currentIndex + 1) % items.length;
 
@@ -92,6 +88,7 @@ export default function Testimonials() {
         background: "white",
         padding: "clamp(3rem, 8vw, 6rem) 1rem",
         overflow: "hidden",
+        scrollMarginTop: "80px",
       }}
     >
       <style jsx>{`
@@ -169,7 +166,7 @@ export default function Testimonials() {
                 fontWeight: 500,
               }}
             >
-              Testimonials
+              Wall of Love
             </span>
             <div
               style={{
@@ -438,7 +435,10 @@ function TestimonialCard({
               marginBottom: 2,
             }}
           >
-            {data.role} &bull; <span style={{ color: "var(--gold)", fontWeight: 600 }}>{data.therapy}</span>
+            {data.role} &bull;{" "}
+            <span style={{ color: "var(--gold)", fontWeight: 600 }}>
+              {data.therapy}
+            </span>
           </p>
         </div>
       </div>

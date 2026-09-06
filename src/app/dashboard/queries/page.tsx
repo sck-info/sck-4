@@ -12,6 +12,7 @@ import {
   CheckCircle,
   Loader2,
   AlertCircle,
+  AlertTriangle,
   Mail,
   Phone,
   Calendar,
@@ -138,7 +139,9 @@ function QueriesPageContent() {
   const [replyLoading, setReplyLoading] = useState(false);
 
   // Delete state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteQueryId, setDeleteQueryId] = useState<string | null>(null);
+  const [blockedDeleteReason, setBlockedDeleteReason] = useState<string | null>(null);
 
   const fetchQueries = useCallback(async () => {
     try {
@@ -251,7 +254,13 @@ function QueriesPageContent() {
     try {
       const res = await fetch(`/api/queries/${deleteQueryId}`, { method: "DELETE" });
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Failed to delete query.");
+      if (!res.ok) {
+        if (res.status === 409 || result.error === "dependency_conflict") {
+          setBlockedDeleteReason(result.message || "This query cannot be deleted due to existing dependencies.");
+          return;
+        }
+        throw new Error(result.error || "Failed to delete query.");
+      }
 
       toast.success("Contact query deleted successfully.");
       fetchQueries();
@@ -259,6 +268,7 @@ function QueriesPageContent() {
       toast.error(err.message || "Failed to delete query.");
     } finally {
       setDeleteQueryId(null);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -413,7 +423,10 @@ function QueriesPageContent() {
                           <ReplyIcon className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => setDeleteQueryId(query.id)}
+                          onClick={() => {
+                            setDeleteQueryId(query.id);
+                            setDeleteDialogOpen(true);
+                          }}
                           className="p-2 hover:bg-[#c4796a]/10 text-[#c4796a] border border-transparent hover:border-[#c4796a]/30 rounded-xl transition-all cursor-pointer"
                           title="Delete Query"
                         >
@@ -526,29 +539,60 @@ function QueriesPageContent() {
       </Dialog>
 
       {/* Delete Query Confirmation Dialog */}
-      <AlertDialog open={!!deleteQueryId} onOpenChange={(open) => !open && setDeleteQueryId(null)}>
-        <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#1c1f4a] font-bold">
-              Confirm Query Deletion
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
-              Are you sure you want to permanently delete this contact request record? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel className="border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50">
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div className="space-y-2">
+              <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">
+                Delete Contact Query
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                Are you sure you want to delete this contact query? This action cannot be undone.
+              </AlertDialogDescription>
+            </div>
+          </div>
+          <AlertDialogFooter className="flex sm:flex-row gap-2 mt-6 justify-center w-full">
+            <AlertDialogCancel className="flex-1 border border-[#e8dcc4] text-xs font-semibold rounded-xl hover:bg-[#faf7f2]/50 py-2 h-9">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              className="bg-[#c4796a] hover:bg-[#c4796a]/90 text-white text-xs font-semibold rounded-xl"
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl py-2 h-9"
             >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Dependency / Error Blocked Dialog */}
+      {blockedDeleteReason && (
+        <AlertDialog open={!!blockedDeleteReason} onOpenChange={(open) => !open && setBlockedDeleteReason(null)}>
+          <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="space-y-2">
+                <AlertDialogTitle className="text-base font-bold text-[#1c1f4a]">
+                  Deletion Blocked
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-xs text-[#5a5e7a] leading-relaxed">
+                  {blockedDeleteReason}
+                </AlertDialogDescription>
+              </div>
+            </div>
+            <AlertDialogFooter className="mt-6 flex justify-center w-full">
+              <AlertDialogCancel className="w-full bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white border-0 text-xs font-semibold rounded-xl py-2 h-9">
+                Close
+              </AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }

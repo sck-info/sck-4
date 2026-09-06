@@ -6,6 +6,7 @@ import VisionMission from "@/components/VisionMission";
 import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
 import Gallery from "@/components/Gallery";
+import BackToTop from "@/components/BackToTop";
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
         <Testimonials />
         <Contact />
       </main>
+      <BackToTop />
     </>
   );
 }

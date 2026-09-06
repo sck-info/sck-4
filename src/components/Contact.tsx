@@ -4,8 +4,70 @@ import { FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
 import { useState, useEffect, useCallback } from "react";
 import { useRealtime } from "@/hooks/useRealtime";
 import Footer from "@/components/Footer";
+type OfferingCategory = {
+  id?: string;
+  name?: string;
+  subCategories?: { id: string; name: string }[];
+};
+
+const CATEGORY_STYLES: Record<
+  string,
+  { color: string; icon: string; hash: string }
+> = {
+  "Alternative Therapies": { color: "#6B8F71", icon: "✦", hash: "therapy" },
+  "Jyothishya Consultations": {
+    color: "#C4796A",
+    icon: "◈",
+    hash: "consultations",
+  },
+  "Music Classes": { color: "#4A6FA5", icon: "♪", hash: "classes" },
+  "Mind & Body Workshops": { color: "#C9873A", icon: "◉", hash: "workshops" },
+  Satsangs: { color: "#7A5E9A", icon: "♫", hash: "satsangs" },
+};
+
+const getCategoryStyle = (name: string) => {
+  return (
+    CATEGORY_STYLES[name] || {
+      color: "#b86a16",
+      icon: "✦",
+      hash: name.toLowerCase().replace(/\s+/g, "-"),
+    }
+  );
+};
+
+const DEFAULT_OFFERINGS: OfferingCategory[] = [
+  { id: "therapy", name: "Alternative Therapies" },
+  { id: "consultations", name: "Jyothishya Consultations" },
+  { id: "classes", name: "Music Classes" },
+  { id: "workshops", name: "Mind & Body Workshops" },
+  { id: "satsangs", name: "Satsangs" },
+];
 
 export default function Contact() {
+  const [offeringsList, setOfferingsList] =
+    useState<OfferingCategory[]>(DEFAULT_OFFERINGS);
+
+  const fetchOfferings = useCallback(async () => {
+    try {
+      const res = await fetch("/api/offerings");
+      if (!res.ok) return;
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        setOfferingsList(json.data);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch offerings for quick registration:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchOfferings();
+  }, [fetchOfferings]);
+
+  useRealtime(["offering_categories", "offering_sub_categories"], () => {
+    fetchOfferings();
+  });
+
   const [liveContact, setLiveContact] = useState<{
     email: string;
     phone: string;
@@ -17,8 +79,10 @@ export default function Contact() {
     email: "sharathchandra.kancherla@gmail.com",
     phone: "+91 8374896261",
     location: "Hyderabad, Telangana",
-    instagramLink: "https://www.instagram.com/sharathkancherla?igsh=MWtvZXI1a3czbzdlYg==",
-    linkedinLink: "https://www.linkedin.com/in/sharath-chandra-kancherla-b38422108?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    instagramLink:
+      "https://www.instagram.com/sharathkancherla?igsh=MWtvZXI1a3czbzdlYg==",
+    linkedinLink:
+      "https://www.linkedin.com/in/sharath-chandra-kancherla-b38422108?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     youtubeLink: "https://youtube.com/@sharathkancherla?si=d8kXq71Z1eJ0e18K",
   });
 
@@ -32,13 +96,22 @@ export default function Contact() {
           email: data.email || "sharathchandra.kancherla@gmail.com",
           phone: data.phone || "+91 8374896261",
           location: data.location || "Hyderabad, Telangana",
-          instagramLink: data.instagramLink || "https://www.instagram.com/sharathkancherla?igsh=MWtvZXI1a3czbzdlYg==",
-          linkedinLink: data.linkedinLink || "https://www.linkedin.com/in/sharath-chandra-kancherla-b38422108?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-          youtubeLink: data.youtubeLink || "https://youtube.com/@sharathkancherla?si=d8kXq71Z1eJ0e18K",
+          instagramLink:
+            data.instagramLink ||
+            "https://www.instagram.com/sharathkancherla?igsh=MWtvZXI1a3czbzdlYg==",
+          linkedinLink:
+            data.linkedinLink ||
+            "https://www.linkedin.com/in/sharath-chandra-kancherla-b38422108?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+          youtubeLink:
+            data.youtubeLink ||
+            "https://youtube.com/@sharathkancherla?si=d8kXq71Z1eJ0e18K",
         });
       }
     } catch (err) {
-      console.warn("Failed to fetch live contact details, using defaults:", err);
+      console.warn(
+        "Failed to fetch live contact details, using defaults:",
+        err,
+      );
     }
   }, []);
 
@@ -77,7 +150,8 @@ export default function Contact() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
+              gridTemplateColumns:
+                "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
               gap: "clamp(3rem, 5vw, 5rem)",
               alignItems: "start",
             }}
@@ -176,11 +250,13 @@ export default function Contact() {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow = "0 15px 25px rgba(232,150,46,0.3)";
+                    e.currentTarget.style.boxShadow =
+                      "0 15px 25px rgba(232,150,46,0.3)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow = "0 10px 20px rgba(232,150,46,0.2)";
+                    e.currentTarget.style.boxShadow =
+                      "0 10px 20px rgba(232,150,46,0.2)";
                   }}
                 >
                   Send a Message
@@ -252,7 +328,6 @@ export default function Contact() {
                     value: liveContact.location,
                   },
                 ].map((item) => (
-
                   <div
                     key={item.label}
                     style={{ display: "flex", alignItems: "center", gap: 14 }}
@@ -332,7 +407,6 @@ export default function Contact() {
                       label: "YouTube",
                     },
                   ].map((social) => (
-
                     <a
                       key={social.label}
                       href={social.url}
@@ -396,93 +470,88 @@ export default function Contact() {
                   Quick Registration
                 </p>
               </div>
-              {[
-                {
-                  label: "Alternative Therapies",
-                  icon: "✦",
-                  color: "#6B8F71",
-                  url: "https://forms.gle/jjHiYLsS41csuk8x7",
-                },
-                {
-                  label: "Jyothishya Consultations",
-                  icon: "◈",
-                  color: "#C4796A",
-                  url: "https://forms.gle/9tzkrwSneeeAMoTW9",
-                },
-                {
-                  label: "Music Classes",
-                  icon: "♪",
-                  color: "#4A6FA5",
-                  url: "https://forms.gle/rriqtYCqQTi88Uyy6",
-                },
-                {
-                  label: "Mind & Body Workshops",
-                  icon: "◉",
-                  color: "#C9873A",
-                  url: "https://forms.gle/f5MNNoN6AGKs8TD89",
-                },
-                {
-                  label: "Satsangs",
-                  icon: "♫",
-                  color: "#7A5E9A",
-                  url: "https://forms.gle/y1XBLfrsLnNgsDXo6",
-                },
-              ].map((item, i, arr) => (
-                <a
-                  key={item.label}
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "1.25rem 2rem",
-                    borderBottom:
-                      i < arr.length - 1
-                        ? "1px solid rgba(250,247,242,0.06)"
-                        : "none",
-                    textDecoration: "none",
-                    transition: "background 0.2s",
-                  }}
-                  onMouseEnter={(e) =>
-                    ((e.currentTarget as HTMLElement).style.background =
-                      "rgba(250,247,242,0.04)")
-                  }
-                  onMouseLeave={(e) =>
-                    ((e.currentTarget as HTMLElement).style.background =
-                      "transparent")
-                  }
-                >
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
+              {offeringsList.map((c, i, arr) => {
+                const style = getCategoryStyle(c.name || "");
+                const subCount = c.subCategories?.length ?? 0;
+                return (
+                  <a
+                    key={c.id || c.name || i}
+                    href={`/offerings#${style.hash}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "1.25rem 2rem",
+                      borderBottom:
+                        i < arr.length - 1
+                          ? "1px solid rgba(250,247,242,0.06)"
+                          : "none",
+                      textDecoration: "none",
+                      transition: "background 0.2s",
+                    }}
+                    onMouseEnter={(e) =>
+                      ((e.currentTarget as HTMLElement).style.background =
+                        "rgba(250,247,242,0.04)")
+                    }
+                    onMouseLeave={(e) =>
+                      ((e.currentTarget as HTMLElement).style.background =
+                        "transparent")
+                    }
                   >
-                    <span style={{ color: item.color, fontSize: 18 }}>
-                      {item.icon}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "'DM Sans', sans-serif",
-                        fontSize: 15,
-                        color: "rgba(250,247,242,0.8)",
-                        fontWeight: 400,
-                      }}
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 14 }}
                     >
-                      {item.label}
-                    </span>
-                  </div>
-                  <svg
-                    width="16"
-                    height="16"
-                    fill="none"
-                    stroke={item.color}
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M7 17L17 7M17 7H7M17 7v10" />
-                  </svg>
-                </a>
-              ))}
+                      <span
+                        style={{
+                          color: style.color,
+                          fontSize: 18,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {style.icon}
+                      </span>
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <span
+                          style={{
+                            fontFamily: "'DM Sans', sans-serif",
+                            fontSize: 15,
+                            color: "rgba(250,247,242,0.85)",
+                            fontWeight: 400,
+                          }}
+                        >
+                          {c.name}
+                        </span>
+                        {subCount > 0 && (
+                          <span
+                            style={{
+                              fontFamily: "'DM Sans', sans-serif",
+                              fontSize: 11,
+                              color: "rgba(250,247,242,0.4)",
+                              marginTop: 2,
+                            }}
+                          >
+                            {subCount}{" "}
+                            {subCount === 1
+                              ? "offering session"
+                              : "offering sessions"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke={style.color}
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                      style={{ flexShrink: 0 }}
+                    >
+                      <path d="M7 17L17 7M17 7H7M17 7v10" />
+                    </svg>
+                  </a>
+                );
+              })}
             </div>
           </div>
         </div>

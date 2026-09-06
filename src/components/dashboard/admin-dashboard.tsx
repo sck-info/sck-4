@@ -71,6 +71,8 @@ type StatsData = {
   totalBookings: number;
   totalDrafts: number;
   totalSlots: number;
+  upcomingAvailableSlots: number;
+  upcomingTotalSlots: number;
   totalCategories: number;
   totalOfferings: number;
   totalLocations: number;
@@ -94,6 +96,8 @@ export default function AdminDashboard() {
     totalBookings: 0,
     totalDrafts: 0,
     totalSlots: 0,
+    upcomingAvailableSlots: 0,
+    upcomingTotalSlots: 0,
     totalCategories: 0,
     totalOfferings: 0,
     totalLocations: 0,
@@ -213,9 +217,9 @@ export default function AdminDashboard() {
       color: "border-[#7a5e9a]/30 text-[#7a5e9a] bg-[#7a5e9a]/5",
     },
     {
-      title: "ANNOUNCED SLOTS",
-      value: stats.totalSlots,
-      description: "Time blocks configured",
+      title: "AVAILABLE / ANNOUNCED SLOTS",
+      value: `${stats.upcomingAvailableSlots ?? 0} / ${stats.totalSlots ?? 0}`,
+      description: "Upcoming available vs total announced slots",
       icon: CheckCircle,
       color: "border-[#4a6fa5]/30 text-[#4a6fa5] bg-[#4a6fa5]/5",
     },
@@ -230,7 +234,12 @@ export default function AdminDashboard() {
 
   // Bar chart data (Online vs Offline format preference only)
   const barData = (stats.bookingsByFormat || [])
-    .filter((item) => item.format && (item.format.toLowerCase() === "online" || item.format.toLowerCase() === "offline"))
+    .filter(
+      (item) =>
+        item.format &&
+        (item.format.toLowerCase() === "online" ||
+          item.format.toLowerCase() === "offline"),
+    )
     .map((item) => ({
       name: item.format.toUpperCase(),
       Bookings: item.count,

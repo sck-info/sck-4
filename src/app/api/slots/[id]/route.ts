@@ -20,7 +20,7 @@ export async function PATCH(
 
     const updateFields: any = {};
     if (status !== undefined) {
-      const validStatuses = ["available", "booked", "suspended"];
+      const validStatuses = ["available", "booked", "suspended", "expired"];
       if (!validStatuses.includes(status)) {
         return NextResponse.json({ error: "Invalid status value" }, { status: 400 });
       }

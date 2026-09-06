@@ -25,6 +25,7 @@ import {
   AlertCircle,
   Bell,
   Megaphone,
+  HelpCircle,
 } from "lucide-react";
 import {
   Sidebar,
@@ -61,6 +62,11 @@ const ADMIN_MENU_SECTIONS = [
         name: "Bookings Queue",
         href: "/dashboard/bookings",
         icon: ClipboardList,
+      },
+      {
+        name: "Offering Inquiries",
+        href: "/dashboard/offering-inquiries",
+        icon: HelpCircle,
       },
       {
         name: "Interested Pending Leads",

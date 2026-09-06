@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { offeringSlots, slotLocationsMap, sessionLocations } from "@/db/schema";
 import { eq, and, gt, asc } from "drizzle-orm";
+import { getTodayIST } from "@/lib/format";
 
 export async function GET(req: Request) {
   try {
@@ -12,8 +13,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "subCategoryId is required" }, { status: 400 });
     }
 
-    // Get today's date string in YYYY-MM-DD to enforce tomorrow onwards (gt today)
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = getTodayIST();
 
     const slots = await db
       .select()

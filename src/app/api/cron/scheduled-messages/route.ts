@@ -4,6 +4,7 @@ import { scheduledMessages, users, roles } from "@/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { enforceCronSecurity } from "@/lib/cron-guard";
 import { sendWhatsApp } from "@/lib/whatsapp";
+import { getTodayIST } from "@/lib/format";
 
 export async function GET(req: Request) {
   return handleCron(req);
@@ -21,17 +22,7 @@ async function handleCron(req: Request) {
   }
 
   try {
-    // Determine today's date in IST (Asia/Kolkata)
-    const todayIST = new Intl.DateTimeFormat("en-IN", {
-      timeZone: "Asia/Kolkata",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit"
-    }).format(new Date());
-
-    const [dd, mm, yyyy] = todayIST.split("/");
-    const dateStr = `${yyyy}-${mm}-${dd}`;
-
+    const dateStr = getTodayIST();
     console.log(`[Cron] Executing scheduled dispatches for date: ${dateStr}`);
 
     // Query all unsent scheduled messages for today

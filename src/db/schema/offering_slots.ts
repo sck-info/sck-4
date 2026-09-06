@@ -1,7 +1,7 @@
 import { pgTable, uuid, timestamp, date, time, pgEnum } from "drizzle-orm/pg-core";
 import { offeringSubCategories } from "./offering_sub_categories";
 
-export const slotStatusEnum = pgEnum("slot_status", ["available", "booked", "suspended"]);
+export const slotStatusEnum = pgEnum("slot_status", ["available", "booked", "suspended", "expired"]);
 
 export const offeringSlots = pgTable("offering_slots", {
   id: uuid("id").primaryKey().defaultRandom(),
