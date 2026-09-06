@@ -6,9 +6,6 @@ import { ArrowLeft, ChevronLeft, ChevronRight, X, Loader2, Camera } from "lucide
 import Image from "next/image";
 import Link from "next/link";
 import { useRealtime } from "@/hooks/useRealtime";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import BackToTop from "@/components/BackToTop";
 
 type GalleryPhoto = {
   id: string;
@@ -85,9 +82,11 @@ export default function PublicGalleryPage() {
 
   return (
     <div className="min-h-screen bg-[#faf7f2] flex flex-col text-[#1c1f4a] selection:bg-[#b86a16]/20 font-sans">
-      <Navbar />
       {/* Top Header Section */}
-      <header className="relative pt-24 pb-12 px-8 border-b border-[#e8dcc4]/50 max-w-[1600px] mx-auto w-full">
+      <header
+        className="relative pb-12 px-8 border-b border-[#e8dcc4]/50 max-w-[1600px] mx-auto w-full"
+        style={{ paddingTop: "calc(var(--header-height) + 1.5rem)" }}
+      >
         {/* Back button */}
         <div style={{ marginBottom: "1.5rem", marginLeft: "-0.5rem" }}>
           <Link
@@ -236,8 +235,6 @@ export default function PublicGalleryPage() {
           </motion.div>
         )}
       </AnimatePresence>
-      <BackToTop />
-      <Footer />
     </div>
   );
 }

@@ -96,6 +96,9 @@ html {
   --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: var(--gold);
   
+  --header-height: 72px;
+  --marquee-height: 0px;
+
   --app-font: "DM Sans", sans-serif;
 }
 
@@ -294,3 +297,28 @@ input[type="password"]::-ms-clear {
   margin-bottom: 0.25rem !important;
   display: list-item !important;
 }
+
+/* Header Marquee Animation (like D:/hrms) */
+@keyframes sck-marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-sck-marquee {
+  display: inline-flex;
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: sck-marquee 25s linear infinite;
+  will-change: transform;
+}
+
+.marquee-wrapper:hover .animate-sck-marquee,
+.animate-sck-marquee:hover {
+  animation-play-state: paused;
+}
+
+

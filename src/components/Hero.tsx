@@ -2,6 +2,7 @@
 
 import BreathingAnimation from "@/components/BreathingAnimation";
 import HangingLotus from "@/components/HangingLotus";
+import Link from "next/link";
 
 export default function Hero() {
   return (
@@ -13,16 +14,17 @@ export default function Hero() {
         overflow: "hidden",
       }}
     >
-      {/* top line */}
+      {/* top line positioned below marquee/header */}
       <div
         style={{
           position: "absolute",
-          top: 0,
+          top: "var(--header-height)",
           left: 0,
           right: 0,
           height: 3,
           background:
             "linear-gradient(90deg, transparent, var(--gold), transparent)",
+          zIndex: 20,
         }}
       />
 
@@ -43,7 +45,7 @@ export default function Hero() {
                   marginBottom: "2rem",
                 }}
               >
-                <div className="badge-wrapper">
+                <div className="badge-wrapper" style={{ top: "var(--header-height)" }}>
                   <HangingLotus align="right" />
                   <HangingLotus
                     align="right"
@@ -118,7 +120,7 @@ export default function Hero() {
                   flexWrap: "wrap",
                 }}
               >
-                <a
+                <Link
                   href="/offerings"
                   style={{
                     background: "var(--light-gold)",
@@ -131,7 +133,7 @@ export default function Hero() {
                   }}
                 >
                   Explore Sessions →
-                </a>
+                </Link>
 
                 <a
                   href="#about"
@@ -161,7 +163,7 @@ export default function Hero() {
         .hero-wrapper{
           max-width:1200px;
           margin:0 auto;
-          padding:8rem 2rem 5rem;
+          padding: calc(var(--header-height) + 2rem) 2rem 5rem;
         }
 
         .hero-grid{
@@ -169,7 +171,7 @@ export default function Hero() {
           grid-template-columns:1.1fr .9fr;
           align-items:center;
           gap:60px;
-          min-height:calc(100vh - 13rem);
+          min-height:calc(100vh - var(--header-height) - 7rem);
         }
 
         .hero-animation{

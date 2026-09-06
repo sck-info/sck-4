@@ -26,6 +26,7 @@ import {
   Bell,
   Megaphone,
   HelpCircle,
+  Volume2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -95,6 +96,7 @@ const ADMIN_MENU_SECTIONS = [
       { name: "Contacts", href: "/dashboard/contacts", icon: Contact },
       { name: "Queries", href: "/dashboard/queries", icon: MessageSquare },
       { name: "Events & Updates", href: "/dashboard/events", icon: Bell },
+      { name: "Marquee Announcements", href: "/dashboard/marquees", icon: Volume2 },
     ],
   },
   {

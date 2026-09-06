@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useRealtime } from "@/hooks/useRealtime";
@@ -494,7 +495,7 @@ export default function BookingClient({
         fontFamily: "'DM Sans', sans-serif",
       }}
     >
-      <a
+      <Link
         href="/offerings"
         style={{
           display: "inline-flex",
@@ -514,8 +515,8 @@ export default function BookingClient({
           e.currentTarget.style.opacity = "1";
         }}
       >
-        ← Back to Offerings
-      </a>
+        <span>← Back to Offerings</span>
+      </Link>
       <h2
         style={{
           fontFamily: "'Cormorant Garamond', serif",
@@ -586,7 +587,7 @@ export default function BookingClient({
             <strong>{currentSubCategory.name}</strong>. Please check back later
             or contact the administrator.
           </p>
-          <a
+          <Link
             href="/offerings"
             style={{
               display: "inline-flex",
@@ -610,7 +611,7 @@ export default function BookingClient({
             }}
           >
             Explore Other Offerings
-          </a>
+          </Link>
         </div>
       ) : (
         <div

@@ -2,9 +2,9 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { Loader2, Calendar, Clock, Home, ListTodo, Share2 } from "lucide-react";
 import { toast } from "sonner";
-import Navbar from "@/components/Navbar";
 import { formatDate, formatTimeRange } from "@/lib/format";
 
 function ThankYouContent() {
@@ -276,7 +276,7 @@ function ThankYouContent() {
           flexWrap: "wrap",
         }}
       >
-        <a
+        <Link
           href="/"
           style={{
             display: "inline-flex",
@@ -301,7 +301,7 @@ function ThankYouContent() {
         >
           <Home size={16} />
           Go Home
-        </a>
+        </Link>
 
         <button
           onClick={handleShare}
@@ -408,39 +408,36 @@ function ThankYouContent() {
 
 export default function ThankYouPage() {
   return (
-    <>
-      <Navbar />
-      <main
-        style={{
-          minHeight: "100vh",
-          background: "var(--ivory)",
-          paddingTop: 72,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "var(--ivory)",
+        paddingTop: "calc(var(--header-height) + 1.5rem)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Suspense
+        fallback={
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Loader2
+              className="animate-spin"
+              size={36}
+              style={{ color: "var(--indigo)" }}
+            />
+          </div>
+        }
       >
-        <Suspense
-          fallback={
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Loader2
-                className="animate-spin"
-                size={36}
-                style={{ color: "var(--indigo)" }}
-              />
-            </div>
-          }
-        >
-          <ThankYouContent />
-        </Suspense>
-      </main>
-    </>
+        <ThankYouContent />
+      </Suspense>
+    </main>
   );
 }

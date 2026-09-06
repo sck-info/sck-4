@@ -1,4 +1,3 @@
-import Navbar from "@/components/Navbar";
 import { db } from "@/lib/db";
 import { offeringSubCategories, subCategoryQuestions, formQuestions, paymentQrs } from "@/db/schema";
 import { eq, and, asc, or } from "drizzle-orm";
@@ -68,15 +67,12 @@ export default async function BookOfferingPage({
     .orderBy(asc(subCategoryQuestions.sortOrder));
 
   return (
-    <>
-      <Navbar />
-      <main style={{ minHeight: "100vh", background: "var(--ivory)", paddingTop: 72 }}>
-        <BookingClient
-          subCategory={subCategory}
-          paymentQr={paymentQr}
-          initialQuestions={linkedQuestions}
-        />
-      </main>
-    </>
+    <main style={{ minHeight: "100vh", background: "var(--ivory)", paddingTop: "calc(var(--header-height) + 1.5rem)" }}>
+      <BookingClient
+        subCategory={subCategory}
+        paymentQr={paymentQr}
+        initialQuestions={linkedQuestions}
+      />
+    </main>
   );
 }

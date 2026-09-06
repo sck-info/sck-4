@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "@/db/schema";
@@ -16,7 +17,8 @@ export const pool =
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
     ssl:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === "production" ||
+      process.env.DATABASE_URL?.includes("supabase.com")
         ? { rejectUnauthorized: false }
         : undefined,
   });

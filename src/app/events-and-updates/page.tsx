@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import BackToTop from "@/components/BackToTop";
+import Link from "next/link";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { DateRange } from "react-day-picker";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -136,13 +134,11 @@ function EventsAndUpdatesContent() {
   };
 
   return (
-    <>
-      <Navbar />
-      <main
+    <main
         style={{
           minHeight: "100vh",
           background: "#faf7f2", // var(--ivory)
-          paddingTop: 96,
+          paddingTop: "calc(var(--header-height) + 1.5rem)",
           paddingBottom: 64,
           fontFamily: "'DM Sans', sans-serif",
         }}
@@ -150,14 +146,14 @@ function EventsAndUpdatesContent() {
         <div style={{ maxWidth: 1600, margin: "0 auto", padding: "0 2rem" }}>
           {/* Back button */}
           <div style={{ marginBottom: "1.5rem", marginLeft: "-0.5rem" }}>
-            <a
+            <Link
               href="/"
               className="inline-flex items-center gap-2 text-xs font-bold text-[#b86a16] hover:text-[#1c1f4a] uppercase tracking-widest transition-all cursor-pointer group"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
               Back to Home
-            </a>
+            </Link>
           </div>
 
           {/* Header Section */}
@@ -565,37 +561,32 @@ function EventsAndUpdatesContent() {
           )}
         </div>
       </main>
-    </>
   );
 }
 
 export default function EventsAndUpdatesPage() {
   return (
-    <>
-      <Suspense
-        fallback={
-          <div
+    <Suspense
+      fallback={
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            padding: "8rem 0",
+          }}
+        >
+          <Loader2
             style={{
-              display: "flex",
-              justifyContent: "center",
-              padding: "8rem 0",
+              width: "2rem",
+              height: "2rem",
+              color: "#b86a16",
+              animation: "spin 1s linear infinite",
             }}
-          >
-            <Loader2
-              style={{
-                width: "2rem",
-                height: "2rem",
-                color: "#b86a16",
-                animation: "spin 1s linear infinite",
-              }}
-            />
-          </div>
-        }
-      >
-        <EventsAndUpdatesContent />
-      </Suspense>
-      <BackToTop />
-      <Footer />
-    </>
+          />
+        </div>
+      }
+    >
+      <EventsAndUpdatesContent />
+    </Suspense>
   );
 }

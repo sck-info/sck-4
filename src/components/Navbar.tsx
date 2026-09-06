@@ -1,7 +1,9 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import HeaderMarquee from "./HeaderMarquee";
 
 const dropdownItems = [
   {
@@ -15,6 +17,7 @@ const dropdownItems = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
   const isHome = pathname === "/";
   const getHref = (href: string) =>
@@ -54,7 +57,7 @@ export default function Navbar() {
         window.history.pushState(null, "", `#${id}`);
       }
     } else {
-      window.location.href = `/#${id}`;
+      router.push(`/#${id}`);
     }
   };
 
@@ -97,22 +100,29 @@ export default function Navbar() {
   };
 
   return (
-    <nav
+    <header
       style={{
         position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         zIndex: 100,
-        transition: "all 0.4s ease",
-        background:
-          scrolled || !isHome ? "rgba(250,247,242,0.92)" : "transparent",
-        backdropFilter: scrolled || !isHome ? "blur(12px)" : "none",
-        borderBottom:
-          scrolled || !isHome ? "1px solid rgba(28,31,74,0.08)" : "none",
-        padding: "0 2rem",
       }}
     >
+      <nav
+        style={{
+          width: "100%",
+          position: "relative",
+          zIndex: 50,
+          transition: "all 0.4s ease",
+          background:
+            scrolled || !isHome ? "rgba(250,247,242,0.92)" : "transparent",
+          backdropFilter: scrolled || !isHome ? "blur(12px)" : "none",
+          borderBottom:
+            scrolled || !isHome ? "1px solid rgba(28,31,74,0.08)" : "none",
+          padding: "0 2rem",
+        }}
+      >
       <div
         style={{
           width: "100%",
@@ -123,8 +133,8 @@ export default function Navbar() {
           height: 72,
         }}
       >
-        <a
-          href={getHref("#")}
+        <Link
+          href="/"
           onClick={(e) => {
             if (isHome) {
               e.preventDefault();
@@ -151,7 +161,7 @@ export default function Navbar() {
           >
             Sharath Kancherla
           </span>
-        </a>
+        </Link>
 
         {/* Desktop nav */}
         <div
@@ -159,8 +169,8 @@ export default function Navbar() {
           className="desktop-nav"
         >
           {/* About */}
-          <a
-            href={getHref("#about")}
+          <Link
+            href={isHome ? "#about" : "/#about"}
             onClick={(e) => {
               if (isHome) {
                 e.preventDefault();
@@ -172,11 +182,11 @@ export default function Navbar() {
             onMouseLeave={(e) => handleLinkHover(e, false)}
           >
             About
-          </a>
+          </Link>
 
           {/* Vision */}
-          <a
-            href={getHref("#vision")}
+          <Link
+            href={isHome ? "#vision" : "/#vision"}
             onClick={(e) => {
               if (isHome) {
                 e.preventDefault();
@@ -188,17 +198,17 @@ export default function Navbar() {
             onMouseLeave={(e) => handleLinkHover(e, false)}
           >
             Vision
-          </a>
+          </Link>
 
           {/*Gallery*/}
-          <a
+          <Link
             href="/gallery"
             style={navLinkStyle}
             onMouseEnter={(e) => handleLinkHover(e, true)}
             onMouseLeave={(e) => handleLinkHover(e, false)}
           >
             Gallery
-          </a>
+          </Link>
 
           {/* More dropdown: Events & Updates, Wall of Love, SKY */}
           <div ref={dropdownRef} style={{ position: "relative" }}>
@@ -252,7 +262,7 @@ export default function Navbar() {
               >
                 {dropdownItems.map((item) =>
                   item.type === "link" ? (
-                    <a
+                    <Link
                       key={item.href}
                       href={getHref(item.href)}
                       onClick={() => setDropdownOpen(false)}
@@ -279,7 +289,7 @@ export default function Navbar() {
                       }}
                     >
                       {item.label}
-                    </a>
+                    </Link>
                   ) : (
                     <button
                       key={item.href}
@@ -322,7 +332,7 @@ export default function Navbar() {
           </div>
 
           {/* Offerings */}
-          <a
+          <Link
             href="/offerings"
             style={{
               fontFamily: "'DM Sans', sans-serif",
@@ -363,11 +373,11 @@ export default function Navbar() {
             }}
           >
             Offerings
-          </a>
+          </Link>
 
           {/* Dynamic Login / Dashboard Button */}
           {session ? (
-            <a
+            <Link
               href="/dashboard"
               style={{
                 background: "var(--indigo)",
@@ -389,9 +399,9 @@ export default function Navbar() {
               }}
             >
               Dashboard
-            </a>
+            </Link>
           ) : (
-            <a
+            <Link
               href="/login"
               style={{
                 background: "var(--indigo)",
@@ -413,7 +423,7 @@ export default function Navbar() {
               }}
             >
               Login
-            </a>
+            </Link>
           )}
         </div>
 
@@ -467,8 +477,8 @@ export default function Navbar() {
           }}
         >
           {/* About */}
-          <a
-            href={getHref("#about")}
+          <Link
+            href={isHome ? "#about" : "/#about"}
             onClick={(e) => {
               setMenuOpen(false);
               if (isHome) {
@@ -487,11 +497,11 @@ export default function Navbar() {
             }}
           >
             About
-          </a>
+          </Link>
 
           {/* Vision */}
-          <a
-            href={getHref("#vision")}
+          <Link
+            href={isHome ? "#vision" : "/#vision"}
             onClick={(e) => {
               setMenuOpen(false);
               if (isHome) {
@@ -510,10 +520,10 @@ export default function Navbar() {
             }}
           >
             Vision
-          </a>
+          </Link>
 
           {/* Gallery */}
-          <a
+          <Link
             href="/gallery"
             onClick={() => setMenuOpen(false)}
             style={{
@@ -527,7 +537,7 @@ export default function Navbar() {
             }}
           >
             Gallery
-          </a>
+          </Link>
 
           {/* More (collapsible) */}
           <button
@@ -583,7 +593,7 @@ export default function Navbar() {
             >
               {dropdownItems.map((item) =>
                 item.type === "link" ? (
-                  <a
+                  <Link
                     key={item.href}
                     href={getHref(item.href)}
                     onClick={() => {
@@ -600,7 +610,7 @@ export default function Navbar() {
                     }}
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 ) : (
                   <button
                     key={item.href}
@@ -629,7 +639,7 @@ export default function Navbar() {
           )}
 
           {/* Offerings */}
-          <a
+          <Link
             href="/offerings"
             onClick={() => setMenuOpen(false)}
             style={{
@@ -643,11 +653,11 @@ export default function Navbar() {
             }}
           >
             Offerings
-          </a>
+          </Link>
 
           {/* Dynamic Login / Dashboard Link */}
           {session ? (
-            <a
+            <Link
               href="/dashboard"
               onClick={() => setMenuOpen(false)}
               style={{
@@ -661,9 +671,9 @@ export default function Navbar() {
               }}
             >
               Dashboard
-            </a>
+            </Link>
           ) : (
-            <a
+            <Link
               href="/login"
               onClick={() => setMenuOpen(false)}
               style={{
@@ -677,7 +687,7 @@ export default function Navbar() {
               }}
             >
               Login
-            </a>
+            </Link>
           )}
         </div>
       )}
@@ -688,6 +698,8 @@ export default function Navbar() {
           .mobile-menu-btn { display: block !important; }
         }
       `}</style>
-    </nav>
+      </nav>
+      <HeaderMarquee />
+    </header>
   );
 }

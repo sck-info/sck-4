@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import {
   ArrowLeft,
   Mail,
@@ -149,13 +147,11 @@ export default function ContactPage() {
   const cleanPhoneDigits = liveContact.phone.replace(/\D/g, "");
 
   return (
-    <>
-      <Navbar />
-      <main
+    <main
         style={{
           minHeight: "100vh",
           background: "var(--ivory)",
-          paddingTop: 96,
+          paddingTop: "calc(var(--header-height) + 1.5rem)",
         }}
         className="relative overflow-hidden"
       >
@@ -167,14 +163,14 @@ export default function ContactPage() {
           <div style={{ width: "100%", maxWidth: 1600, margin: "0 auto" }}>
             {/* Back button */}
             <div style={{ marginBottom: "1.5rem", marginLeft: "-0.5rem" }}>
-              <a
+              <Link
                 href="/"
                 className="inline-flex items-center gap-2 text-xs font-bold text-[#b86a16] hover:text-[#1c1f4a] uppercase tracking-widest transition-all cursor-pointer group"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                 Back to Home
-              </a>
+              </Link>
             </div>
 
             {/* Two-Column Contact Section */}
@@ -461,7 +457,5 @@ export default function ContactPage() {
           </div>
         </section>
       </main>
-      <Footer />
-    </>
   );
 }

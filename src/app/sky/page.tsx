@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import BackToTop from "@/components/BackToTop";
+import Link from "next/link";
 import {
   Brain,
   Heart,
@@ -161,7 +159,6 @@ export default function SKYPage() {
           }
         }
       `}</style>
-      <Navbar />
       <main
         style={{
           minHeight: "100vh",
@@ -182,25 +179,25 @@ export default function SKYPage() {
             color: "#faf7f2",
             backgroundSize: "cover",
             backgroundPosition: "center",
-            paddingTop: "100px",
+            paddingTop: "calc(var(--header-height) + 2rem)",
             paddingBottom: "3rem",
           }}
         >
           {/* Back button container centered with hero content */}
           <div
-            className="absolute top-[96px] left-0 right-0 z-10 pointer-events-none"
-            style={{ position: "absolute" }}
+            className="absolute left-0 right-0 z-10 pointer-events-none"
+            style={{ position: "absolute", top: "calc(var(--header-height) + 1rem)" }}
           >
             <div className="max-w-[1200px] mx-auto px-8 w-full pointer-events-auto">
               <div style={{ marginLeft: "-0.5rem" }}>
-                <a
+                <Link
                   href="/"
                   className="inline-flex items-center gap-2 text-xs font-bold text-[#b86a16] hover:text-[#1c1f4a] md:text-[#faf7f2]/80 md:hover:text-white uppercase tracking-widest transition-all cursor-pointer group"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
                   <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                   Back to Home
-                </a>
+                </Link>
               </div>
             </div>
           </div>
@@ -1524,8 +1521,6 @@ export default function SKYPage() {
           </div>
         </section>
       </main>
-      <BackToTop />
-      <Footer />
     </>
   );
 }

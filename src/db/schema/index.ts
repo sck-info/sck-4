@@ -22,3 +22,4 @@ export * from "./user_query_replies";
 export * from "./events";
 export * from "./campaigns";
 export * from "./offering_inquiries";
+export * from "./marquees";

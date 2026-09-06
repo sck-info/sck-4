@@ -2,8 +2,8 @@
 
 import { FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useRealtime } from "@/hooks/useRealtime";
-import Footer from "@/components/Footer";
 type OfferingCategory = {
   id?: string;
   name?: string;
@@ -231,7 +231,7 @@ export default function Contact() {
               </p>
 
               <div style={{ marginBottom: "2.5rem" }}>
-                <a
+                <Link
                   href="/contact"
                   style={{
                     display: "inline-flex",
@@ -270,7 +270,7 @@ export default function Contact() {
                   >
                     <path d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
-                </a>
+                </Link>
               </div>
 
               {/* Contact details */}
@@ -474,7 +474,7 @@ export default function Contact() {
                 const style = getCategoryStyle(c.name || "");
                 const subCount = c.subCategories?.length ?? 0;
                 return (
-                  <a
+                  <Link
                     key={c.id || c.name || i}
                     href={`/offerings#${style.hash}`}
                     style={{
@@ -549,15 +549,13 @@ export default function Contact() {
                     >
                       <path d="M7 17L17 7M17 7H7M17 7v10" />
                     </svg>
-                  </a>
+                  </Link>
                 );
               })}
             </div>
           </div>
         </div>
       </section>
-
-      <Footer />
     </>
   );
 }

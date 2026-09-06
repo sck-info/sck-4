@@ -127,6 +127,13 @@
       "when": 1788690320127,
       "tag": "0017_add_offering_inquiries_and_expired_slots",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1788700650294,
+      "tag": "0018_add_marquees_module",
+      "breakpoints": true
     }
   ]
 }

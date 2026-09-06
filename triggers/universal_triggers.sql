@@ -104,3 +104,7 @@ ON campaign_answers FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
 CREATE OR REPLACE TRIGGER offering_inquiries_app_event AFTER INSERT OR UPDATE OR DELETE
 ON offering_inquiries FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
 
+-- (24) Marquees Trigger
+CREATE OR REPLACE TRIGGER marquees_app_event AFTER INSERT OR UPDATE OR DELETE
+ON marquees FOR EACH ROW EXECUTE FUNCTION notify_app_event ();
+

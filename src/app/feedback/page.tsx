@@ -4,8 +4,6 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Star, Loader2, CheckCircle2, ArrowLeft, Calendar, Clock, AlertTriangle } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -104,90 +102,76 @@ function FeedbackSubmissionContent() {
 
   if (status === "loading" || loading) {
     return (
-      <>
-        <Navbar />
-        <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf7f2] pt-20">
-          <Loader2 className="w-10 h-10 text-[#b86a16] animate-spin mb-4" />
-          <p className="text-xs text-[#5a5e7a] font-medium font-sans">Verifying booking session...</p>
-        </div>
-      </>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf7f2] pt-20">
+        <Loader2 className="w-10 h-10 text-[#b86a16] animate-spin mb-4" />
+        <p className="text-xs text-[#5a5e7a] font-medium font-sans">Verifying booking session...</p>
+      </div>
     );
   }
 
   if (unauthorizedMsg) {
     return (
-      <>
-        <Navbar />
-        <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf7f2] px-4 pt-20">
-          <div className="max-w-md w-full bg-white border border-[#e8dcc4] rounded-3xl p-8 text-center space-y-4 shadow-sm">
-            <AlertTriangle className="w-12 h-12 text-[#c4796a] mx-auto" />
-            <h2 className="text-xl font-bold text-[#1c1f4a] font-display">Access Denied</h2>
-            <p className="text-xs text-[#5a5e7a] leading-relaxed">
-              This booking is not for you. You can only submit feedback for sessions that you have personally booked.
-            </p>
-            <Button
-              onClick={() => router.push("/dashboard/my-bookings")}
-              className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full px-6 text-xs font-semibold cursor-pointer"
-            >
-              Go to My Bookings
-            </Button>
-          </div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf7f2] px-4 pt-20">
+        <div className="max-w-md w-full bg-white border border-[#e8dcc4] rounded-3xl p-8 text-center space-y-4 shadow-sm">
+          <AlertTriangle className="w-12 h-12 text-[#c4796a] mx-auto" />
+          <h2 className="text-xl font-bold text-[#1c1f4a] font-display">Access Denied</h2>
+          <p className="text-xs text-[#5a5e7a] leading-relaxed">
+            This booking is not for you. You can only submit feedback for sessions that you have personally booked.
+          </p>
+          <Button
+            onClick={() => router.push("/dashboard/my-bookings")}
+            className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full px-6 text-xs font-semibold cursor-pointer"
+          >
+            Go to My Bookings
+          </Button>
         </div>
-      </>
+      </div>
     );
   }
 
   if (!bookingId || !booking) {
     return (
-      <>
-        <Navbar />
-        <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf7f2] px-4 pt-20">
-          <div className="max-w-md w-full bg-white border border-[#e8dcc4] rounded-3xl p-8 text-center space-y-4 shadow-sm">
-            <AlertTriangle className="w-12 h-12 text-[#c4796a] mx-auto" />
-            <h2 className="text-xl font-bold text-[#1c1f4a] font-display">Booking Not Found</h2>
-            <p className="text-xs text-[#5a5e7a] leading-relaxed">
-              We couldn't resolve the booking reference details. Please verify your notification link or check your booked slots.
-            </p>
-            <Button
-              onClick={() => router.push("/dashboard/my-bookings")}
-              className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full px-6 text-xs font-semibold cursor-pointer"
-            >
-              Go to My Bookings
-            </Button>
-          </div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf7f2] px-4 pt-20">
+        <div className="max-w-md w-full bg-white border border-[#e8dcc4] rounded-3xl p-8 text-center space-y-4 shadow-sm">
+          <AlertTriangle className="w-12 h-12 text-[#c4796a] mx-auto" />
+          <h2 className="text-xl font-bold text-[#1c1f4a] font-display">Booking Not Found</h2>
+          <p className="text-xs text-[#5a5e7a] leading-relaxed">
+            We couldn't resolve the booking reference details. Please verify your notification link or check your booked slots.
+          </p>
+          <Button
+            onClick={() => router.push("/dashboard/my-bookings")}
+            className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full px-6 text-xs font-semibold cursor-pointer"
+          >
+            Go to My Bookings
+          </Button>
         </div>
-      </>
+      </div>
     );
   }
 
   if (booking.status !== "completed") {
     return (
-      <>
-        <Navbar />
-        <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf7f2] px-4 pt-20">
-          <div className="max-w-md w-full bg-white border border-[#e8dcc4] rounded-3xl p-8 text-center space-y-4 shadow-sm">
-            <AlertTriangle className="w-12 h-12 text-[#b86a16] mx-auto" />
-            <h2 className="text-xl font-bold text-[#1c1f4a] font-display">Session Not Completed</h2>
-            <p className="text-xs text-[#5a5e7a] leading-relaxed">
-              Feedback can only be compiled for completed sessions. Your current booking status is:{" "}
-              <span className="font-bold text-[#b86a16] uppercase">{booking.status.replace("_", " ")}</span>.
-            </p>
-            <Button
-              onClick={() => router.push("/dashboard/my-bookings")}
-              className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full px-6 text-xs font-semibold cursor-pointer"
-            >
-              Go to My Bookings
-            </Button>
-          </div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf7f2] px-4 pt-20">
+        <div className="max-w-md w-full bg-white border border-[#e8dcc4] rounded-3xl p-8 text-center space-y-4 shadow-sm">
+          <AlertTriangle className="w-12 h-12 text-[#b86a16] mx-auto" />
+          <h2 className="text-xl font-bold text-[#1c1f4a] font-display">Session Not Completed</h2>
+          <p className="text-xs text-[#5a5e7a] leading-relaxed">
+            Feedback can only be compiled for completed sessions. Your current booking status is:{" "}
+            <span className="font-bold text-[#b86a16] uppercase">{booking.status.replace("_", " ")}</span>.
+          </p>
+          <Button
+            onClick={() => router.push("/dashboard/my-bookings")}
+            className="bg-[#1c1f4a] hover:bg-[#1c1f4a]/90 text-white rounded-full px-6 text-xs font-semibold cursor-pointer"
+          >
+            Go to My Bookings
+          </Button>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen bg-[#faf7f2] flex flex-col items-center justify-center px-4 py-24">
+    <div className="min-h-screen bg-[#faf7f2] flex flex-col items-center justify-center px-4 py-24">
         {success ? (
           /* SUCCESS STATE: Feedback already submitted */
           <div className="max-w-md w-full bg-white border border-[#e8dcc4] rounded-[2rem] p-8 md:p-10 text-center space-y-6 shadow-md transition-all">
@@ -320,24 +304,20 @@ function FeedbackSubmissionContent() {
           </div>
         )}
       </div>
-    </>
   );
 }
 
 export default function FeedbackSubmissionPage() {
   return (
-    <>
-      <Suspense
-        fallback={
-          <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf7f2] pt-20">
-            <Loader2 className="w-10 h-10 text-[#b86a16] animate-spin mb-4" />
-            <p className="text-xs text-[#5a5e7a] font-medium font-sans">Loading feedback page...</p>
-          </div>
-        }
-      >
-        <FeedbackSubmissionContent />
-      </Suspense>
-      <Footer />
-    </>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf7f2] pt-20">
+          <Loader2 className="w-10 h-10 text-[#b86a16] animate-spin mb-4" />
+          <p className="text-xs text-[#5a5e7a] font-medium font-sans">Loading feedback page...</p>
+        </div>
+      }
+    >
+      <FeedbackSubmissionContent />
+    </Suspense>
   );
 }
