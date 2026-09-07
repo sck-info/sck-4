@@ -98,7 +98,6 @@ export default function ChakraMeditation({ size = 360, speed = 1000 }: ChakraMed
               justify-content: center;
               align-items: center;
               gap: 24px;
-              /* CHANGED: Prevent cards from wrapping to the next line on intermediate screens */
               flex-wrap: nowrap;
               padding: 16px;
             }
@@ -176,7 +175,6 @@ export default function ChakraMeditation({ size = 360, speed = 1000 }: ChakraMed
             }
 
             @media (max-width: 900px) {
-              /* CHANGED: Hide the left and right popup columns completely on small screens */
               .chakra-column { 
                 display: none; 
               }
@@ -193,12 +191,10 @@ export default function ChakraMeditation({ size = 360, speed = 1000 }: ChakraMed
         }}
       />
 
-      {/* LEFT column */}
       <div className="chakra-column chakra-column-left">
         {chakrasData.map((c, i) => (c.side === "left" ? renderCard(i) : null))}
       </div>
 
-      {/* CENTER SVG */}
       <svg
         viewBox="0 -10 200 280"
         style={{ height: size, maxWidth: "100%" }}
@@ -214,7 +210,6 @@ export default function ChakraMeditation({ size = 360, speed = 1000 }: ChakraMed
           ))}
         </defs>
 
-        {/* Meditation silhouette */}
         <g opacity="0.85" fill="#1C1F4A">
           <circle cx="100" cy="32" r="15" />
           <path d="
@@ -312,7 +307,6 @@ export default function ChakraMeditation({ size = 360, speed = 1000 }: ChakraMed
         })}
       </svg>
 
-      {/* RIGHT column */}
       <div className="chakra-column chakra-column-right">
         {chakrasData.map((c, i) => (c.side === "right" ? renderCard(i) : null))}
       </div>

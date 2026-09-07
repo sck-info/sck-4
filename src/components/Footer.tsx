@@ -33,7 +33,6 @@ export default function Footer() {
           gap: "3rem",
         }}
       >
-        {/* Top Section */}
         <div
           style={{
             display: "flex",
@@ -42,7 +41,6 @@ export default function Footer() {
             gap: "2.5rem",
           }}
         >
-          {/* Brand info */}
           <div style={{ flex: "1 1 300px" }}>
             <h3
               style={{
@@ -71,7 +69,6 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Links Column: Navigation */}
           <div style={{ flex: "1 1 150px" }}>
             <h4
               style={{
@@ -162,7 +159,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Divider */}
         <hr
           style={{
             border: 0,
@@ -172,7 +168,6 @@ export default function Footer() {
           }}
         />
 
-        {/* Bottom Section */}
         <div
           style={{
             display: "flex",

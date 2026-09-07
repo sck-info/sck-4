@@ -83,19 +83,16 @@ export default function HeaderMarquee() {
   // Render the marquee content (Category tag, rich content with bold/italic/underline, and optional action link)
   const renderMessageContent = () => (
     <div className="inline-flex items-center gap-4 px-4 select-none">
-      {/* Title Badge (No stars) */}
       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#e8962e]/20 border border-[#e8962e]/40 text-[#f5c16c] text-[11px] font-bold uppercase tracking-wider shrink-0 shadow-2xs">
         <Volume2 className="w-3 h-3 text-[#e8962e]" />
         <span>{marquee.title}</span>
       </span>
 
-      {/* Rich Text Content (Supports bold, italic, underline) */}
       <span
         className="text-xs sm:text-[13px] text-[#faf7f2] font-normal leading-normal tracking-wide [&_strong]:font-bold [&_b]:font-bold [&_em]:italic [&_em]:text-[#faecd7] [&_i]:italic [&_i]:text-[#faecd7] [&_u]:underline [&_u]:underline-offset-2"
         dangerouslySetInnerHTML={{ __html: marquee.content }}
       />
 
-      {/* Direct Action Hyperlink (Shows Title/Text, never raw URL; client-side Link for internal) */}
       {marquee.link && (
         marquee.link.startsWith("http://") || marquee.link.startsWith("https://") ? (
           <a
@@ -126,11 +123,9 @@ export default function HeaderMarquee() {
       role="region"
       aria-label="Announcement Marquee"
     >
-      {/* Decorative Subtle Ambient Glows */}
       <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#11132b] to-transparent z-10 pointer-events-none" />
       <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#11132b] to-transparent z-10 pointer-events-none" />
 
-      {/* Single continuous marquee stream like D:/hrms */}
       <div className="animate-sck-marquee whitespace-nowrap flex items-center py-1">
         {renderMessageContent()}
       </div>

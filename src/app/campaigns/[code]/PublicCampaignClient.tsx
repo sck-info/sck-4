@@ -539,7 +539,6 @@ export function PublicCampaignClient({ code, initialBundle, initialMessage }: Pr
   return (
     <div className="min-h-screen bg-[#faf7f2] py-12 px-4 sm:px-6">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Branding header */}
         <div className="flex justify-between items-center pb-4 border-b border-[#e8dcc4]/60">
           <span className="font-display font-bold text-base tracking-wider text-[#1c1f4a]">
             Sharath Kancherla
@@ -549,7 +548,6 @@ export function PublicCampaignClient({ code, initialBundle, initialMessage }: Pr
           </span>
         </div>
 
-        {/* Campaign Info Card */}
         <section className="bg-white border border-[#e8dcc4] rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
           <h1 className="text-2xl sm:text-3xl font-light font-display text-[#1c1f4a] leading-tight">
             {bundle.campaign.title}
@@ -562,7 +560,6 @@ export function PublicCampaignClient({ code, initialBundle, initialMessage }: Pr
           )}
         </section>
 
-        {/* Form Wizard active section */}
         {activeSection && (
           <section className="bg-white border border-[#e8dcc4] rounded-3xl p-6 shadow-sm space-y-5">
             {sections.length > 1 && (
@@ -594,7 +591,6 @@ export function PublicCampaignClient({ code, initialBundle, initialMessage }: Pr
               )}
             </div>
 
-            {/* Navigation buttons */}
             <div className="flex justify-between items-center pt-4 border-t border-[#faf7f2] gap-3">
               {sectionIndex > 0 ? (
                 <Button
@@ -631,7 +627,6 @@ export function PublicCampaignClient({ code, initialBundle, initialMessage }: Pr
           </section>
         )}
 
-        {/* Contacts details list */}
         {bundle.contacts.length > 0 && (
           <section className="bg-white border border-[#e8dcc4] rounded-3xl p-6 shadow-sm space-y-4">
             <h3 className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wider">

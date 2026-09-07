@@ -459,7 +459,6 @@ function AbandonedBookingsContent() {
 
   return (
     <div className="w-full space-y-5">
-      {/* Title & Description */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-[#1c1f4a] font-display">
@@ -486,7 +485,6 @@ function AbandonedBookingsContent() {
         </div>
       </div>
 
-      {/* Filter Toolbar controls with side-by-side flex layout */}
       <div className="flex flex-col md:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
         <div className="flex-1 min-w-[200px] space-y-1 w-full">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
@@ -553,7 +551,6 @@ function AbandonedBookingsContent() {
           <DateRangePicker value={dateRange} onChange={setDateRange} />
         </div>
 
-        {/* Manual Filter Action Buttons */}
         <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
           <Button
             type="button"
@@ -573,7 +570,6 @@ function AbandonedBookingsContent() {
         </div>
       </div>
 
-      {/* Main Leads Table with Responsive scrollbar */}
       <div className="space-y-4">
         {leads.length > 0 && <TablePaginationFooter pagination={pagination} variant="top" />}
         <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">
@@ -630,7 +626,6 @@ function AbandonedBookingsContent() {
                         key={row.id}
                         className="hover:bg-[#faf7f2]/20 transition-colors border-b border-[#e8dcc4]/60 last:border-b-0"
                       >
-                        {/* Seeker Profile Column */}
                         <TableCell className="py-3 px-4">
                           <div className="flex items-start gap-2.5">
                             <div className="w-7 h-7 rounded-full bg-[#b86a16]/10 text-[#b86a16] flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
@@ -660,7 +655,6 @@ function AbandonedBookingsContent() {
                           </div>
                         </TableCell>
 
-                        {/* Offering Details Column */}
                         <TableCell className="py-3 px-4">
                           <span className="inline-block text-[9px] font-bold text-[#b86a16] bg-[#b86a16]/5 border border-[#b86a16]/15 rounded-md px-1.5 py-0.5 uppercase tracking-wide">
                             {row.category?.name}
@@ -670,7 +664,6 @@ function AbandonedBookingsContent() {
                           </p>
                         </TableCell>
 
-                        {/* Format Column */}
                         <TableCell className="py-3 px-4 text-xs font-semibold text-[#1c1f4a]">
                           {row.selectedFormat ? (
                             <div className="flex flex-col gap-0.5">
@@ -690,7 +683,6 @@ function AbandonedBookingsContent() {
                           )}
                         </TableCell>
 
-                        {/* Date & Time Column */}
                         <TableCell className="py-3 px-4 text-xs font-semibold text-[#1c1f4a]">
                           {row.slot ? (
                             <div className="space-y-0.5">
@@ -713,12 +705,10 @@ function AbandonedBookingsContent() {
                           )}
                         </TableCell>
 
-                        {/* Last Active Timestamp */}
                         <TableCell className="py-3 px-4 text-xs font-semibold text-[#1c1f4a]">
                           {formatDate(row.updatedAt)}
                         </TableCell>
 
-                        {/* View Details Action */}
                         <TableCell className="py-3 px-4 text-right">
                           <Button
                             type="button"
@@ -741,7 +731,6 @@ function AbandonedBookingsContent() {
         {leads.length > 0 && <TablePaginationFooter pagination={pagination} variant="bottom" />}
       </div>
 
-      {/* Answer Preview Dialog Modal */}
       <Dialog
         open={!!viewLeadDetails}
         onOpenChange={(open) => !open && setViewLeadDetails(null)}
@@ -756,7 +745,6 @@ function AbandonedBookingsContent() {
 
           {viewLeadDetails && (
             <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
-              {/* Seeker details card */}
               <div className="p-4 border border-[#e8dcc4] bg-[#faf7f2]/30 rounded-xl space-y-2">
                 <p className="text-xs font-extrabold text-[#1c1f4a] uppercase tracking-wide">
                   Customer Details
@@ -797,7 +785,6 @@ function AbandonedBookingsContent() {
                 </div>
               </div>
 
-              {/* Answers details */}
               <div className="space-y-3">
                 <p className="text-xs font-extrabold text-[#1c1f4a] uppercase tracking-wide border-b border-[#e8dcc4] pb-1">
                   Entered Form Answers
@@ -810,7 +797,6 @@ function AbandonedBookingsContent() {
                   </p>
                 ) : (
                   <div className="space-y-3 divide-y divide-[#e8dcc4]/20">
-                    {/* Render questions in configured sorted order */}
                     {sortedQuestions.length > 0
                       ? sortedQuestions.map((q) => {
                           const answer = viewLeadDetails.formResponses[q.id];

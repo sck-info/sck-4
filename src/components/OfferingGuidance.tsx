@@ -29,7 +29,7 @@ interface OfferingGuidanceModalProps {
 }
 
 /**
- * Spiritual Luxury Offering Guidance Modal
+ * Offering Guidance Modal
  * Allows seekers who are undecided to connect directly with Sharath Kancherla via WhatsApp.
  */
 export function OfferingGuidanceModal({
@@ -111,12 +111,9 @@ export function OfferingGuidanceModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[420px] w-[94vw] p-0 border border-[#e8dcc4] bg-white rounded-3xl shadow-2xl font-sans max-h-[85vh] overflow-y-auto top-[calc(50%+36px)] translate-y-[-50%]">
-        {/* Subtle Decorative Top Gradient Accent */}
-        <div className="w-full h-1 bg-gradient-to-r from-[#1c1f4a] via-[#e8962e] to-[#1c1f4a]" />
+      <DialogContent className="sm:max-w-[420px] w-[94vw] p-0 border border-[#e8dcc4] bg-white rounded-3xl shadow-2xl font-sans max-h-[85vh] overflow-y-auto">
 
         {submitted ? (
-          /* Submission Success View */
           <div className="p-7 sm:p-8 text-center space-y-4">
             <div className="w-13 h-13 rounded-full bg-[#b86a16]/15 border border-[#b86a16]/30 text-[#b86a16] flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-6 h-6" />
@@ -144,7 +141,6 @@ export function OfferingGuidanceModal({
             </div>
           </div>
         ) : (
-          /* Guidance Request Form View */
           <div>
             <DialogHeader className="p-5 pb-1 sm:p-6 sm:pb-2 text-center sm:text-center">
               <div className="inline-flex items-center justify-center gap-1.5 mb-1 text-[11px] font-semibold text-[#b86a16] uppercase tracking-wider">
@@ -161,7 +157,6 @@ export function OfferingGuidanceModal({
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="px-5 pb-5 pt-2 sm:px-6 sm:pb-6 space-y-3">
-              {/* Full Name */}
               <div className="space-y-1 text-left">
                 <label
                   htmlFor="guidance-name"
@@ -184,7 +179,6 @@ export function OfferingGuidanceModal({
                 </div>
               </div>
 
-              {/* WhatsApp Phone Number */}
               <div className="space-y-1 text-left">
                 <label
                   htmlFor="guidance-phone"
@@ -206,7 +200,6 @@ export function OfferingGuidanceModal({
                 </div>
               </div>
 
-              {/* Email Address (Strictly NO "Optional" label or badge) */}
               <div className="space-y-1 text-left">
                 <label
                   htmlFor="guidance-email"
@@ -228,7 +221,6 @@ export function OfferingGuidanceModal({
                 </div>
               </div>
 
-              {/* Action Button */}
               <div className="pt-2">
                 <Button
                   type="submit"
@@ -256,10 +248,6 @@ export function OfferingGuidanceModal({
   );
 }
 
-/**
- * Touchpoint 1: Integrated Grid Card
- * Displayed as a distinct guidance card inside the category's subcategories grid.
- */
 export function OfferingGuidanceGridCard({
   onOpen,
   categoryColor = "#b86a16",
@@ -282,11 +270,9 @@ export function OfferingGuidanceGridCard({
       }}
       className="group transition-all duration-300 hover:border-[#b86a16]"
     >
-      {/* Decorative Warm Ambient Glow */}
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#b86a16]/10 rounded-full blur-2xl pointer-events-none" />
 
       <div className="relative z-10">
-        {/* Tags Badge List */}
         <div
           style={{
             display: "flex",
@@ -353,7 +339,6 @@ export function OfferingGuidanceGridCard({
       </div>
 
       <div className="relative z-10">
-        {/* Reassuring Feature Pills */}
         <div
           style={{
             display: "flex",
@@ -390,7 +375,6 @@ export function OfferingGuidanceGridCard({
           </span>
         </div>
 
-        {/* Action Button */}
         <button
           onClick={onOpen}
           type="button"
@@ -430,15 +414,10 @@ export function OfferingGuidanceGridCard({
   );
 }
 
-/**
- * Touchpoint 2: Post-Browse Bottom Banner
- * Displayed at the bottom of the offerings section (after the visitor has scrolled through categories).
- */
 export function OfferingGuidanceBottomBanner({ onOpen }: { onOpen: () => void }) {
   return (
     <div className="w-full mt-12 sm:mt-16">
       <div className="relative overflow-hidden rounded-3xl border border-[#e8dcc4] bg-gradient-to-br from-[#faf7f2] via-white to-[#f5ede0]/70 p-6 sm:p-9 shadow-xs">
-        {/* Subtle decorative accents */}
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-52 h-52 bg-[#b86a16]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-44 h-44 bg-[#1c1f4a]/5 rounded-full blur-2xl pointer-events-none" />
 
@@ -469,10 +448,6 @@ export function OfferingGuidanceBottomBanner({ onOpen }: { onOpen: () => void })
   );
 }
 
-/**
- * Touchpoint 3: Floating Bottom-Right Concierge Pill
- * Pinned at bottom-6 right-6, providing an omnipresent and elegant touchpoint.
- */
 export function OfferingGuidanceFloatingPill({ onOpen }: { onOpen: () => void }) {
   return (
     <button
@@ -481,12 +456,10 @@ export function OfferingGuidanceFloatingPill({ onOpen }: { onOpen: () => void })
       className="fixed bottom-6 right-6 z-40 bg-[#1c1f4a]/95 hover:bg-[#282d6b] text-white backdrop-blur-md border border-[#e8962e]/45 shadow-xl hover:shadow-2xl shadow-indigo-950/25 rounded-full px-4 sm:px-5 py-3 flex items-center gap-3 transition-all duration-300 hover:scale-[1.03] cursor-pointer group"
       aria-label="Ask Sharath Kancherla for guidance"
     >
-      {/* Icon with subtle halo */}
       <div className="w-7 h-7 rounded-full bg-[#b86a16]/25 flex items-center justify-center text-[#e8962e] shrink-0">
         <MessageCircle className="w-4 h-4" />
       </div>
 
-      {/* Label */}
       <div className="text-left">
         <span className="hidden sm:inline text-xs font-medium text-white/90 group-hover:text-white">
           Need Help Choosing? <span className="text-[#e8962e] font-semibold">• Talk to Sharath</span>
@@ -496,7 +469,6 @@ export function OfferingGuidanceFloatingPill({ onOpen }: { onOpen: () => void })
         </span>
       </div>
 
-      {/* Pulsing indicator */}
       <span className="relative flex h-2 w-2 ml-0.5">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#e8962e] opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-[#e8962e]" />

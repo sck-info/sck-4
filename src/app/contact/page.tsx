@@ -155,13 +155,11 @@ export default function ContactPage() {
         }}
         className="relative overflow-hidden"
       >
-        {/* Subtle Decorative Ambient Glows */}
         <div className="absolute top-0 right-0 w-[550px] h-[550px] bg-[#b86a16]/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-20 left-0 w-[500px] h-[500px] bg-[#1c1f4a]/5 rounded-full blur-3xl pointer-events-none" />
 
         <section style={{ padding: "0 2rem clamp(3rem, 6vw, 6rem) 2rem" }}>
           <div style={{ width: "100%", maxWidth: 1600, margin: "0 auto" }}>
-            {/* Back button */}
             <div style={{ marginBottom: "1.5rem", marginLeft: "-0.5rem" }}>
               <Link
                 href="/"
@@ -173,9 +171,7 @@ export default function ContactPage() {
               </Link>
             </div>
 
-            {/* Two-Column Contact Section */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-              {/* Left Column: Contact Channels & Presence */}
               <div className="lg:col-span-5 space-y-8">
                 <div className="space-y-3">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#b86a16]/10 border border-[#b86a16]/20 text-[#b86a16] text-[11px] font-semibold tracking-wider uppercase">
@@ -192,9 +188,7 @@ export default function ContactPage() {
                   </p>
                 </div>
 
-                {/* Contact Channels Cards */}
                 <div className="space-y-4">
-                  {/* WhatsApp & Call */}
                   <a
                     href={`https://wa.me/${cleanPhoneDigits}?text=${encodeURIComponent(
                       "Hi Sharath, I would like to know more about your offerings.",
@@ -220,7 +214,6 @@ export default function ContactPage() {
                     </div>
                   </a>
 
-                  {/* Email Address */}
                   <a
                     href={`mailto:${liveContact.email}`}
                     className="flex items-start gap-4 p-5 rounded-2xl bg-white border border-[#e8dcc4] hover:border-[#b86a16]/50 shadow-xs hover:shadow-md transition-all duration-200 group cursor-pointer"
@@ -241,7 +234,6 @@ export default function ContactPage() {
                     </div>
                   </a>
 
-                  {/* Location */}
                   <div className="flex items-start gap-4 p-5 rounded-2xl bg-white border border-[#e8dcc4] shadow-xs">
                     <div className="w-11 h-11 rounded-xl bg-[#c4796a]/10 text-[#c4796a] flex items-center justify-center shrink-0">
                       <MapPin className="w-5 h-5" />
@@ -260,7 +252,6 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* Fast Response Reassurance Box */}
                 <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-[#faf0dc]/60 border border-[#e8dcc4]/80 text-[#1c1f4a]">
                   <Clock className="w-4 h-4 text-[#b86a16] shrink-0 mt-0.5" />
                   <div className="text-xs leading-relaxed text-[#5a5e7a]">
@@ -276,7 +267,6 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* Social Channels */}
                 <div className="pt-2">
                   <div className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider mb-3">
                     Follow Sharath Kancherla
@@ -319,10 +309,8 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Right Column: Interactive Query Form */}
               <div className="lg:col-span-7">
                 <div className="bg-white border border-[#e8dcc4] rounded-[2rem] p-7 sm:p-10 shadow-xl relative overflow-hidden">
-                  {/* Decorative Top Accent Line */}
                   <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#1c1f4a] via-[#e8962e] to-[#1c1f4a]" />
 
                   <div className="mb-7">
@@ -337,7 +325,6 @@ export default function ContactPage() {
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-5">
-                    {/* Full Name */}
                     <div className="space-y-1.5">
                       <label
                         htmlFor="contact-name"
@@ -360,7 +347,6 @@ export default function ContactPage() {
                       </div>
                     </div>
 
-                    {/* Email Address */}
                     <div className="space-y-1.5">
                       <label
                         htmlFor="contact-email"
@@ -383,7 +369,6 @@ export default function ContactPage() {
                       </div>
                     </div>
 
-                    {/* WhatsApp Phone Number */}
                     <div className="space-y-1.5">
                       <label
                         htmlFor="contact-phone"
@@ -406,7 +391,6 @@ export default function ContactPage() {
                       </div>
                     </div>
 
-                    {/* Message / Query */}
                     <div className="space-y-1.5">
                       <label
                         htmlFor="contact-message"
@@ -430,7 +414,6 @@ export default function ContactPage() {
                       </div>
                     </div>
 
-                    {/* Submit Button */}
                     <div className="pt-2">
                       <Button
                         type="submit"

@@ -300,7 +300,6 @@ export default function ManualBroadcastPage() {
         </CardTitle>
         <CardContent className="p-5">
           <form onSubmit={handleSend} className="space-y-4">
-            {/* Seeker checklist (Single Column layout) */}
             <div className="space-y-2">
               <div className="flex justify-between items-end">
                 <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
@@ -366,7 +365,6 @@ export default function ManualBroadcastPage() {
               </div>
             </div>
 
-            {/* Custom phone contacts list */}
             <div className="space-y-1.5">
               <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
                 Or Send to Custom Phone Numbers (Comma-separated)
@@ -384,7 +382,6 @@ export default function ManualBroadcastPage() {
               </p>
             </div>
 
-            {/* Media type select */}
             <div className="space-y-1.5">
               <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
                 Media Attachment Type
@@ -410,7 +407,6 @@ export default function ManualBroadcastPage() {
               </Select>
             </div>
 
-            {/* Media source inputs */}
             {mediaType !== "text" && (
               <div className="space-y-3 bg-[#fcf9f2] border border-[#e8dcc4]/50 p-4 rounded-xl">
                 <div className="flex gap-4">
@@ -511,7 +507,6 @@ export default function ManualBroadcastPage() {
               </div>
             )}
 
-            {/* Message text area */}
             <div className="space-y-1.5">
               <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
                 {mediaType === "text"
@@ -531,7 +526,6 @@ export default function ManualBroadcastPage() {
               />
             </div>
 
-            {/* Submit button */}
             <div className="pt-1">
               <Button
                 type="submit"

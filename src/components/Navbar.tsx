@@ -163,12 +163,10 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop nav */}
         <div
           style={{ display: "flex", gap: 36, alignItems: "center" }}
           className="desktop-nav"
         >
-          {/* About */}
           <Link
             href={isHome ? "#about" : "/#about"}
             onClick={(e) => {
@@ -184,7 +182,6 @@ export default function Navbar() {
             About
           </Link>
 
-          {/* Vision */}
           <Link
             href={isHome ? "#vision" : "/#vision"}
             onClick={(e) => {
@@ -200,7 +197,6 @@ export default function Navbar() {
             Vision
           </Link>
 
-          {/*Gallery*/}
           <Link
             href="/gallery"
             style={navLinkStyle}
@@ -210,7 +206,6 @@ export default function Navbar() {
             Gallery
           </Link>
 
-          {/* More dropdown: Events & Updates, Wall of Love, SKY */}
           <div ref={dropdownRef} style={{ position: "relative" }}>
             <button
               onClick={() => setDropdownOpen((o) => !o)}
@@ -331,7 +326,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Offerings */}
           <Link
             href="/offerings"
             style={{
@@ -375,7 +369,6 @@ export default function Navbar() {
             Offerings
           </Link>
 
-          {/* Dynamic Login / Dashboard Button */}
           {session ? (
             <Link
               href="/dashboard"
@@ -427,7 +420,6 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile hamburger */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           style={{
@@ -464,7 +456,6 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile menu */}
       {menuOpen && (
         <div
           style={{
@@ -476,7 +467,6 @@ export default function Navbar() {
             gap: 4,
           }}
         >
-          {/* About */}
           <Link
             href={isHome ? "#about" : "/#about"}
             onClick={(e) => {
@@ -499,7 +489,6 @@ export default function Navbar() {
             About
           </Link>
 
-          {/* Vision */}
           <Link
             href={isHome ? "#vision" : "/#vision"}
             onClick={(e) => {
@@ -522,7 +511,6 @@ export default function Navbar() {
             Vision
           </Link>
 
-          {/* Gallery */}
           <Link
             href="/gallery"
             onClick={() => setMenuOpen(false)}
@@ -539,7 +527,6 @@ export default function Navbar() {
             Gallery
           </Link>
 
-          {/* More (collapsible) */}
           <button
             onClick={() => setMobileDropdownOpen((o) => !o)}
             style={{
@@ -638,7 +625,6 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Offerings */}
           <Link
             href="/offerings"
             onClick={() => setMenuOpen(false)}
@@ -655,7 +641,6 @@ export default function Navbar() {
             Offerings
           </Link>
 
-          {/* Dynamic Login / Dashboard Link */}
           {session ? (
             <Link
               href="/dashboard"

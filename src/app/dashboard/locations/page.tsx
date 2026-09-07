@@ -252,7 +252,6 @@ function LocationsDashboardContent() {
 
   return (
     <div className="space-y-6 w-full">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>
           <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
@@ -271,7 +270,6 @@ function LocationsDashboardContent() {
         </Button>
       </div>
 
-      {/* Filter Toolbar (Clear first, then Apply) */}
       <div className="flex flex-col sm:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
         <div className="flex-1 min-w-[200px] space-y-1 w-full">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
@@ -420,7 +418,6 @@ function LocationsDashboardContent() {
         </div>
       )}
 
-      {/* Add/Edit Modal */}
       <Dialog open={locModalOpen} onOpenChange={setLocModalOpen}>
         <DialogContent className="sm:max-w-[450px] border border-[#e8dcc4] bg-white rounded-2xl overflow-hidden p-0 shadow-lg font-sans">
           <DialogHeader className="bg-[#1c1f4a] text-white p-5">
@@ -512,7 +509,6 @@ function LocationsDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Alert */}
       <AlertDialog open={!!deleteLocId} onOpenChange={(open) => !open && setDeleteLocId(null)}>
         <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
           <div className="flex flex-col items-center space-y-4">
@@ -537,7 +533,6 @@ function LocationsDashboardContent() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* DEPENDENCY BLOCKED DIALOG */}
       {blockedDeleteReason && (
         <AlertDialog open={!!blockedDeleteReason} onOpenChange={(open) => !open && setBlockedDeleteReason(null)}>
           <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">

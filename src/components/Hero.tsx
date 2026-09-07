@@ -14,7 +14,6 @@ export default function Hero() {
         overflow: "hidden",
       }}
     >
-      {/* top line positioned below marquee/header */}
       <div
         style={{
           position: "absolute",
@@ -30,7 +29,6 @@ export default function Hero() {
 
       <div className="hero-wrapper">
         <div className="hero-grid">
-          {/* LEFT */}
           <div className="hero-content">
             <div style={{ maxWidth: 680 }}>
               <div
@@ -152,7 +150,6 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* RIGHT */}
           <div className="hero-animation">
             <BreathingAnimation />
           </div>

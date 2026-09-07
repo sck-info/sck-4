@@ -330,7 +330,6 @@ function UsersPageContent() {
 
   return (
     <div className="space-y-6 w-full">
-      {/* Header Title */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
@@ -342,7 +341,6 @@ function UsersPageContent() {
         </div>
       </div>
 
-      {/* Filter Toolbar (No Role Filter) */}
       <div className="flex flex-col sm:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
         <div className="flex-1 min-w-[200px] space-y-1 w-full">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
@@ -376,7 +374,6 @@ function UsersPageContent() {
           </Select>
         </div>
 
-        {/* Manual Filter Apply and Clear Buttons */}
         <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
           <Button
             type="button"

@@ -173,7 +173,6 @@ function FeedbackSubmissionContent() {
   return (
     <div className="min-h-screen bg-[#faf7f2] flex flex-col items-center justify-center px-4 py-24">
         {success ? (
-          /* SUCCESS STATE: Feedback already submitted */
           <div className="max-w-md w-full bg-white border border-[#e8dcc4] rounded-[2rem] p-8 md:p-10 text-center space-y-6 shadow-md transition-all">
             <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100">
               <CheckCircle2 className="w-9 h-9" />
@@ -217,7 +216,6 @@ function FeedbackSubmissionContent() {
             </div>
           </div>
         ) : (
-          /* FORM STATE: Submit feedback form */
           <div className="max-w-lg w-full bg-white border border-[#e8dcc4] rounded-[2rem] p-6 md:p-8 space-y-6 shadow-md">
             <div>
               <div className="inline-flex items-center gap-1 text-[10px] uppercase font-extrabold text-[#b86a16] tracking-wider bg-[#b86a16]/10 px-2.5 py-0.5 rounded-full mb-2">
@@ -229,7 +227,6 @@ function FeedbackSubmissionContent() {
               </p>
             </div>
 
-            {/* Session Card details */}
             <div className="bg-[#faf7f2] border border-[#e8dcc4] p-4.5 rounded-2xl space-y-2">
               <h3 className="text-sm font-bold text-[#1c1f4a]">{booking.subCategory.name}</h3>
               {booking.slot ? (
@@ -249,7 +246,6 @@ function FeedbackSubmissionContent() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Rating Star selection */}
               <div className="space-y-2 text-center py-4 bg-[#faf7f2]/40 rounded-2xl border border-[#e8dcc4]/20">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wider block">Your Session Rating</Label>
                 <div className="flex justify-center gap-2.5 mt-1">
@@ -269,7 +265,6 @@ function FeedbackSubmissionContent() {
                 </div>
               </div>
 
-              {/* Comment text input */}
               <div className="space-y-2">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">Detailed Review comments <span className="text-red-500">*</span></Label>
                 <textarea
@@ -282,7 +277,6 @@ function FeedbackSubmissionContent() {
                 />
               </div>
 
-              {/* Submit Buttons */}
               <div className="flex gap-3 pt-2">
                 <Button
                   type="button"

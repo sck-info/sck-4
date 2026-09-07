@@ -6,7 +6,6 @@ import { profile } from "@/data/content";
 import type { ReactElement } from "react";
 import { useRealtime } from "@/hooks/useRealtime";
 
-
 const highlights = [
   "Art of Living",
   "13+ years of experience",
@@ -159,7 +158,6 @@ function StatsBar({ stats }: { stats: { num: string; label: string }[] }) {
           margin: "0 auto",
         }}
       >
-        {/* Heading */}
 
         <div
           style={{
@@ -170,7 +168,6 @@ function StatsBar({ stats }: { stats: { num: string; label: string }[] }) {
             marginBottom: "2rem",
           }}
         >
-          {/* Same design as About */}
           <div
             style={{
               display: "inline-flex",
@@ -246,7 +243,6 @@ function StatsBar({ stats }: { stats: { num: string; label: string }[] }) {
           </p>
         </div>
 
-        {/* Cards */}
         <div className="stats-grid">
           {stats.map((s) => (
             <div key={s.label} className="metric-card">
@@ -420,7 +416,6 @@ export default function About() {
             alignItems: "center",
           }}
         >
-          {/* Photo Carousel (matching sck-3) */}
           <div style={{ position: "relative" }}>
             <div
               style={{
@@ -478,7 +473,6 @@ export default function About() {
                 </AnimatePresence>
               </div>
 
-              {/* Tag Badge */}
               <div
                 style={{
                   position: "absolute",
@@ -546,7 +540,6 @@ export default function About() {
               </div>
             </div>
 
-            {/* Years badge */}
             <div
               style={{
                 position: "absolute",
@@ -584,7 +577,6 @@ export default function About() {
             </div>
           </div>
 
-          {/* Text */}
           <div>
             <div
               style={{

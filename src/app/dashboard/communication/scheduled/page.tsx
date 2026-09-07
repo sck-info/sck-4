@@ -279,7 +279,6 @@ function ScheduledMessagesContent() {
 
   return (
     <div className="space-y-6 w-full">
-      {/* Header section (Gallery Style) */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
@@ -313,7 +312,6 @@ function ScheduledMessagesContent() {
         </div>
       </div>
 
-      {/* Filter Toolbar (Clear first, then Apply) */}
       <div className="flex flex-col sm:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
         <div className="flex-1 min-w-[200px] space-y-1 w-full">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Search Messages</Label>
@@ -362,7 +360,6 @@ function ScheduledMessagesContent() {
         </div>
       </div>
 
-      {/* Main Table view */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20">
           <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
@@ -460,7 +457,6 @@ function ScheduledMessagesContent() {
         </div>
       )}
 
-      {/* Create Dialog Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="sm:max-w-[500px] border border-[#e8dcc4] bg-white rounded-2xl overflow-hidden p-0 shadow-lg font-sans">
           <DialogHeader className="bg-[#1c1f4a] text-white p-5">
@@ -529,7 +525,6 @@ function ScheduledMessagesContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete / Cancel Broadcast Dialog Confirmation */}
       <Dialog open={!!actionId} onOpenChange={(open) => !open && setActionId(null)}>
         <DialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-sm">
           <DialogHeader>

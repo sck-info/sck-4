@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowUp } from "lucide-react";
 
 /**
- * Spiritual Luxury Back-To-Top Button
+ * Back-To-Top Button
  * - Appears only when scrolled down (> 400px).
  * - Dynamically docks above the footer so it never overlaps footer content.
  * - Smoothly scrolls to the top of the page when clicked.

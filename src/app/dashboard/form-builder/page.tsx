@@ -534,7 +534,6 @@ function FormBuilderDashboardContent() {
 
   return (
     <div className="space-y-8 w-full">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>
           <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
@@ -547,7 +546,6 @@ function FormBuilderDashboardContent() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-2 border-b border-[#e8dcc4] pb-px overflow-x-auto selection:bg-transparent">
         <button
           onClick={() => handleTabChange("library")}
@@ -571,10 +569,8 @@ function FormBuilderDashboardContent() {
         </button>
       </div>
 
-      {/* TAB PANEL 1: Questions Pool Library */}
       {activeTab === "library" && (
         <div className="space-y-5">
-          {/* Header Row */}
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between border-b border-[#e8dcc4]/60 pb-3">
             <h2 className="text-sm font-bold text-[#1c1f4a] font-display flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-[#b86a16]" /> Questions Library
@@ -596,7 +592,6 @@ function FormBuilderDashboardContent() {
             </Button>
           </div>
 
-          {/* Dedicated Filters Card */}
           <div className="bg-[#faf7f2]/25 border border-[#e8dcc4]/50 rounded-2xl p-4 shadow-2xs">
             <div className="flex flex-col md:flex-row md:items-end gap-3.5 w-full">
               <div className="flex-1 w-full">
@@ -753,10 +748,8 @@ function FormBuilderDashboardContent() {
         </div>
       )}
 
-      {/* TAB PANEL 2: Offering Questionnaire Linker */}
       {activeTab === "mapping" && (
         <div className="space-y-5">
-          {/* Sub-Category Selector Card */}
           <div className="bg-white border border-[#e8dcc4]/60 p-5 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1 w-full sm:w-auto flex-1">
               <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
@@ -801,7 +794,6 @@ function FormBuilderDashboardContent() {
             )}
           </div>
 
-          {/* Dedicated Filters Card for Mapping Tab */}
           {selectedSubId && (
             <div className="bg-[#faf7f2]/25 border border-[#e8dcc4]/50 rounded-2xl p-4 shadow-2xs">
               <div className="flex flex-col md:flex-row md:items-end gap-3.5 w-full">
@@ -976,7 +968,6 @@ function FormBuilderDashboardContent() {
         </div>
       )}
 
-      {/* DIALOG: Library Question Creator Form */}
       <Dialog open={libModalOpen} onOpenChange={setLibModalOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
@@ -1112,7 +1103,6 @@ function FormBuilderDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* DIALOG: Link Question to Offering Form */}
       <Dialog open={linkModalOpen} onOpenChange={setLinkModalOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
@@ -1220,7 +1210,6 @@ function FormBuilderDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* DIALOG: Edit Question Mapping Settings */}
       <Dialog open={editLinkModalOpen} onOpenChange={setEditLinkModalOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
@@ -1310,7 +1299,6 @@ function FormBuilderDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* ALERT: Confirm Delete Library Question */}
       <AlertDialog open={deleteLibId !== null} onOpenChange={(open) => !open && setDeleteLibId(null)}>
         <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
           <div className="flex flex-col items-center space-y-4">
@@ -1335,7 +1323,6 @@ function FormBuilderDashboardContent() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ALERT: Confirm Unlink Question */}
       <AlertDialog open={unlinkConfirmId !== null} onOpenChange={(open) => !open && setUnlinkConfirmId(null)}>
         <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
           <div className="flex flex-col items-center space-y-4">
@@ -1360,7 +1347,6 @@ function FormBuilderDashboardContent() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* DEPENDENCY BLOCKED DIALOG */}
       {blockedDeleteReason && (
         <AlertDialog open={!!blockedDeleteReason} onOpenChange={(open) => !open && setBlockedDeleteReason(null)}>
           <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">

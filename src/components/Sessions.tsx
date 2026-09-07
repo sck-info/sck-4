@@ -44,7 +44,6 @@ export default function Sessions() {
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        {/* Header */}
         <div style={{ marginBottom: "clamp(2rem, 4vw, 3rem)" }}>
           <div
             style={{
@@ -157,7 +156,6 @@ export default function Sessions() {
           </div>
         </div>
 
-        {/* Tabs */}
         <div
           style={{
             display: "flex",
@@ -198,7 +196,6 @@ export default function Sessions() {
           ))}
         </div>
 
-        {/* Session Panel */}
         <div
           id={cat.id}
           style={{
@@ -210,7 +207,6 @@ export default function Sessions() {
             scrollMarginTop: "100px",
           }}
         >
-          {/* Category header */}
           <div
             style={{
               background: cat.color,
@@ -310,7 +306,6 @@ export default function Sessions() {
             </a>
           </div>
 
-          {/* Category Quote */}
           <div
             style={{
               padding: "1.2rem 2rem",
@@ -320,7 +315,6 @@ export default function Sessions() {
               position: "relative",
             }}
           >
-            {/* Decorative line */}
             <div
               style={{
                 display: "flex",
@@ -382,7 +376,6 @@ export default function Sessions() {
               {cat.englishQuote}
             </p>
 
-            {/* Bottom decoration */}
             <div
               style={{
                 display: "flex",
@@ -418,7 +411,6 @@ export default function Sessions() {
             </div>
           </div>
 
-          {/* Session cards */}
           <div
             style={{
               display: "grid",

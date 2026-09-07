@@ -204,7 +204,6 @@ function PaymentQRsDashboardContent() {
 
   return (
     <div className="space-y-6 w-full">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>
           <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">Payment QR Codes</h1>
@@ -259,14 +258,12 @@ function PaymentQRsDashboardContent() {
       </div>
     )}
 
-      {/* Table pagination for QRs */}
       {qrPagination.totalPages > 1 && (
         <div className="pt-4 border-t border-[#e8dcc4]/40">
           <TablePaginationFooter pagination={qrPagination} variant="bottom" />
         </div>
       )}
 
-      {/* DIALOG: Add/Edit QR */}
       <Dialog open={qrModalOpen} onOpenChange={setQrModalOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
@@ -309,7 +306,6 @@ function PaymentQRsDashboardContent() {
               </div>
             </div>
 
-            {/* NEW IMAGE PREVIEW CONTAINER */}
             {(filePreview || (editingQr && editingQr.qrImageUrl)) && (
               <div className="space-y-2 flex flex-col items-center border border-[#e8dcc4]/40 bg-[#faf7f2]/20 p-3 rounded-2xl">
                 <Label className="text-[10px] font-bold text-[#1c1f4a] uppercase tracking-wide">Selected Image Preview</Label>
@@ -335,7 +331,6 @@ function PaymentQRsDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* ALERT DIALOG: Delete QR */}
       <AlertDialog open={deleteQrId !== null} onOpenChange={(open) => !open && setDeleteQrId(null)}>
         <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
           <div className="flex flex-col items-center space-y-4">
@@ -360,7 +355,6 @@ function PaymentQRsDashboardContent() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* DEPENDENCY BLOCKED DIALOG */}
       {blockedDeleteReason && (
         <AlertDialog open={!!blockedDeleteReason} onOpenChange={(open) => !open && setBlockedDeleteReason(null)}>
           <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">

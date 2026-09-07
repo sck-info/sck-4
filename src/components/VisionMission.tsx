@@ -27,7 +27,6 @@ export default function VisionMission() {
       <HangingLotus align="left" />
 
       <div style={{ maxWidth: 1600, margin: "0 auto", position: "relative" }}>
-        {/* Section heading */}
         <div
           style={{
             textAlign: "center",

@@ -540,7 +540,6 @@ export default function BookingClient({
         Please complete the reservation slots &amp; details below.
       </p>
 
-      {/* Grid containing Calendar & Details */}
       {!loadingSlots &&
       currentSubCategory.requiresBooking &&
       slots.length === 0 ? (
@@ -622,7 +621,6 @@ export default function BookingClient({
             alignItems: "start",
           }}
         >
-          {/* LEFT COLUMN: Calendar Picker (if slot reservation required) */}
           {currentSubCategory.requiresBooking ? (
             <div
               style={{
@@ -679,7 +677,6 @@ export default function BookingClient({
                 </div>
               ) : (
                 <div>
-                  {/* Month Navigation Banner */}
                   <div
                     style={{
                       display: "flex",
@@ -730,7 +727,6 @@ export default function BookingClient({
                     </button>
                   </div>
 
-                  {/* Week Day Labels */}
                   <div
                     style={{
                       display: "grid",
@@ -751,7 +747,6 @@ export default function BookingClient({
                     <span>Sa</span>
                   </div>
 
-                  {/* Calendar Days Grid */}
                   <div
                     style={{
                       display: "grid",
@@ -759,12 +754,10 @@ export default function BookingClient({
                       gap: 6,
                     }}
                   >
-                    {/* Empty cells leading up to 1st of month */}
                     {Array.from({ length: firstDayIndex }).map((_, i) => (
                       <div key={`empty-${i}`} />
                     ))}
 
-                    {/* Days */}
                     {Array.from({ length: daysInMonth }).map((_, i) => {
                       const day = i + 1;
                       const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -801,7 +794,6 @@ export default function BookingClient({
                     })}
                   </div>
 
-                  {/* Time Slot display */}
                   {selectedDate && (
                     <div
                       style={{
@@ -919,7 +911,6 @@ export default function BookingClient({
             </div>
           )}
 
-          {/* RIGHT COLUMN: Questionnaire Form & Details */}
           <form
             onSubmit={handleSubmit}
             style={{
@@ -944,7 +935,6 @@ export default function BookingClient({
                 : "1. Complete Questionnaire"}
             </h3>
 
-            {/* Prefilled user credentials */}
             <div
               style={{
                 display: "flex",
@@ -1007,7 +997,6 @@ export default function BookingClient({
                   {userDetails?.email}
                 </div>
               </div>
-              {/* If user phone exists */}
               {userDetails?.phone && (
                 <div>
                   <label
@@ -1038,7 +1027,6 @@ export default function BookingClient({
               )}
             </div>
 
-            {/* Configured Slot Format Options */}
             {selectedSlot && selectedSlot.locations.length > 0 && (
               <div style={{ marginBottom: 24 }}>
                 <label
@@ -1097,7 +1085,6 @@ export default function BookingClient({
               </div>
             )}
 
-            {/* Dynamic Form questions rendering */}
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               {questions.map((q) => {
                 const opts = Array.isArray(q.options)
@@ -1122,7 +1109,6 @@ export default function BookingClient({
                       )}
                     </label>
 
-                    {/* RENDER FIELD INPUT TYPES */}
                     {q.fieldType === "short_answer" && (
                       <input
                         type="text"
@@ -1298,7 +1284,6 @@ export default function BookingClient({
                           </SelectContent>
                         </Select>
 
-                        {/* Conditional Short Answer field if 'Other' chosen */}
                         {q.allowOther && val === "Other" && (
                           <input
                             type="text"
@@ -1381,7 +1366,6 @@ export default function BookingClient({
                               <span>Other</span>
                             </label>
 
-                            {/* Conditional specify input */}
                             {(Array.isArray(val) ? val : []).includes(
                               "Other",
                             ) && (
@@ -1413,7 +1397,6 @@ export default function BookingClient({
               })}
             </div>
 
-            {/* Payment QR displays if configured */}
             {currentPaymentQr && (
               <div
                 style={{
@@ -1446,7 +1429,6 @@ export default function BookingClient({
                   Scan the QR code below via UPI or your banking application to
                   complete the session fee payment.
                 </p>
-                {/* QR Image */}
                 <img
                   src={currentPaymentQr.qrImageUrl}
                   alt={currentPaymentQr.name}
@@ -1473,7 +1455,6 @@ export default function BookingClient({
                   {currentPaymentQr.name}
                 </span>
 
-                {/* Upload Screenshot File Field */}
                 <div
                   style={{
                     textAlign: "left",
@@ -1577,7 +1558,6 @@ export default function BookingClient({
               </div>
             )}
 
-            {/* Submit Action */}
             {(() => {
               const isSubmitDisabled =
                 submitting || (subCategory.requiresBooking && !selectedSlot);

@@ -77,9 +77,6 @@ import type {
   CampaignResponseRow,
 } from "@/types/campaign";
 
-
-
-
 // Rich description editor using contentEditable
 function RichDescriptionEditor({
   value,
@@ -678,11 +675,8 @@ function CampaignsContent() {
     }));
   };
 
-
-
   return (
     <div className="w-full space-y-6">
-      {/* Page Title Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>
           <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
@@ -701,7 +695,6 @@ function CampaignsContent() {
         </Button>
       </div>
 
-      {/* Filter toolbar */}
       <div className="flex flex-col md:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
         <div className="flex-1 min-w-[200px] space-y-1 w-full">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider block">
@@ -754,7 +747,6 @@ function CampaignsContent() {
         </div>
       </div>
 
-      {/* Campaigns list table */}
       <div className="bg-white border border-[#e8dcc4] rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <Table>
@@ -901,7 +893,6 @@ function CampaignsContent() {
         <TablePaginationFooter pagination={pagination} variant="bottom" />
       </div>
 
-      {/* Creation Wizard Dialog */}
       <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-5 rounded-t-3xl">
@@ -970,7 +961,6 @@ function CampaignsContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Main Campaign CONFIG & STATS Board Editor */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent className="sm:max-w-[900px] h-[85vh] flex flex-col p-0 overflow-hidden">
           <DialogHeader className="bg-[#1c1f4a] text-white px-6 py-4.5 flex flex-row justify-between items-center shrink-0">
@@ -980,7 +970,6 @@ function CampaignsContent() {
             </DialogTitle>
           </DialogHeader>
 
-          {/* Navigation Tabs bar */}
           <div className="flex bg-[#faf7f2] border-b border-[#e8dcc4] px-6 py-1 shrink-0 text-xs font-bold text-[#5a5e7a]">
             {[
               { id: "settings", label: "General Settings" },
@@ -1003,7 +992,6 @@ function CampaignsContent() {
             ))}
           </div>
 
-          {/* Tab content panel */}
           <div className="flex-1 overflow-y-auto p-6 bg-white space-y-4">
             {loadingDetails ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
@@ -1100,7 +1088,6 @@ function CampaignsContent() {
                         </Button>
                       </div>
 
-                      {/* Section Questions */}
                       <div className="space-y-4 pl-4 border-l-2 border-[#e8dcc4]">
                         {section.questions.map((q, qIdx) => (
                           <div key={q.tempId} className="border border-[#e8dcc4]/60 bg-white p-4 rounded-xl space-y-3 shadow-sm">
@@ -1392,7 +1379,6 @@ function CampaignsContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Campaign Confirmation */}
       <AlertDialog open={!!deleteCampaign} onOpenChange={(open) => !open && setDeleteCampaign(null)}>
         <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
           <div className="flex flex-col items-center space-y-4">

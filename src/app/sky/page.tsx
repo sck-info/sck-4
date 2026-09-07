@@ -183,7 +183,6 @@ export default function SKYPage() {
             paddingBottom: "3rem",
           }}
         >
-          {/* Back button container centered with hero content */}
           <div
             className="absolute left-0 right-0 z-10 pointer-events-none"
             style={{ position: "absolute", top: "calc(var(--header-height) + 1rem)" }}
@@ -325,7 +324,6 @@ export default function SKYPage() {
           </div>
         </div>
 
-        {/* Section 1: Introduction & Etymology */}
         <section
           style={{
             maxWidth: 1100,
@@ -389,7 +387,6 @@ export default function SKYPage() {
           </div>
         </section>
 
-        {/* Section 2: Scientific Research & Statistics */}
         <section
           style={{
             background: "#ffffff",
@@ -452,7 +449,6 @@ export default function SKYPage() {
               </p>
             </div>
 
-            {/* Statistics Cards Grid */}
             <div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
               style={{ marginBottom: "4rem" }}
@@ -536,7 +532,6 @@ export default function SKYPage() {
               })}
             </div>
 
-            {/* In-depth Research Bullet Points */}
             <div
               style={{
                 background: "#faf7f2",
@@ -663,7 +658,6 @@ export default function SKYPage() {
           </div>
         </section>
 
-        {/* Section 3: Philosophy & Breath Connection */}
         <section
           style={{ maxWidth: 1100, margin: "0 auto", padding: "5rem 1.5rem" }}
         >
@@ -792,7 +786,6 @@ export default function SKYPage() {
           </div>
         </section>
 
-        {/* Section 4: Key Components Timeline */}
         <section
           style={{
             background: "#ffffff",
@@ -941,7 +934,6 @@ export default function SKYPage() {
           </div>
         </section>
 
-        {/* Section 5: Gurudev Sri Sri Ravi Shankar Bio */}
         <section
           style={{ maxWidth: 1100, margin: "0 auto", padding: "5rem 1.5rem" }}
         >
@@ -1080,7 +1072,6 @@ export default function SKYPage() {
           </div>
         </section>
 
-        {/* Section 6: The Art of Living Foundation */}
         <section
           style={{
             background: "#ffffff",
@@ -1241,7 +1232,6 @@ export default function SKYPage() {
           </div>
         </section>
 
-        {/* Section 7: FAQ & Safety Warnings */}
         <section
           style={{ maxWidth: 900, margin: "0 auto", padding: "5rem 1.5rem" }}
         >
@@ -1272,7 +1262,6 @@ export default function SKYPage() {
             </h2>
           </div>
 
-          {/* Accordion Layout */}
           <div
             style={{
               display: "flex",
@@ -1370,7 +1359,6 @@ export default function SKYPage() {
             })}
           </div>
 
-          {/* Medical disclaimer panel */}
           <div
             style={{
               display: "flex",
@@ -1420,7 +1408,6 @@ export default function SKYPage() {
           </div>
         </section>
 
-        {/* Section 8: Bottom Call to Action */}
         <section
           style={{
             maxWidth: 1200,
@@ -1439,7 +1426,6 @@ export default function SKYPage() {
               boxShadow: "0 20px 55px rgba(28, 31, 74, 0.15)",
             }}
           >
-            {/* Background elements */}
             <div
               style={{
                 position: "absolute",

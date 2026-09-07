@@ -144,7 +144,6 @@ function EventsAndUpdatesContent() {
         }}
       >
         <div style={{ maxWidth: 1600, margin: "0 auto", padding: "0 2rem" }}>
-          {/* Back button */}
           <div style={{ marginBottom: "1.5rem", marginLeft: "-0.5rem" }}>
             <Link
               href="/"
@@ -156,7 +155,6 @@ function EventsAndUpdatesContent() {
             </Link>
           </div>
 
-          {/* Header Section */}
           <div style={{ textAlign: "center", marginBottom: "3rem" }}>
             <span
               style={{
@@ -198,7 +196,6 @@ function EventsAndUpdatesContent() {
             </p>
           </div>
 
-          {/* Filter Bar */}
           <div
             style={{
               background: "#ffffff",
@@ -221,7 +218,6 @@ function EventsAndUpdatesContent() {
                 gap: "1rem",
               }}
             >
-              {/* Type Filters */}
               <div
                 style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}
               >
@@ -298,7 +294,6 @@ function EventsAndUpdatesContent() {
                 </button>
               </div>
 
-              {/* Date Range Picker */}
               <div
                 style={{
                   display: "flex",
@@ -328,7 +323,6 @@ function EventsAndUpdatesContent() {
             </div>
           </div>
 
-          {/* Unified Feed Stream */}
           {loading ? (
             <div style={{ textAlign: "center", padding: "4rem 0" }}>
               <Loader2
@@ -434,7 +428,6 @@ function EventsAndUpdatesContent() {
                     }}
                     className="feed-card"
                   >
-                    {/* Top Row: Type tag & Date */}
                     <div
                       style={{
                         display: "flex",
@@ -493,7 +486,6 @@ function EventsAndUpdatesContent() {
                       </div>
                     </div>
 
-                    {/* Title */}
                     <h2
                       style={{
                         fontSize: "19px",
@@ -506,7 +498,6 @@ function EventsAndUpdatesContent() {
                       {item.title}
                     </h2>
 
-                    {/* Description HTML format rendering */}
                     <div
                       style={{
                         fontSize: "13.5px",
@@ -517,7 +508,6 @@ function EventsAndUpdatesContent() {
                       dangerouslySetInnerHTML={{ __html: item.description }}
                     />
 
-                    {/* Footer link row */}
                     {item.link && (
                       <div
                         style={{

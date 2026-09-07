@@ -108,7 +108,6 @@ function ThankYouContent() {
         fontFamily: "'DM Sans', sans-serif",
       }}
     >
-      {/* Animated Success Checkmark */}
       <div className="checkmark-wrapper">
         <svg
           className="checkmark"
@@ -162,7 +161,6 @@ function ThankYouContent() {
         has been successfully received.
       </p>
 
-      {/* Conditional message block */}
       {hasSlot ? (
         <div
           style={{
@@ -267,7 +265,6 @@ function ThankYouContent() {
         </div>
       )}
 
-      {/* Buttons */}
       <div
         style={{
           display: "flex",
@@ -358,7 +355,6 @@ function ThankYouContent() {
         </a>
       </div>
 
-      {/* CSS TICK ANIMATION */}
       <style>{`
         .checkmark-wrapper {
           display: flex;

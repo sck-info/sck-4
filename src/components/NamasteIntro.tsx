@@ -40,7 +40,6 @@ export default function NamasteIntro() {
     <AnimatePresence>
       {!isComplete && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden pointer-events-none">
-          {/* Top Panel - Sliding Door */}
           <motion.div
             initial={{ y: 0 }}
             exit={{
@@ -50,7 +49,6 @@ export default function NamasteIntro() {
             className="absolute top-0 left-0 w-full h-[50.5vh] bg-[#1c1f4a] border-b border-[#e8962e]/20 pointer-events-auto"
           />
 
-          {/* Bottom Panel - Sliding Door */}
           <motion.div
             initial={{ y: 0 }}
             exit={{
@@ -60,7 +58,6 @@ export default function NamasteIntro() {
             className="absolute bottom-0 left-0 w-full h-[50.5vh] bg-[#1c1f4a] border-t border-[#e8962e]/20 pointer-events-auto"
           />
 
-          {/* Central Logo and Texts */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{
@@ -76,7 +73,6 @@ export default function NamasteIntro() {
             }}
             className="relative z-[10000] flex flex-col items-center text-center px-4"
           >
-            {/* Pulsing Spirit Aura */}
             <div className="absolute -inset-20 flex items-center justify-center pointer-events-none z-[-1] overflow-visible">
               <motion.div
                 animate={{
@@ -112,7 +108,6 @@ export default function NamasteIntro() {
               />
             </div>
 
-            {/* Lotus SVG */}
             <motion.div
               initial={{ rotate: -8, opacity: 0 }}
               animate={{
@@ -164,7 +159,6 @@ export default function NamasteIntro() {
               </svg>
             </motion.div>
 
-            {/* Namaste Text */}
             <motion.h1
               initial={{ letterSpacing: "0.15em", opacity: 0 }}
               animate={{
@@ -177,7 +171,6 @@ export default function NamasteIntro() {
               Namaste
             </motion.h1>
 
-            {/* Devanagari Script */}
             <motion.p
               initial={{ opacity: 0, y: 5 }}
               animate={{
@@ -190,7 +183,6 @@ export default function NamasteIntro() {
               नमस्ते
             </motion.p>
 
-            {/* Quote */}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{

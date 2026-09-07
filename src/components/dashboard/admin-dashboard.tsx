@@ -325,7 +325,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8 w-full">
-      {/* Header */}
       <div className="border-b border-[#e8dcc4] pb-5">
         <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
           ADMINISTRATOR DASHBOARD
@@ -336,7 +335,6 @@ export default function AdminDashboard() {
         </p>
       </div>
 
-      {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {kpis.map((kpi, idx) => {
           const Icon = kpi.icon;
@@ -370,9 +368,7 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Booking Status Distribution Donut Chart */}
         <Card className="border-[#e8dcc4] bg-white rounded-2xl shadow-xs">
           <CardHeader className="pb-2 border-b border-gray-100">
             <CardTitle className="text-xs font-bold text-[#1c1f4a] uppercase">
@@ -428,7 +424,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Format Delivery Preference */}
         <Card className="border-[#e8dcc4] bg-white rounded-2xl shadow-xs">
           <CardHeader className="pb-2 border-b border-gray-100">
             <CardTitle className="text-xs font-bold text-[#1c1f4a] uppercase">
@@ -481,9 +476,7 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Row 3: Slot Booking Utilization + Program Sub-category analytics (Horizontal Bar Chart) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Left: Slot Booking Utilization */}
         <Card className="border-[#e8dcc4] bg-white rounded-2xl shadow-xs p-6 flex flex-col justify-between">
           <div>
             <h3 className="text-xs font-bold text-[#1c1f4a] uppercase">
@@ -495,7 +488,6 @@ export default function AdminDashboard() {
           </div>
 
           <div className="relative flex items-center justify-center py-6">
-            {/* SVG Radial Progress */}
             <svg className="w-32 h-32 transform -rotate-90">
               <circle
                 cx="64"
@@ -546,7 +538,6 @@ export default function AdminDashboard() {
           </div>
         </Card>
 
-        {/* Right: Program Subcategory Wise Stats (Horizontal Bar Chart) */}
         <Card className="border-[#e8dcc4] bg-white rounded-2xl shadow-xs md:col-span-2 p-6 flex flex-col justify-between overflow-hidden">
           <CardHeader className="pb-2 border-b border-gray-100 p-0 mb-4">
             <CardTitle className="text-xs font-bold text-[#1c1f4a] uppercase">
@@ -603,7 +594,6 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Row 4: Website Static Assets Overview (Full width row only!) */}
       <Card className="border-[#e8dcc4] bg-white rounded-2xl shadow-xs p-6">
         <div className="border-b border-[#e8dcc4]/40 pb-4">
           <div className="flex items-center gap-2">

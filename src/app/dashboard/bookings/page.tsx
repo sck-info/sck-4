@@ -469,7 +469,6 @@ function BookingsDashboardContent() {
 
   return (
     <div className="space-y-6 w-full">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>
           <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">Bookings Tracker Queue</h1>
@@ -491,7 +490,6 @@ function BookingsDashboardContent() {
         </div>
       </div>
 
-      {/* Neat Filter Toolbar (Clear first, then Apply) */}
       <div className="flex flex-col md:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
         <div className="flex-1 min-w-[150px] space-y-1 w-full">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Search Seekers</Label>
@@ -625,7 +623,6 @@ function BookingsDashboardContent() {
                     key={booking.id}
                     className="border-b border-[#e8dcc4]/60 last:border-b-0 hover:bg-[#faf7f2]/20 transition-colors text-xs"
                   >
-                    {/* User credentials */}
                     <TableCell className="py-3 px-4">
                       <div className="space-y-1">
                         <div className="font-bold text-[#1c1f4a] flex items-center gap-1">
@@ -642,12 +639,10 @@ function BookingsDashboardContent() {
                       </div>
                     </TableCell>
 
-                    {/* Category offering */}
                     <TableCell className="py-3 px-4 text-[#1c1f4a] font-bold">
                       {booking.subCategoryName}
                     </TableCell>
 
-                    {/* Timing slot */}
                     <TableCell className="py-3 px-4">
                       {booking.slotDate ? (
                         <div className="space-y-1 font-semibold">
@@ -667,7 +662,6 @@ function BookingsDashboardContent() {
                       )}
                     </TableCell>
 
-                    {/* Format / location links */}
                     <TableCell className="py-3 px-4">
                       <div className="space-y-1">
                         <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide uppercase bg-[#faf7f2] border border-[#e8dcc4] text-[#1c1f4a]">
@@ -676,7 +670,6 @@ function BookingsDashboardContent() {
                       </div>
                     </TableCell>
 
-                    {/* Booking Status badges */}
                     <TableCell className="py-3 px-4">
                       <div className="flex flex-col gap-1.5 items-start">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase ${
@@ -699,10 +692,8 @@ function BookingsDashboardContent() {
                       </div>
                     </TableCell>
 
-                    {/* Actions column */}
                     <TableCell className="py-3 px-4 text-right">
                       <div className="inline-flex gap-2">
-                        {/* View Responses Form answers */}
                         <button
                           onClick={() => setViewResponsesBooking(booking)}
                           className="p-1.5 hover:bg-[#1c1f4a]/10 text-[#1c1f4a] border border-transparent hover:border-[#1c1f4a]/30 rounded-xl transition-all cursor-pointer"
@@ -711,7 +702,6 @@ function BookingsDashboardContent() {
                           <Eye className="w-3.5 h-3.5" />
                         </button>
 
-                        {/* Add to Google Calendar (only if confirmed and scheduled timing slot exists) */}
                         {booking.status === "confirmed" && booking.slotDate && (
                           <a
                             href={getGoogleCalendarUrl(booking, true)}
@@ -724,7 +714,6 @@ function BookingsDashboardContent() {
                           </a>
                         )}
 
-                        {/* Status updates */}
                         {booking.status === "pending" && (
                           <button
                             onClick={() => setConfirmStatusUpdate({ booking, nextStatus: "confirmed" })}
@@ -768,7 +757,6 @@ function BookingsDashboardContent() {
                           </>
                         )}
 
-                        {/* Allow canceling directly from queue if confirmed or pending */}
                         {(booking.status === "pending" || booking.status === "confirmed") && (
                           <button
                             onClick={() => setCancelBooking(booking)}
@@ -790,7 +778,6 @@ function BookingsDashboardContent() {
         </div>
       )}
 
-      {/* View Responses Form answers Modal popup dialog */}
       <Dialog open={!!viewResponsesBooking} onOpenChange={(open) => !open && setViewResponsesBooking(null)}>
         <DialogContent className="max-w-2xl border border-[#e8dcc4] bg-white rounded-2xl overflow-hidden p-0 shadow-lg font-sans">
           <DialogHeader className="bg-[#1c1f4a] text-white p-5 flex flex-row items-center justify-between -mx-0 -mt-0">
@@ -868,7 +855,6 @@ function BookingsDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Cancel Booking Reason dialog modal */}
       <Dialog open={!!cancelBooking} onOpenChange={(open) => !open && setCancelBooking(null)}>
         <DialogContent className="max-w-md border border-[#e8dcc4] bg-white rounded-2xl overflow-hidden p-0 shadow-lg font-sans">
           <DialogHeader className="bg-[#1c1f4a] text-white p-5">
@@ -926,7 +912,6 @@ function BookingsDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Confirmation transitions modal */}
       <AlertDialog open={!!confirmStatusUpdate} onOpenChange={(open) => !open && setConfirmStatusUpdate(null)}>
         <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
           <AlertDialogHeader>

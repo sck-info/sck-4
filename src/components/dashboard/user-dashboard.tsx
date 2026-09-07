@@ -103,7 +103,6 @@ export default function UserDashboard() {
 
   return (
     <div className="space-y-6 w-full p-2">
-      {/* Header section card */}
       <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#b86a16]/10 text-[#b86a16]">
@@ -120,9 +119,7 @@ export default function UserDashboard() {
         </div>
       </div>
 
-      {/* Stats Cards Section */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Stats 1: Total Booked */}
         <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl p-5 shadow-xs flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-[#1c1f4a]/5 flex items-center justify-center text-[#1c1f4a] shrink-0">
             <ClipboardList className="w-6 h-6" />
@@ -137,7 +134,6 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* Stats 2: Active Sessions */}
         <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl p-5 shadow-xs flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-[#b86a16]/10 flex items-center justify-center text-[#b86a16] shrink-0">
             <Activity className="w-6 h-6" />
@@ -152,7 +148,6 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* Stats 3: Completed Sessions */}
         <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl p-5 shadow-xs flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
             <CheckCircle className="w-6 h-6" />
@@ -167,7 +162,6 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* Stats 4: Cancelled Sessions */}
         <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl p-5 shadow-xs flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center text-[#c4796a] shrink-0">
             <AlertTriangle className="w-6 h-6" />
@@ -183,7 +177,6 @@ export default function UserDashboard() {
         </div>
       </div>
 
-      {/* Active / Confirmed Bookings list */}
       <div className="bg-white border border-[#e8dcc4]/60 rounded-[2rem] p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-[#faf7f2] pb-3">
           <h2 className="text-base font-bold text-[#1c1f4a] font-display">

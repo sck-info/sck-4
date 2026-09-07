@@ -1,10 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { ArrowUpRight, ArrowLeft } from "lucide-react";
 import { useRealtime } from "@/hooks/useRealtime";
+import {
+  OfferingGuidanceModal,
+  OfferingGuidanceGridCard,
+} from "@/components/OfferingGuidance";
 
-type SubCategory = {
+export type SubCategory = {
   id: string;
   name: string;
   description: string | null;
@@ -15,7 +20,7 @@ type SubCategory = {
   isActive: boolean;
 };
 
-type Category = {
+export type Category = {
   id: string;
   name: string;
   description: string | null;
@@ -26,7 +31,7 @@ type Category = {
   subCategories: SubCategory[];
 };
 
-const CATEGORY_STYLES: Record<
+export const CATEGORY_STYLES: Record<
   string,
   { color: string; lightColor: string; icon: string; hash: string }
 > = {
@@ -62,7 +67,7 @@ const CATEGORY_STYLES: Record<
   },
 };
 
-const getCategoryStyle = (name: string) => {
+export const getCategoryStyle = (name: string) => {
   return (
     CATEGORY_STYLES[name] || {
       color: "#b86a16",
@@ -80,22 +85,65 @@ export default function OfferingsClient({
 }) {
   const [categories, setCategories] = useState<Category[]>(initialData);
   const [activeTab, setActiveTab] = useState(0);
+  const [guidanceModalOpen, setGuidanceModalOpen] = useState(false);
 
   // Sync Hash on load/change
   useEffect(() => {
     const updateFromHash = () => {
-      const hash = window.location.hash.replace("#", "");
+      const rawHash = window.location.hash || "";
+      if (!rawHash) return;
+
+      // Clean up multiple concatenated hashes if present (e.g. #therapy#consultations -> consultations)
+      const hashParts = rawHash.split("#").filter(Boolean);
+      const hash = hashParts[hashParts.length - 1] || "";
       if (!hash) return;
-      const index = categories.findIndex((c) => {
+
+      // If multiple hashes were in the URL, clean up the address bar immediately
+      if (hashParts.length > 1) {
+        window.history.replaceState(
+          null,
+          "",
+          `${window.location.pathname}#${hash}`,
+        );
+      }
+
+      const normalizedHash = hash.toLowerCase();
+
+      // 1. Find matching category by hash, id, or name
+      let index = categories.findIndex((c) => {
         const style = getCategoryStyle(c.name);
         return (
-          style.hash === hash ||
-          c.id === hash ||
-          c.name === decodeURIComponent(hash)
+          style.hash.toLowerCase() === normalizedHash ||
+          c.id.toLowerCase() === normalizedHash ||
+          c.name.toLowerCase() === decodeURIComponent(normalizedHash) ||
+          c.name.toLowerCase().replace(/\s+/g, "-") === normalizedHash
         );
       });
+
+      // 2. If not matched on category, check if it matches a sub-category
+      if (index === -1) {
+        index = categories.findIndex((c) =>
+          c.subCategories?.some(
+            (sub) =>
+              sub.id.toLowerCase() === normalizedHash ||
+              `offering-${sub.id}`.toLowerCase() === normalizedHash ||
+              sub.name.toLowerCase().replace(/\s+/g, "-") === normalizedHash,
+          ),
+        );
+      }
+
       if (index !== -1) {
         setActiveTab(index);
+        setTimeout(() => {
+          const style = getCategoryStyle(categories[index]?.name || "");
+          const el =
+            document.getElementById(style.hash) ||
+            document.getElementById(hash) ||
+            document.getElementById(`offering-${hash}`);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 120);
       }
     };
     updateFromHash();
@@ -142,19 +190,17 @@ export default function OfferingsClient({
   return (
     <section style={{ padding: "0 2rem clamp(3rem, 6vw, 6rem) 2rem" }}>
       <div style={{ width: "100%", maxWidth: 1600, margin: "0 auto" }}>
-        {/* Back button */}
         <div style={{ marginBottom: "1.5rem", marginLeft: "-0.5rem" }}>
-          <a
+          <Link
             href="/"
             className="inline-flex items-center gap-2 text-xs font-bold text-[#b86a16] hover:text-[#1c1f4a] uppercase tracking-widest transition-all cursor-pointer group"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             Back to Home
-          </a>
+          </Link>
         </div>
 
-        {/* Scheduled Note Header */}
         <div style={{ marginBottom: "clamp(2rem, 4vw, 3rem)" }}>
           <div
             style={{
@@ -203,7 +249,6 @@ export default function OfferingsClient({
                 Programmes
               </span>
             </h2>
-            {/* Scheduling Note Card */}
             <div
               style={{
                 background: "rgba(232,150,46,0.05)",
@@ -263,7 +308,6 @@ export default function OfferingsClient({
           </div>
         </div>
 
-        {/* Tab Buttons */}
         <div
           style={{
             display: "flex",
@@ -279,7 +323,11 @@ export default function OfferingsClient({
                 key={c.id}
                 onClick={() => {
                   setActiveTab(i);
-                  window.history.replaceState(null, "", `#${style.hash}`);
+                  window.history.replaceState(
+                    null,
+                    "",
+                    `${window.location.pathname}#${style.hash}`,
+                  );
                 }}
                 style={{
                   padding: "10px 24px",
@@ -308,7 +356,6 @@ export default function OfferingsClient({
           })}
         </div>
 
-        {/* Selected Category Panels */}
         {activeCategory &&
           (() => {
             const activeStyle = getCategoryStyle(activeCategory.name);
@@ -324,7 +371,6 @@ export default function OfferingsClient({
                   scrollMarginTop: "100px",
                 }}
               >
-                {/* Header Banner */}
                 <div
                   style={{
                     background: activeStyle.color,
@@ -381,7 +427,6 @@ export default function OfferingsClient({
                   </div>
                 </div>
 
-                {/* Sanskrit Text & Meaning Quote Block */}
                 {activeCategory.sanskritText && (
                   <div
                     style={{
@@ -450,7 +495,6 @@ export default function OfferingsClient({
                   </div>
                 )}
 
-                {/* Sub-Category Offerings List Grid */}
                 <div
                   className="offerings-grid"
                   style={{
@@ -470,6 +514,7 @@ export default function OfferingsClient({
                     return (
                       <div
                         key={sub.id}
+                        id={`offering-${sub.id}`}
                         style={{
                           background: "white",
                           padding: "clamp(1.5rem, 3vw, 2rem)",
@@ -478,6 +523,7 @@ export default function OfferingsClient({
                           justifyContent: "space-between",
                           gap: 20,
                           transition: "background 0.2s",
+                          scrollMarginTop: "100px",
                         }}
                         onMouseEnter={(e) => {
                           (e.currentTarget as HTMLElement).style.background =
@@ -489,7 +535,6 @@ export default function OfferingsClient({
                         }}
                       >
                         <div>
-                          {/* Tags Badge list */}
                           <div
                             style={{
                               display: "flex",
@@ -563,7 +608,6 @@ export default function OfferingsClient({
                           )}
                         </div>
 
-                        {/* Highlights benefits pill list */}
                         <div>
                           {tagsArray.length > 0 && (
                             <div
@@ -593,8 +637,7 @@ export default function OfferingsClient({
                             </div>
                           )}
 
-                          {/* Booking Route Link Button */}
-                          <a
+                          <Link
                             href={`/offerings/${encodeURIComponent(sub.name)}/book`}
                             style={{
                               display: "inline-flex",
@@ -626,16 +669,25 @@ export default function OfferingsClient({
                               ? "View Available Slots"
                               : "Register / Submit Form"}
                             <ArrowUpRight size={16} />
-                          </a>
+                          </Link>
                         </div>
                       </div>
                     );
                   })}
+                  <OfferingGuidanceGridCard
+                    onOpen={() => setGuidanceModalOpen(true)}
+                    categoryColor={activeStyle.color}
+                  />
                 </div>
               </div>
             );
           })()}
       </div>
+
+      <OfferingGuidanceModal
+        open={guidanceModalOpen}
+        onOpenChange={setGuidanceModalOpen}
+      />
     </section>
   );
 }

@@ -304,7 +304,6 @@ function ContactsCrudPageContent() {
 
   return (
     <div className="space-y-8 w-full">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[#1c1f4a] font-display">
@@ -324,7 +323,6 @@ function ContactsCrudPageContent() {
         </button>
       </div>
 
-      {/* Main content pane */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20">
           <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-4" />
@@ -508,7 +506,6 @@ function ContactsCrudPageContent() {
         </div>
       )}
 
-      {/* CRUD Form Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-5 rounded-t-3xl flex flex-row items-center gap-2">
@@ -724,7 +721,6 @@ function ContactsCrudPageContent() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* DEPENDENCY BLOCKED DIALOG */}
       {blockedDeleteReason && (
         <AlertDialog open={!!blockedDeleteReason} onOpenChange={(open) => !open && setBlockedDeleteReason(null)}>
           <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">

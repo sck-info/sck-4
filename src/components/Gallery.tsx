@@ -130,7 +130,6 @@ export default function Gallery() {
         </h2>
       </div>
 
-      {/* Scrolling / Centered Card track */}
       <div style={{ position: "relative", overflow: "hidden" }}>
         {dbPhotos.length === 0 ? (
           <div
@@ -340,7 +339,6 @@ export default function Gallery() {
                       if (track) track.style.animationPlayState = "running";
                     }}
                   >
-                    {/* Image Card */}
                     <div
                       style={{
                         width: 280,

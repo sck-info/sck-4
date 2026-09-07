@@ -14,7 +14,6 @@ type GalleryPhoto = {
   height: number;
 };
 
-
 export default function PublicGalleryPage() {
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,16 +77,12 @@ export default function PublicGalleryPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightboxIndex, photos]);
 
-
-
   return (
     <div className="min-h-screen bg-[#faf7f2] flex flex-col text-[#1c1f4a] selection:bg-[#b86a16]/20 font-sans">
-      {/* Top Header Section */}
       <header
         className="relative pb-12 px-8 border-b border-[#e8dcc4]/50 max-w-[1600px] mx-auto w-full"
         style={{ paddingTop: "calc(var(--header-height) + 1.5rem)" }}
       >
-        {/* Back button */}
         <div style={{ marginBottom: "1.5rem", marginLeft: "-0.5rem" }}>
           <Link
             href="/"
@@ -117,7 +112,6 @@ export default function PublicGalleryPage() {
           </div>
       </header>
 
-      {/* Grid Container */}
       <main className="max-w-[1600px] mx-auto px-8 mt-12 pb-24 sm:pb-32 flex-1 w-full">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32">
@@ -152,7 +146,6 @@ export default function PublicGalleryPage() {
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                   priority={originalIdx < 6}
                 />
-                {/* Hover Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1c1f4a]/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
                   <p className="text-white text-xs font-semibold uppercase tracking-wider line-clamp-2">
                     {photo.caption}
@@ -164,7 +157,6 @@ export default function PublicGalleryPage() {
         )}
       </main>
 
-      {/* Fullscreen Lightbox Overlay */}
       <AnimatePresence>
         {lightboxIndex !== null && photos[lightboxIndex] && (
           <motion.div
@@ -175,7 +167,6 @@ export default function PublicGalleryPage() {
             onClick={() => setLightboxIndex(null)}
             className="fixed inset-0 bg-[#0e1026]/96 z-[999] flex flex-col items-center justify-center p-4 md:p-8"
           >
-            {/* Top Bar controls */}
             <div className="absolute top-5 right-5 flex items-center gap-4 z-50">
               <span className="text-white/40 text-xs font-mono select-none">
                 {lightboxIndex + 1} / {photos.length}
@@ -188,7 +179,6 @@ export default function PublicGalleryPage() {
               </button>
             </div>
 
-            {/* Previous Arrow button */}
             <button
               onClick={goPrev}
               className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/5 hover:bg-white/10 text-white rounded-full flex items-center justify-center transition-colors cursor-pointer z-50 border border-white/10"
@@ -196,7 +186,6 @@ export default function PublicGalleryPage() {
               <ChevronLeft className="w-6 h-6" />
             </button>
 
-            {/* Active Image container */}
             <motion.div
               key={lightboxIndex}
               initial={{ scale: 0.96, opacity: 0 }}
@@ -217,7 +206,6 @@ export default function PublicGalleryPage() {
                 />
               </div>
 
-              {/* Lower caption info */}
               <div className="mt-4 flex flex-col gap-1 text-center">
                 <p className="text-white text-sm font-semibold tracking-wide uppercase">
                   {photos[lightboxIndex].caption}
@@ -225,7 +213,6 @@ export default function PublicGalleryPage() {
               </div>
             </motion.div>
 
-            {/* Next Arrow button */}
             <button
               onClick={goNext}
               className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/5 hover:bg-white/10 text-white rounded-full flex items-center justify-center transition-colors cursor-pointer z-50 border border-white/10"

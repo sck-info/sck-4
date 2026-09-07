@@ -203,23 +203,19 @@ export default function Testimonials() {
         </h2>
 
         <div className="testimonial-carousel">
-          {/* Previous Card */}
           <div className="side-card">
             <TestimonialCard data={items[prevIndex]} />
           </div>
 
-          {/* Active Card */}
           <div className="active-card">
             <TestimonialCard data={items[currentIndex]} active />
           </div>
 
-          {/* Next Card */}
           <div className="side-card">
             <TestimonialCard data={items[nextIndex]} />
           </div>
         </div>
 
-        {/* Controls */}
         <div
           style={{
             display: "flex",
@@ -379,7 +375,6 @@ function TestimonialCard({
           gap: "12px",
         }}
       >
-        {/* Avatar or Letter block */}
         <div
           style={{
             width: 44,

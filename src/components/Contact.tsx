@@ -273,7 +273,6 @@ export default function Contact() {
                 </Link>
               </div>
 
-              {/* Contact details */}
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >

@@ -296,7 +296,6 @@ export default function ProfilePage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
-          {/* Avatar Upload Header */}
           <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-[#e8dcc4]/60 mb-2">
             <div className="relative w-24 h-24 flex-shrink-0 group">
               <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-[#e8dcc4] bg-[#faf7f2]/50 shadow-xs relative">
@@ -311,7 +310,6 @@ export default function ProfilePage() {
                     {name ? name.slice(0, 2) : "US"}
                   </div>
                 )}
-                {/* Hover overlay */}
                 <div
                   onClick={() => setPhotoMenuOpen(true)}
                   className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"

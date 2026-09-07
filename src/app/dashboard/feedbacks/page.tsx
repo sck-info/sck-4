@@ -239,13 +239,11 @@ function FeedbacksPageContent() {
 
   return (
     <div className="space-y-6 w-full">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">Feedbacks &amp; Testimonials Compiler</h1>
         <p className="text-xs text-[#5a5e7a] mt-1">Review ratings, rewrite submissions into polished testimonials, and toggle landing page visibility.</p>
       </div>
 
-      {/* Filter Toolbar (Clear first, then Apply) */}
       <div className="flex flex-col sm:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
         <div className="flex-1 min-w-[200px] space-y-1 w-full">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Search Feedback</Label>
@@ -408,7 +406,6 @@ function FeedbacksPageContent() {
         </div>
       )}
 
-      {/* Compile Testimonial Dialog Modal */}
       <Dialog open={!!editingFeedback} onOpenChange={(open) => !open && setEditingFeedback(null)}>
         <DialogContent className="max-w-lg border border-[#e8dcc4] bg-white rounded-2xl overflow-hidden p-0 shadow-lg font-sans">
           <DialogHeader className="bg-[#1c1f4a] text-white p-5">
@@ -475,7 +472,6 @@ function FeedbacksPageContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Feedback Alert Dialog */}
       <AlertDialog open={!!deleteFeedbackId} onOpenChange={(open) => !open && setDeleteFeedbackId(null)}>
         <AlertDialogContent className="rounded-2xl border-[#e8dcc4] bg-white font-sans max-w-md">
           <AlertDialogHeader>

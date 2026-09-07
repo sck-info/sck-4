@@ -389,7 +389,6 @@ function EventsDashboardContent() {
         }
       `}</style>
 
-      {/* Title & Description */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>
           <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
@@ -408,7 +407,6 @@ function EventsDashboardContent() {
         </Button>
       </div>
 
-      {/* Filter toolbar */}
       <div className="flex flex-col md:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
         <div className="flex-1 min-w-[150px] space-y-1 w-full">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider block">
@@ -483,7 +481,6 @@ function EventsDashboardContent() {
         </div>
       </div>
 
-      {/* Events Table list */}
       <div className="bg-white border border-[#e8dcc4] rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <Table>
@@ -607,7 +604,6 @@ function EventsDashboardContent() {
         <TablePaginationFooter pagination={pagination} variant="bottom" />
       </div>
 
-      {/* Create / Edit Dialog Modal */}
       <Dialog open={modalOpen} onOpenChange={(open) => {
         setModalOpen(open);
         if (!open) setEditingEvent(null);
@@ -693,7 +689,6 @@ function EventsDashboardContent() {
                 <Label htmlFor="eventDescription" className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
                   Description <span className="text-red-500">*</span>
                 </Label>
-                {/* Visual rich formatting toolbar - highlighted if state is active */}
                 <div className="inline-flex items-center border border-[#e8dcc4] rounded-lg overflow-hidden bg-white shadow-sm">
                   <button
                     type="button"
@@ -734,7 +729,6 @@ function EventsDashboardContent() {
                 </div>
               </div>
 
-              {/* Native ContentEditable rich text editor */}
               <div
                 id="eventDescription"
                 ref={editorRef}
@@ -792,7 +786,6 @@ function EventsDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Alert Dialog */}
       <AlertDialog open={!!deleteEvent} onOpenChange={(open) => !open && setDeleteEvent(null)}>
         <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
           <div className="flex flex-col items-center space-y-4">

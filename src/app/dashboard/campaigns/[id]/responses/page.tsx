@@ -196,7 +196,6 @@ function CampaignResponsesPageContent({ params }: Props) {
 
   return (
     <div className="w-full space-y-6">
-      {/* Back button */}
       <div>
         <Link
           href="/dashboard/campaigns"
@@ -207,7 +206,6 @@ function CampaignResponsesPageContent({ params }: Props) {
         </Link>
       </div>
 
-      {/* Page Title & Exports row */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>
           <h1 className="text-2xl font-bold text-[#1c1f4a] font-display flex items-center gap-3">
@@ -230,7 +228,6 @@ function CampaignResponsesPageContent({ params }: Props) {
         </div>
       </div>
 
-      {/* Table of answers */}
       <div className="space-y-4">
         <TablePaginationFooter pagination={pagination} variant="top" />
         <div className="bg-white border border-[#e8dcc4]/60 rounded-3xl overflow-hidden shadow-xs">

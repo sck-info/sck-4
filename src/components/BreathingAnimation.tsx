@@ -134,7 +134,6 @@ export default function BreathingAnimation() {
         pointerEvents: "none",
       }}
     >
-      {/* Dynamic background glow */}
       <div
         style={{
           position: "absolute",
@@ -150,7 +149,6 @@ export default function BreathingAnimation() {
           filter: "blur(50px)",
         }}
       />
-      {/* Orbiting particles */}
       <div
         style={{
           position: "absolute",
@@ -199,7 +197,6 @@ export default function BreathingAnimation() {
           justifyContent: "center",
         }}
       >
-        {/* Outer breathing ring — expands and contracts with breath */}
         <div
           style={{
             position: "absolute",
@@ -211,7 +208,6 @@ export default function BreathingAnimation() {
             transition: "transform 0.1s linear",
           }}
         />
-        {/* Mid ring */}
         <div
           style={{
             position: "absolute",
@@ -222,7 +218,6 @@ export default function BreathingAnimation() {
           }}
         />
 
-        {/* Vertical track */}
         <div
           style={{
             position: "relative",
@@ -233,7 +228,6 @@ export default function BreathingAnimation() {
             borderRadius: 2,
           }}
         >
-          {/* Track dots — top and bottom anchors */}
           <div
             style={{
               position: "absolute",
@@ -259,7 +253,6 @@ export default function BreathingAnimation() {
             }}
           />
 
-          {/* The ball */}
           <div
             style={{
               position: "absolute",
@@ -276,7 +269,6 @@ export default function BreathingAnimation() {
           />
         </div>
 
-        {/* Phase label + countdown */}
         <div
           style={{
             marginTop: 36,
@@ -297,7 +289,6 @@ export default function BreathingAnimation() {
             {currentLabel}
           </p>
 
-          {/* Arc progress bar */}
           <svg
             width="60"
             height="6"

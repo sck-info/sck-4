@@ -373,7 +373,6 @@ function OfferingInquiriesContent() {
 
   return (
     <div className="space-y-6 w-full">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>
           <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
@@ -400,9 +399,7 @@ function OfferingInquiriesContent() {
         </div>
       </div>
 
-      {/* Filter Toolbar */}
       <div className="flex flex-col md:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
-        {/* Search */}
         <div className="flex-1 min-w-[200px] space-y-1 w-full">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
             Search Seeker
@@ -419,7 +416,6 @@ function OfferingInquiriesContent() {
           </div>
         </div>
 
-        {/* Status Filter */}
         <div className="w-full md:w-48 space-y-1">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
             Inquiry Status
@@ -437,7 +433,6 @@ function OfferingInquiriesContent() {
           </Select>
         </div>
 
-        {/* Date Range Picker */}
         <div className="w-full md:w-56 space-y-1">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
             Filter Date Range
@@ -445,7 +440,6 @@ function OfferingInquiriesContent() {
           <DateRangePicker value={dateRange} onChange={setDateRange} />
         </div>
 
-        {/* Buttons */}
         <div className="flex items-center gap-2 w-full md:w-auto">
           <Button
             type="button"
@@ -465,7 +459,6 @@ function OfferingInquiriesContent() {
         </div>
       </div>
 
-      {/* Inquiries Table */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 min-h-[300px]">
           <Loader2 className="w-8 h-8 text-[#b86a16] animate-spin mb-2" />
@@ -524,7 +517,6 @@ function OfferingInquiriesContent() {
                       key={inquiry.id}
                       className="border-b border-[#e8dcc4]/50 hover:bg-[#faf7f2]/20 transition-colors"
                     >
-                      {/* Name & Email */}
                       <TableCell className="py-3 px-4">
                         <div className="flex flex-col">
                           <span className="font-bold text-xs text-[#1c1f4a]">
@@ -543,7 +535,6 @@ function OfferingInquiriesContent() {
                         </div>
                       </TableCell>
 
-                      {/* Phone & WhatsApp Link */}
                       <TableCell className="py-3 px-4">
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-xs font-semibold text-[#1c1f4a]">
@@ -561,7 +552,6 @@ function OfferingInquiriesContent() {
                         </div>
                       </TableCell>
 
-                      {/* Status */}
                       <TableCell className="py-3 px-4">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide uppercase ${
@@ -576,7 +566,6 @@ function OfferingInquiriesContent() {
                         </span>
                       </TableCell>
 
-                      {/* Admin Notes */}
                       <TableCell className="py-3 px-4 max-w-xs">
                         {inquiry.notes ? (
                           <p className="text-xs text-[#1c1f4a] line-clamp-2 leading-relaxed">
@@ -589,12 +578,10 @@ function OfferingInquiriesContent() {
                         )}
                       </TableCell>
 
-                      {/* Created At */}
                       <TableCell className="py-3 px-4 text-xs text-[#5a5e7a] whitespace-nowrap">
                         {formatDate(inquiry.createdAt)}
                       </TableCell>
 
-                      {/* Actions */}
                       <TableCell className="py-3 px-4 text-right">
                         <div className="inline-flex items-center gap-1.5 justify-end">
                           <button
@@ -626,7 +613,6 @@ function OfferingInquiriesContent() {
         </div>
       )}
 
-      {/* Edit Inquiry Modal */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent className="max-w-md border border-[#e8dcc4] bg-white rounded-3xl p-6 sm:p-7 shadow-xl font-sans">
           <DialogHeader className="text-left space-y-1">
@@ -639,7 +625,6 @@ function OfferingInquiriesContent() {
           </DialogHeader>
 
           <form onSubmit={handleSaveEdit} className="space-y-3.5 mt-2">
-            {/* Seeker Name */}
             <div className="space-y-1">
               <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
                 Seeker Name
@@ -653,7 +638,6 @@ function OfferingInquiriesContent() {
               />
             </div>
 
-            {/* Phone Code & Phone */}
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
@@ -681,7 +665,6 @@ function OfferingInquiriesContent() {
               </div>
             </div>
 
-            {/* Email Address */}
             <div className="space-y-1">
               <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
                 Email Address
@@ -695,7 +678,6 @@ function OfferingInquiriesContent() {
               />
             </div>
 
-            {/* Status Selector */}
             <div className="space-y-1">
               <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
                 Inquiry Status
@@ -715,7 +697,6 @@ function OfferingInquiriesContent() {
               </Select>
             </div>
 
-            {/* Notes */}
             <div className="space-y-1">
               <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
                 Admin Notes & Remarks
@@ -729,7 +710,6 @@ function OfferingInquiriesContent() {
               />
             </div>
 
-            {/* Modal Actions */}
             <div className="flex justify-end gap-2 pt-3 border-t border-[#e8dcc4]/50">
               <Button
                 type="button"
@@ -752,7 +732,6 @@ function OfferingInquiriesContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
           <div className="flex flex-col items-center space-y-4">

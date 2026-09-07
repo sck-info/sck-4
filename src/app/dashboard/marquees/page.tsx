@@ -441,7 +441,6 @@ function MarqueesDashboardContent() {
 
   return (
     <div className="w-full space-y-6">
-      {/* Title & Description Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>
           <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
@@ -461,9 +460,7 @@ function MarqueesDashboardContent() {
         </button>
       </div>
 
-      {/* Filter toolbar (with Search, Status, Date range, Clear All, and Apply) */}
       <div className="flex flex-col md:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
-        {/* Search */}
         <div className="flex-1 min-w-[150px] space-y-1 w-full">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider block">
             Search Marquees
@@ -479,7 +476,6 @@ function MarqueesDashboardContent() {
           </div>
         </div>
 
-        {/* Status */}
         <div className="w-full md:w-40 space-y-1">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider block">
             Status
@@ -496,7 +492,6 @@ function MarqueesDashboardContent() {
           </Select>
         </div>
 
-        {/* Date range */}
         <div className="w-full md:w-52 space-y-1">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider block">
             Date range
@@ -504,7 +499,6 @@ function MarqueesDashboardContent() {
           <DateRangePicker value={dateRange} onChange={setDateRange} />
         </div>
 
-        {/* Filter Action Buttons (Clear All & Apply) */}
         <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0 shrink-0">
           <Button
             type="button"
@@ -524,7 +518,6 @@ function MarqueesDashboardContent() {
         </div>
       </div>
 
-      {/* Marquees Table */}
       <div className="bg-white border border-[#e8dcc4] rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <Table>
@@ -582,7 +575,6 @@ function MarqueesDashboardContent() {
                       key={item.id}
                       className="hover:bg-[#faf7f2]/30 transition-colors"
                     >
-                      {/* Title */}
                       <TableCell className="py-3.5 px-4">
                         <div className="font-semibold text-xs text-[#1c1f4a]">
                           {item.title}
@@ -592,7 +584,6 @@ function MarqueesDashboardContent() {
                         </div>
                       </TableCell>
 
-                      {/* Content Preview */}
                       <TableCell className="py-3.5 px-4 max-w-sm">
                         <div
                           className="text-xs text-[#5a5e7a] line-clamp-2 [&_strong]:font-semibold [&_b]:font-semibold [&_em]:italic [&_i]:italic [&_u]:underline [&_a]:text-[#b86a16] [&_a]:underline"
@@ -600,7 +591,6 @@ function MarqueesDashboardContent() {
                         />
                       </TableCell>
 
-                      {/* Action Link (Never shows raw URL) */}
                       <TableCell className="py-3.5 px-4">
                         {item.link ? (
                           <a
@@ -627,7 +617,6 @@ function MarqueesDashboardContent() {
                         )}
                       </TableCell>
 
-                      {/* Schedule / Validity */}
                       <TableCell className="py-3.5 px-4 text-xs">
                         {item.startDate || item.endDate ? (
                           <div className="space-y-1">
@@ -662,7 +651,6 @@ function MarqueesDashboardContent() {
                         )}
                       </TableCell>
 
-                      {/* Status / Quick Toggle */}
                       <TableCell className="py-3.5 px-4 text-center">
                         <div className="flex flex-col items-center justify-center gap-1">
                           {item.isActive ? (
@@ -693,7 +681,6 @@ function MarqueesDashboardContent() {
                         </div>
                       </TableCell>
 
-                      {/* Actions */}
                       <TableCell className="py-3.5 px-4 text-right">
                         <div className="inline-flex items-center gap-2">
                           <Button
@@ -724,11 +711,9 @@ function MarqueesDashboardContent() {
           </Table>
         </div>
 
-        {/* Pagination Footer */}
         <TablePaginationFooter pagination={pagination} />
       </div>
 
-      {/* Create / Edit Dialog */}
       <Dialog
         open={modalOpen}
         onOpenChange={(open) => {
@@ -746,7 +731,6 @@ function MarqueesDashboardContent() {
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-3 pt-1">
-            {/* Title */}
             <div className="space-y-1">
               <Label
                 htmlFor="mq-title"
@@ -770,7 +754,6 @@ function MarqueesDashboardContent() {
               </p>
             </div>
 
-            {/* Announcement Content (Bold, Italic, Underline - NO Link button) */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <Label
@@ -779,7 +762,6 @@ function MarqueesDashboardContent() {
                 >
                   Announcement Content *
                 </Label>
-                {/* Visual formatting buttons: Bold, Italic, Underline */}
                 <div className="inline-flex items-center gap-1">
                   <button
                     type="button"
@@ -833,7 +815,6 @@ function MarqueesDashboardContent() {
               </p>
             </div>
 
-            {/* Direct Action Link & Title */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-[#faf7f2]/70 border border-[#e8dcc4]">
               <div className="space-y-1">
                 <Label
@@ -875,7 +856,6 @@ function MarqueesDashboardContent() {
               </div>
             </div>
 
-            {/* Scheduling (Start Date & End After Date) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs font-semibold text-[#1c1f4a] uppercase tracking-wider">
@@ -904,7 +884,6 @@ function MarqueesDashboardContent() {
               </div>
             </div>
 
-            {/* Active Switch with shadcn Checkbox */}
             <div className="flex items-center justify-between p-3 rounded-xl bg-[#faf7f2]/60 border border-[#e8dcc4]">
               <div className="space-y-0.5 pr-4">
                 <Label
@@ -928,7 +907,6 @@ function MarqueesDashboardContent() {
               />
             </div>
 
-            {/* Actions */}
             <div className="pt-3 border-t border-[#e8dcc4]/50 flex items-center justify-end gap-3">
               <Button
                 type="button"
@@ -959,7 +937,6 @@ function MarqueesDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Alert */}
       <AlertDialog
         open={Boolean(deleteTarget)}
         onOpenChange={(o) => !o && setDeleteTarget(null)}

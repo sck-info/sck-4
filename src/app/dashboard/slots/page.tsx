@@ -568,7 +568,6 @@ function SlotsDashboardContent() {
 
   return (
     <div className="space-y-6 w-full">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>
           <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">
@@ -587,7 +586,6 @@ function SlotsDashboardContent() {
         </Button>
       </div>
 
-      {/* Neat Filter Toolbar (Clear first, then Apply) */}
       <div className="flex flex-col md:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
         <div className="flex-1 min-w-[180px] space-y-1 w-full">
           <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">
@@ -798,7 +796,6 @@ function SlotsDashboardContent() {
         </div>
       )}
 
-      {/* Announce Modal Dialog */}
       <Dialog open={modalOpen} onOpenChange={(open) => {
         setModalOpen(open);
         if (!open) setEditingSlot(null);
@@ -836,7 +833,6 @@ function SlotsDashboardContent() {
               </Select>
             </div>
 
-            {/* Recurrence Repeat Selector (New Announcement Only) */}
             {!editingSlot && (
               <div className="space-y-1">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide">
@@ -861,7 +857,6 @@ function SlotsDashboardContent() {
               </div>
             )}
 
-            {/* Date Inputs based on Repeat Pattern */}
             {(editingSlot || formData.repeatType === "once") ? (
               <div className="space-y-1">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
@@ -901,7 +896,6 @@ function SlotsDashboardContent() {
               </div>
             )}
 
-            {/* Weekday Selection for Weekly Recurrence */}
             {!editingSlot && formData.repeatType === "weekly" && (
               <div className="space-y-2">
                 <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
@@ -937,7 +931,6 @@ function SlotsDashboardContent() {
               </div>
             )}
 
-            {/* Timings List & Picker */}
             {editingSlot ? (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
@@ -1008,7 +1001,6 @@ function SlotsDashboardContent() {
                   Timings List
                 </Label>
 
-                {/* Render timings list */}
                 <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
                   {timingsList.map((t, idx) => (
                     <div
@@ -1041,7 +1033,6 @@ function SlotsDashboardContent() {
                   )}
                 </div>
 
-                {/* Add timings form inline */}
                 <div className="flex gap-2 items-end pt-1">
                   <div className="flex-1 space-y-1">
                     <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
@@ -1116,7 +1107,6 @@ function SlotsDashboardContent() {
               </div>
             )}
 
-            {/* Select Formats & Locations */}
             <div className="space-y-2">
               <Label className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wide block">
                 Select Formats &amp; Locations
@@ -1187,7 +1177,6 @@ function SlotsDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Duplicate / Clash Result Dialog */}
       <Dialog open={!!conflictResult} onOpenChange={(open) => !open && setConflictResult(null)}>
         <DialogContent className="sm:max-w-[550px] rounded-3xl [&>button]:text-white/80 hover:[&>button]:bg-white/10 hover:[&>button]:text-white [&>button]:z-50">
           <DialogHeader className="bg-[#b86a16] text-white -mx-6 -mt-6 px-6 py-5 rounded-t-3xl">
@@ -1241,7 +1230,6 @@ function SlotsDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Slot AlertDialog */}
       <AlertDialog open={!!deleteSlot} onOpenChange={(open) => !open && setDeleteSlot(null)}>
         <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
           <div className="flex flex-col items-center space-y-4">
@@ -1266,7 +1254,6 @@ function SlotsDashboardContent() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* DEPENDENCY BLOCKED DIALOG */}
       {blockedDeleteReason && (
         <AlertDialog open={!!blockedDeleteReason} onOpenChange={(open) => !open && setBlockedDeleteReason(null)}>
           <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
@@ -1292,7 +1279,6 @@ function SlotsDashboardContent() {
         </AlertDialog>
       )}
 
-      {/* SUSPEND CONFIRMATION DIALOG */}
       {suspendConfirmSlot && (
         <AlertDialog open={!!suspendConfirmSlot} onOpenChange={(open) => !open && setSuspendConfirmSlot(null)}>
           <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">

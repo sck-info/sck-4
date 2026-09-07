@@ -423,7 +423,6 @@ function OfferingsDashboardContent() {
 
   return (
     <div className="space-y-8 w-full">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#e8dcc4] pb-5">
         <div>
           <h1 className="text-2xl font-bold text-[#1c1f4a] font-display">Manage Offerings</h1>
@@ -450,7 +449,6 @@ function OfferingsDashboardContent() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* URL Tabbed Navigation (No Stars) */}
           <div className="flex gap-2 border-b border-[#e8dcc4] pb-px overflow-x-auto selection:bg-transparent">
             {categories.map((cat) => {
               const isSel = activeCategory?.id === cat.id;
@@ -470,7 +468,6 @@ function OfferingsDashboardContent() {
             })}
           </div>
 
-          {/* Active Category Header Card */}
           {activeCategory && (
             <div className="bg-[#1c1f4a] text-white p-6 rounded-2xl flex flex-col md:flex-row md:items-center md:justify-between gap-6 shadow-sm">
               <div className="space-y-2">
@@ -504,14 +501,12 @@ function OfferingsDashboardContent() {
             </div>
           )}
 
-          {/* Sub-Categories Offerings List Table with Filter Toolbar */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pt-2">
               <BookOpen className="w-4 h-4 text-[#b86a16]" />
               <h4 className="text-xs font-bold text-[#1c1f4a] uppercase tracking-wider">Sub-Category Offerings List</h4>
             </div>
 
-            {/* Filter Toolbar (Clear first, then Apply) */}
             <div className="flex flex-col sm:flex-row items-end gap-3 p-4 border border-[#e8dcc4]/60 bg-[#faf7f2]/20 rounded-2xl">
               <div className="flex-1 min-w-[200px] space-y-1 w-full">
                 <Label className="text-[9px] font-bold text-[#1c1f4a] uppercase tracking-wider">Search Offerings</Label>
@@ -644,7 +639,6 @@ function OfferingsDashboardContent() {
         </div>
       )}
 
-      {/* DIALOG: Category Form */}
       <Dialog open={catModalOpen} onOpenChange={setCatModalOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
@@ -739,7 +733,6 @@ function OfferingsDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* DIALOG: Sub-Category (Offering) Form */}
       <Dialog open={subModalOpen} onOpenChange={setSubModalOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader className="bg-[#1c1f4a] text-white -mx-6 -mt-6 px-6 py-4 rounded-t-3xl">
@@ -869,7 +862,6 @@ function OfferingsDashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* ALERT DIALOG: Delete Category */}
       <AlertDialog open={!!deleteCatId} onOpenChange={(open) => !open && setDeleteCatId(null)}>
         <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
           <div className="flex flex-col items-center space-y-4">
@@ -894,7 +886,6 @@ function OfferingsDashboardContent() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ALERT DIALOG: Delete Sub-Category */}
       <AlertDialog open={!!deleteSubId} onOpenChange={(open) => !open && setDeleteSubId(null)}>
         <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-md p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
           <div className="flex flex-col items-center space-y-4">
@@ -919,7 +910,6 @@ function OfferingsDashboardContent() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* DEPENDENCY BLOCKED DIALOG */}
       {blockedDeleteReason && (
         <AlertDialog open={!!blockedDeleteReason} onOpenChange={(open) => !open && setBlockedDeleteReason(null)}>
           <AlertDialogContent className="rounded-3xl border border-[#e8dcc4] bg-white max-w-sm p-6 font-sans shadow-lg text-center animate-in fade-in zoom-in-95 duration-200">
