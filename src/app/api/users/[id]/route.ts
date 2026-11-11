@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { users } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, sql, and, ne } from "drizzle-orm";
+import { sendTextMessage } from "@/lib/whatsapp";
 
 export async function PATCH(
   req: Request,
@@ -73,25 +74,11 @@ export async function PATCH(
         updates.sessionVersion = sql`${users.sessionVersion} + 1`;
 
         // Send OTP via WhatsApp gateway
-        const WHATSAPP_GATEWAY_URL = process.env.WHATSAPP_GATEWAY_URL || "http://localhost:3001";
-        const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
         const fullPhone = `${phoneCode || "91"}${phone}`;
         const message = `Dear ${existing.name},\n\nYour phone number was updated by SCK Admin. Here is your OTP to verify: ${otp}\n\nThis code expires in 10 minutes.\n\nThank You,\nSharath Kancherla Admin Team.`;
 
         try {
-          const gatewayRes = await fetch(`${WHATSAPP_GATEWAY_URL}/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              to: fullPhone,
-              message,
-              token: WHATSAPP_API_TOKEN,
-            }),
-          });
-          const gatewayData = await gatewayRes.json();
-          if (!gatewayRes.ok || !gatewayData.success) {
-            console.error("WhatsApp gateway error on admin phone update:", gatewayData);
-          }
+          await sendTextMessage(fullPhone, message);
         } catch (err) {
           console.error("Failed to send WhatsApp OTP on admin update:", err);
         }

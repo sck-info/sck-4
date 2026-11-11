@@ -3,9 +3,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { users, roles } from "@/db/schema";
 import { eq } from "drizzle-orm";
-
-const WHATSAPP_GATEWAY_URL = process.env.WHATSAPP_GATEWAY_URL || "http://localhost:3001";
-const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
+import { sendTextMessage } from "@/lib/whatsapp";
 
 function generateOtp(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -74,20 +72,10 @@ export async function POST(req: Request) {
     const fullPhone = `${phoneCode}${cleanPhone}`;
     const message = `Dear ${name},\n\nHere is your OTP for SCK Login: ${otp}\n\nThis code expires in 10 minutes. Please do not share it with anyone.\n\nThank You,\nSharath Kancherla Admin Team.`;
 
-    const gatewayRes = await fetch(`${WHATSAPP_GATEWAY_URL}/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: fullPhone,
-        message,
-        token: WHATSAPP_API_TOKEN,
-      }),
-    });
-
-    const gatewayData = await gatewayRes.json();
-
-    if (!gatewayRes.ok || !gatewayData.success) {
-      console.error("WhatsApp gateway error:", gatewayData);
+    try {
+      await sendTextMessage(fullPhone, message);
+    } catch (gatewayErr) {
+      console.error("WhatsApp gateway error:", gatewayErr);
       return NextResponse.json({ error: "Failed to send OTP via WhatsApp." }, { status: 502 });
     }
 

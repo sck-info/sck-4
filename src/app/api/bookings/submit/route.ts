@@ -5,29 +5,10 @@ import { auth } from "@/lib/auth";
 import { eq, and, gt } from "drizzle-orm";
 import { uploadImages } from "@/lib/cloudinaryUpload";
 import { formatDate, getTodayIST } from "@/lib/format";
+import { sendWhatsApp } from "@/lib/whatsapp";
 
-const WHATSAPP_GATEWAY_URL = process.env.WHATSAPP_GATEWAY_URL || "http://localhost:3001";
-const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
 const ADMIN_NOTIFICATION_PHONE = process.env.ADMIN_NOTIFICATION_PHONE;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
-async function sendWhatsApp(to: string, message: string) {
-  if (!WHATSAPP_API_TOKEN) return;
-  try {
-    const formattedPhone = to.replace(/\+/g, "").replace(/\D/g, "");
-    await fetch(`${WHATSAPP_GATEWAY_URL}/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: formattedPhone,
-        message,
-        token: WHATSAPP_API_TOKEN,
-      }),
-    });
-  } catch (err) {
-    console.error("Failed to send WhatsApp message:", err);
-  }
-}
 
 export async function POST(req: Request) {
   try {

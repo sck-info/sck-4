@@ -3,9 +3,7 @@ import { db } from "@/lib/db";
 import { userQueries, userQueryReplies } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, asc } from "drizzle-orm";
-
-const WHATSAPP_GATEWAY_URL = process.env.WHATSAPP_GATEWAY_URL || "http://localhost:3001";
-const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
+import { sendTextMessage } from "@/lib/whatsapp";
 
 export async function GET(
   req: Request,
@@ -79,21 +77,11 @@ export async function PATCH(
     const queryData = existing[0];
     const fullPhone = `${queryData.phoneCode}${queryData.phone}`.replace(/\+/g, "");
 
-    // Send WhatsApp notification via gateway
-    const gatewayRes = await fetch(`${WHATSAPP_GATEWAY_URL}/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: fullPhone,
-        message: replyMessage,
-        token: WHATSAPP_API_TOKEN,
-      }),
-    });
-
-    const gatewayData = await gatewayRes.json();
-
-    if (!gatewayRes.ok || !gatewayData.success) {
-      console.error("WhatsApp gateway error:", gatewayData);
+    // Send WhatsApp notification via SwiftVane gateway
+    try {
+      await sendTextMessage(fullPhone, replyMessage);
+    } catch (gatewayErr) {
+      console.error("WhatsApp gateway error:", gatewayErr);
       return NextResponse.json(
         { error: "Failed to send reply via WhatsApp. Please check gateway." },
         { status: 502 }

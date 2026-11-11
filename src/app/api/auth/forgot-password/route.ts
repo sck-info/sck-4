@@ -4,9 +4,8 @@ import { db } from "@/lib/db";
 import { users, passwordResetTokens } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { sendResetEmail } from "@/lib/email";
+import { sendTextMessage } from "@/lib/whatsapp";
 
-const WHATSAPP_GATEWAY_URL = process.env.WHATSAPP_GATEWAY_URL || "http://localhost:3001";
-const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 export async function POST(req: Request) {
@@ -59,16 +58,10 @@ export async function POST(req: Request) {
       const resetUrl = `${APP_URL}/reset-password?token=${token}&phone=${user.phone}`;
       const message = `Dear ${user.name},\n\nUse the link below to reset your SCK password:\n${resetUrl}\n\nThis link expires in 1 hour. If you did not request this, please ignore.\n\nThank You,\nSharath Kancherla Admin Team.`;
 
-      const gatewayRes = await fetch(`${WHATSAPP_GATEWAY_URL}/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to: fullPhone, message, token: WHATSAPP_API_TOKEN }),
-      });
-
-      const gatewayData = await gatewayRes.json();
-
-      if (!gatewayRes.ok || !gatewayData.success) {
-        console.error("WhatsApp gateway error:", gatewayData);
+      try {
+        await sendTextMessage(fullPhone, message);
+      } catch (gatewayErr) {
+        console.error("WhatsApp gateway error:", gatewayErr);
         return NextResponse.json({ error: "Failed to send reset link via WhatsApp." }, { status: 502 });
       }
 
